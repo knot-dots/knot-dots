@@ -14,6 +14,7 @@
 	import createComparisonData from '$lib/client/createComparisonData.svelte';
 	import IndicatorPicker from '$lib/components/IndicatorPicker.svelte';
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
+	import { getOverlayContext } from '$lib/contexts/overlay.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type BinaryIndicatorPayload,
@@ -38,8 +39,7 @@
 		applicationState,
 		dragged,
 		mayCreateContainer,
-		newContainer,
-		overlay
+		newContainer
 	} from '$lib/stores';
 
 	interface Props {
@@ -48,6 +48,8 @@
 	}
 
 	let { compare = false, containers }: Props = $props();
+
+	const loadedOverlay = getOverlayContext();
 
 	let selectedContainer = $derived.by(() => {
 		if (page.url.searchParams.has('related-to')) {
@@ -206,7 +208,7 @@
 		</p>
 	{/if}
 
-	{#if browser && !matchMedia('(pointer: coarse)').matches && $overlay?.key === overlayKey.enum.relations && $ability.can('update', $overlay.container)}
+	{#if browser && !matchMedia('(pointer: coarse)').matches && loadedOverlay.data?.key === overlayKey.enum.relations && $ability.can('update', loadedOverlay.data.container)}
 		<ul
 			use:dndzone={{ items, dropFromOthersDisabled: true, centreDraggedOnCursor: true }}
 			onconsider={handleDndConsider}

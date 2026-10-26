@@ -16,6 +16,7 @@
 	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import { getFavoriteListContext } from '$lib/contexts/favoriteList';
+	import { getOverlayContext } from '$lib/contexts/overlay.svelte';
 	import {
 		type AnyPayload,
 		type Container,
@@ -26,7 +27,7 @@
 		overlayURL,
 		visibility
 	} from '$lib/models';
-	import { ability, applicationState, mayDeleteContainer, overlayHistory } from '$lib/stores';
+	import { ability, applicationState, mayDeleteContainer } from '$lib/stores';
 
 	interface Props {
 		container: Container<AnyPayload>;
@@ -82,6 +83,8 @@
 
 	let overlay = getContext('overlay');
 
+	const loadedOverlay = getOverlayContext();
+
 	let membersURL = $derived.by(() => {
 		if (overlay) {
 			return overlayURL(page.url, overlayKey.enum.members, container.guid);
@@ -97,9 +100,11 @@
 		const response = await deleteContainer(container);
 		if (response.ok) {
 			if (overlay) {
-				if ($overlayHistory.length > 1) {
-					$overlayHistory = $overlayHistory.slice(0, $overlayHistory.length - 1);
-					const newParams = $overlayHistory[$overlayHistory.length - 1] as URLSearchParams;
+				if (loadedOverlay.history.length > 1) {
+					loadedOverlay.history = loadedOverlay.history.slice(0, loadedOverlay.history.length - 1);
+					const newParams = loadedOverlay.history[
+						loadedOverlay.history.length - 1
+					] as URLSearchParams;
 					await goto(`#${newParams.toString()}`, { invalidateAll: true });
 				} else {
 					await goto('#', { invalidateAll: true });

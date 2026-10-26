@@ -7,8 +7,9 @@
 	import CreateContainerDialog from '$lib/components/CreateContainerDialog.svelte';
 	import CreateObjectiveOrEffectDialog from '$lib/components/CreateObjectiveOrEffectDialog.svelte';
 	import NewCreateContainerDialog from '$lib/components/NewCreateContainerDialog.svelte';
+	import { getOverlayContext } from '$lib/contexts/overlay.svelte';
 	import { createFeatureDecisions } from '$lib/features';
-	import { overlay, overlayWidth } from '$lib/stores';
+	import { overlayWidth } from '$lib/stores';
 
 	interface Props {
 		children: Snippet;
@@ -16,6 +17,8 @@
 	}
 
 	let { children, sidebar }: Props = $props();
+
+	const loadedOverlay = getOverlayContext();
 
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
@@ -42,8 +45,8 @@
 
 	{@render children()}
 
-	{#if $overlay}
-		<Overlay data={$overlay} />
+	{#if loadedOverlay.data}
+		<Overlay data={loadedOverlay.data} />
 	{/if}
 </div>
 

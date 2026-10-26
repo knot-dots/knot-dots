@@ -42,6 +42,7 @@
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import WorkspacesMegaMenu from '$lib/components/WorkspacesMegaMenu.svelte';
 	import { getFavoriteListContext } from '$lib/contexts/favoriteList';
+	import { getOverlayContext } from '$lib/contexts/overlay.svelte';
 	import { getReviewContext } from '$lib/contexts/review.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
@@ -59,7 +60,6 @@
 		ability,
 		applicationState,
 		user,
-		overlay as overlayStore,
 		compareState,
 		lastUpdatedContainers
 	} from '$lib/stores';
@@ -97,8 +97,10 @@
 
 	const review = getReviewContext();
 
+	const loadedOverlay = getOverlayContext();
+
 	let container = $derived.by(() => {
-		const base = overlay ? $overlayStore?.container : page.data.container;
+		const base = overlay ? loadedOverlay.data?.container : page.data.container;
 		const optimistic = base && $lastUpdatedContainers.get(base.guid);
 		return optimistic && optimistic.revision > base.revision ? optimistic : base;
 	});
@@ -325,7 +327,7 @@
 	{/if}
 
 	<div class="actions">
-		{#if (!overlay && !$overlayStore?.key) || overlay}
+		{#if (!overlay && !loadedOverlay.data?.key) || overlay}
 			{#if $user.isAuthenticated}
 				<EditModeToggle />
 			{:else}

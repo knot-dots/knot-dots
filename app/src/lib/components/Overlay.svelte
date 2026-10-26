@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { setContext, type Snippet } from 'svelte';
+	import type { OverlayData } from '$lib/client/loadOverlay';
 	import ChaptersOverlay from '$lib/components/ChaptersOverlay.svelte';
 	import EditableDetailView from '$lib/components/EditableDetailView.svelte';
 	import IndicatorsOverlay from '$lib/components/IndicatorsOverlay.svelte';
@@ -14,7 +15,7 @@
 	import TasksOverlay from '$lib/components/TasksOverlay.svelte';
 	import TemplatesOverlay from '$lib/components/TemplatesOverlay.svelte';
 	import { isGoalContainer, isMeasureContainer, isProgramContainer, overlayKey } from '$lib/models';
-	import { type OverlayData, overlayWidth } from '$lib/stores';
+	import { overlayWidth } from '$lib/stores';
 	import { isTemplateScope } from '$lib/templateScopes';
 
 	interface Props {

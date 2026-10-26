@@ -12,8 +12,8 @@
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
 	import Summary from '$lib/components/Summary.svelte';
+	import { getOverlayContext } from '$lib/contexts/overlay.svelte';
 	import { overlayKey, paramsFromFragment } from '$lib/models';
-	import { overlayHistory } from '$lib/stores';
 	import {
 		axisTicks,
 		DAY,
@@ -44,6 +44,8 @@
 	const minTrackHeight = 176; // the height of the actions
 
 	const overlayContext = getContext('overlay');
+
+	const loadedOverlay = getOverlayContext();
 
 	const reducedMotion = new MediaQuery('prefers-reduced-motion: reduce');
 
@@ -200,7 +202,7 @@
 	// Like Card.svelte, start a new overlay history unless already in an overlay.
 	function updateOverlayHistory(event: MouseEvent) {
 		if (!overlayContext) {
-			$overlayHistory = [
+			loadedOverlay.history = [
 				new URLSearchParams((event.currentTarget as HTMLAnchorElement).hash.substring(1))
 			];
 		}

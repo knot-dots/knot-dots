@@ -2,17 +2,19 @@
 	import { _ } from 'svelte-i18n';
 	import ChevronLeft from '~icons/flowbite/chevron-left-outline';
 	import { goto } from '$app/navigation';
-	import { overlayHistory } from '$lib/stores';
 	import tooltip from '$lib/attachments/tooltip';
+	import { getOverlayContext } from '$lib/contexts/overlay.svelte';
+
+	const loadedOverlay = getOverlayContext();
 
 	async function navigateBack() {
-		$overlayHistory = $overlayHistory.slice(0, $overlayHistory.length - 1);
-		const newParams = $overlayHistory[$overlayHistory.length - 1] as URLSearchParams;
+		loadedOverlay.history = loadedOverlay.history.slice(0, loadedOverlay.history.length - 1);
+		const newParams = loadedOverlay.history[loadedOverlay.history.length - 1] as URLSearchParams;
 		await goto(`#${newParams.toString()}`);
 	}
 </script>
 
-{#if $overlayHistory.length > 1}
+{#if loadedOverlay.history.length > 1}
 	<button class="action-button" onclick={navigateBack} {@attach tooltip($_('back'))}>
 		<ChevronLeft />
 	</button>

@@ -10,6 +10,7 @@
 	import { setComputedProgressContext } from '$lib/contexts/computedProgress';
 	import { setFavoriteListContext } from '$lib/contexts/favoriteList';
 	import { setLastOverlayContext } from '$lib/contexts/lastOverlay';
+	import { createOverlayContext, setOverlayContext } from '$lib/contexts/overlay.svelte';
 	import { createReviewContext, setReviewContext } from '$lib/contexts/review.svelte';
 	import { setToastContext, type ToastProps } from '$lib/contexts/toast';
 	import { getContextIdentifier } from '$lib/models';
@@ -64,6 +65,8 @@
 	setComputedProgressContext(createComputedProgressLoader());
 
 	setReviewContext(createReviewContext());
+
+	setOverlayContext(createOverlayContext());
 
 	const title = $derived.by(() => {
 		if (!page.data.currentOrganization) {

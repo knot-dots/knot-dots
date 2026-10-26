@@ -3,6 +3,7 @@
 	import { getContext, type Snippet } from 'svelte';
 	import z from 'zod';
 	import { page } from '$app/state';
+	import { getOverlayContext } from '$lib/contexts/overlay.svelte';
 	import {
 		type Container,
 		createContainerSchema,
@@ -11,7 +12,6 @@
 		type RulePayload,
 		rulePayload
 	} from '$lib/models';
-	import { overlay as overlayStore } from '$lib/stores';
 	import { extractCustomCategoryFiltersFromParams } from '$lib/utils/customCategoryFilters';
 
 	interface Props {
@@ -22,7 +22,9 @@
 
 	const overlay = getContext('overlay');
 
-	let container = $derived(overlay ? $overlayStore?.container : page.data.container);
+	const loadedOverlay = getOverlayContext();
+
+	let container = $derived(overlay ? loadedOverlay.data?.container : page.data.container);
 
 	let categories = $derived(
 		container && isContainerWithCategory(container)
