@@ -28,6 +28,7 @@
 	async function upload(event: Event) {
 		event.stopPropagation();
 		const input = event.currentTarget as HTMLInputElement;
+		const form = input.form;
 		if (input.files instanceof FileList && input.files.length > 0) {
 			try {
 				uploadInProgress = true;
@@ -38,7 +39,7 @@
 							.map(async (f) => [await uploadAsFormData(f), f.name])
 					)
 				);
-				input.form?.requestSubmit();
+				form?.requestSubmit();
 			} catch (e) {
 				console.log(e);
 			} finally {
@@ -48,7 +49,7 @@
 	}
 </script>
 
-{#if value.length > 1}
+{#if value.length > 1 || (value.length === 1 && editable)}
 	<Dropdown offset={[-4, 4]}>
 		{#snippet button(popover)}
 			<button
@@ -64,9 +65,11 @@
 					</span>
 				{/each}
 
-				<span class="badge badge--large badge--gray">
-					{$_('n_more', { values: { count: value.length - 1 } })}
-				</span>
+				{#if value.length > 1}
+					<span class="badge badge--large badge--gray">
+						{$_('n_more', { values: { count: value.length - 1 } })}
+					</span>
+				{/if}
 			</button>
 		{/snippet}
 
@@ -109,6 +112,7 @@
 						{#if uploadInProgress}
 							<span class="badge badge--large badge--gray">
 								<span class="loader system-primary"></span>
+								{$_('pdf')}
 							</span>
 						{:else}
 							<label class="badge badge--large badge--unstyled" for={id}>
@@ -132,37 +136,22 @@
 		{/snippet}
 	</Dropdown>
 {:else if value.length == 1}
-	{#if editable}
-		<span class="badge badge--gray">
-			<FilePDF />
-			<span class="truncated">{value[0][1]}</span>
-
-			<button
-				class="button button-remove"
-				onclick={remove(0)}
-				type="button"
-				{@attach tooltip($_('upload.pdf.remove'))}
-			>
-				<Close />
-			</button>
-		</span>
-	{:else}
-		<a
-			class="badge badge--large badge--gray"
-			href={transformFileURL(value[0][0])}
-			rel="noopener noreferrer"
-			target="_blank"
-		>
-			<FilePDF />
-			<span class="truncated">{value[0][1]}</span>
-		</a>
-	{/if}
+	<a
+		class="badge badge--large badge--gray"
+		href={transformFileURL(value[0][0])}
+		rel="noopener noreferrer"
+		target="_blank"
+	>
+		<FilePDF />
+		<span class="truncated">{value[0][1]}</span>
+	</a>
 {:else}
 	{const id = crypto.randomUUID()}
 
 	{#if uploadInProgress}
 		<span class="badge badge--large badge--gray">
 			<span class="loader system-primary"></span>
+			{$_('pdf')}
 		</span>
 	{:else if editable}
 		<label class="badge badge--large badge--file-upload" for={id}>
