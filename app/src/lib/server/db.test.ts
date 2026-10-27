@@ -1014,7 +1014,7 @@ test('restoring skips relations to containers that are still deleted until those
 	);
 });
 
-test('restoring fails for containers that are not deleted or do not exist', async ({
+test('restoring fails when there is no deleted container to restore', async ({
 	connection
 }: Fixtures) => {
 	const goal = await createContainer(
@@ -1025,7 +1025,7 @@ test('restoring fails for containers that are not deleted or do not exist', asyn
 		ContainerRestoreError
 	);
 	await expect(restoreContainerRecursively(goal.guid)(connection)).rejects.toMatchObject({
-		kind: 'not_deleted'
+		kind: 'not_found'
 	});
 	await expect(restoreContainerRecursively(uuid())(connection)).rejects.toMatchObject({
 		kind: 'not_found'

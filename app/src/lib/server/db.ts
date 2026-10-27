@@ -1116,7 +1116,7 @@ async function restoreContainerRevision(
 }
 
 export class ContainerRestoreError extends Error {
-	constructor(public readonly kind: 'not_deleted' | 'not_found' | 'unsupported') {
+	constructor(public readonly kind: 'not_found' | 'unsupported') {
 		super(`The container cannot be restored: ${kind}`);
 		this.name = 'ContainerRestoreError';
 	}
@@ -1142,12 +1142,7 @@ export function restoreContainerRecursively(guid: string) {
 				`
 			);
 			if (deletedContainer === null) {
-				const exists = await txConnection.exists(sql.typeAlias('void')`
-					SELECT 1
-					FROM container
-					WHERE guid = ${guid}
-				`);
-				throw new ContainerRestoreError(exists ? 'not_deleted' : 'not_found');
+				throw new ContainerRestoreError('not_found');
 			}
 			if (deletedContainer.type === payloadTypes.enum.organization) {
 				throw new ContainerRestoreError('unsupported');

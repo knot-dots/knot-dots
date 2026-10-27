@@ -198,6 +198,7 @@
 		"unprocessable_entity": "The request could not be processed.",
 		"precondition_failed": "The resource has been modified.",
 		"precondition_required": "This request is required to be conditional; try using \"If-Match\".",
+		"restore_unsupported": "Organizations cannot be restored.",
 		"program_template_required": "Objects in a program must be created from a template available in that program.",
 		"scoped_template_required": "Objects in a program or measure must be created from a template available in that workspace.",
 		"slug_not_available": "This URL slug is already in use.",
