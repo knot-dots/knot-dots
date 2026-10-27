@@ -13,6 +13,7 @@ import {
 	computeReviewStatus,
 	expectedTrend,
 	offsetDirection,
+	type ProgramReview,
 	reviewBasis,
 	reviewIndicator,
 	reviewObjectiveOrEffect,
@@ -190,67 +191,53 @@ test('reviewStatusFor is undefined without objectives under review', () => {
 
 function reviewObjective(
 	program: string,
-	payload: Pick<ObjectivePayload, 'wantedValues' | 'trendValue' | 'booleanValue'>
-) {
-	return { program, objective: { payload: objective(payload) } } as ReviewObjective;
-}
-
-test('reviewStatusByProgram compares the actual state with each program on its own', () => {
-	expect(
-		reviewStatusByProgram(rising, [
-			reviewObjective('a', { wantedValues: [], trendValue: 1 }),
-			reviewObjective('b', { wantedValues: [], trendValue: -1 }),
-			reviewObjective('c', { wantedValues: [], trendValue: 1 }),
-			reviewObjective('c', { wantedValues: [], trendValue: -1 }),
-			reviewObjective('d', { wantedValues: [] })
-		])
-	).toEqual([
-		{ program: 'a', status: 'review_status.in_target_direction', target: 1, goals: [] },
-		{ program: 'b', status: 'review_status.against_target_direction', target: -1, goals: [] },
-		{ program: 'c', status: 'review_status.diverging_targets', target: undefined, goals: [] },
-		{ program: 'd', status: 'review_status.no_target', target: undefined, goals: [] }
-	]);
-});
-
-function goalObjective(
-	goal: string,
-	payload: Pick<ObjectivePayload, 'wantedValues' | 'trendValue' | 'booleanValue'>
+	payload: Pick<ObjectivePayload, 'wantedValues' | 'trendValue' | 'booleanValue'>,
+	goal = `${program}-goal`
 ) {
 	return {
-		program: 'a',
+		program,
 		goal: { guid: goal, payload: { title: goal, type: 'goal' } },
-		objective: { payload: objective(payload) }
+		objective: { guid: `${program}-objective`, payload: objective(payload) }
 	} as ReviewObjective;
 }
 
-test('reviewStatusByProgram compares the actual state with each goal of a program', () => {
-	const [{ status, goals }] = reviewStatusByProgram(rising, [
-		goalObjective('g1', { wantedValues: [], trendValue: 1 }),
-		goalObjective('g2', { wantedValues: [[2030, -2]] }),
-		goalObjective('g3', { wantedValues: [] })
+function goalReviews({ goals }: ProgramReview) {
+	return goals.map(({ goal, status, target }) => [goal.guid, status, target]);
+}
+
+test('reviewStatusByProgram reviews the goals of each program on its own', () => {
+	const programs = reviewStatusByProgram(rising, [
+		reviewObjective('a', { wantedValues: [], trendValue: 1 }),
+		reviewObjective('b', { wantedValues: [], trendValue: -1 }),
+		reviewObjective('c', { wantedValues: [] })
 	]);
-	expect(status).toBe('review_status.diverging_targets');
-	expect(goals.map(({ goal, status, target }) => [goal.guid, status, target])).toEqual([
-		['g1', 'review_status.in_target_direction', 1],
-		['g2', 'review_status.against_target_direction', -1]
+	expect(programs.map((program) => [program.program, goalReviews(program)])).toEqual([
+		['a', [['a-goal', 'review_status.in_target_direction', 1]]],
+		['b', [['b-goal', 'review_status.against_target_direction', -1]]],
+		['c', []]
 	]);
 });
 
-test('reviewStatusByProgram leaves out goals that are not visible', () => {
-	const [{ goals }] = reviewStatusByProgram(rising, [
-		reviewObjective('a', { wantedValues: [], trendValue: 1 }),
-		goalObjective('g1', { wantedValues: [], trendValue: -1 })
+test('reviewStatusByProgram compares the actual state with each goal of a program', () => {
+	const [program] = reviewStatusByProgram(rising, [
+		reviewObjective('a', { wantedValues: [], trendValue: 1 }, 'g1'),
+		reviewObjective('a', { wantedValues: [[2030, -2]] }, 'g2'),
+		reviewObjective('a', { wantedValues: [] }, 'g3'),
+		reviewObjective('a', { wantedValues: [], trendValue: 1 }, 'g4'),
+		reviewObjective('a', { wantedValues: [], trendValue: -1 }, 'g4')
 	]);
-	expect(goals.map(({ goal }) => goal.guid)).toEqual(['g1']);
+	expect(goalReviews(program)).toEqual([
+		['g1', 'review_status.in_target_direction', 1],
+		['g2', 'review_status.against_target_direction', -1],
+		['g4', 'review_status.diverging_targets', undefined]
+	]);
 });
 
 test('reviewStatusByProgram reviews goals without actual data', () => {
-	const [{ goals }] = reviewStatusByProgram({ actual: undefined, target: targetTrend }, [
-		goalObjective('g1', { wantedValues: [], trendValue: 1 })
+	const [program] = reviewStatusByProgram({ actual: undefined, target: targetTrend }, [
+		reviewObjective('a', { wantedValues: [], trendValue: 1 })
 	]);
-	expect(goals.map(({ status, target }) => [status, target])).toEqual([
-		['review_status.insufficient_data', 1]
-	]);
+	expect(goalReviews(program)).toEqual([['a-goal', 'review_status.insufficient_data', 1]]);
 });
 
 test('reviewIndicator reviews a binary indicator', () => {
@@ -260,10 +247,13 @@ test('reviewIndicator reviews a binary indicator', () => {
 			[actualData({ indicator: 'b', booleanValue: false })],
 			[reviewObjective('a', { wantedValues: [], booleanValue: true })]
 		)
-	).toEqual({
+	).toMatchObject({
 		status: 'review_status.against_target_direction',
 		programs: [
-			{ program: 'a', status: 'review_status.against_target_direction', target: true, goals: [] }
+			{
+				program: 'a',
+				goals: [{ status: 'review_status.against_target_direction', target: true }]
+			}
 		]
 	});
 });
@@ -311,13 +301,9 @@ function programObjectives(...payloads: Array<[string, Record<string, unknown>]>
 	return new Map([
 		[
 			'i',
-			payloads.map(([program, payload]) => ({
-				program,
-				objective: {
-					guid: `${program}-objective`,
-					payload: objective({ wantedValues: [], ...payload })
-				}
-			})) as ReviewObjective[]
+			payloads.map(([program, payload]) =>
+				reviewObjective(program, { wantedValues: [], ...payload })
+			)
 		]
 	]);
 }

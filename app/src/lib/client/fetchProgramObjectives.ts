@@ -8,6 +8,7 @@ import {
 	payloadTypes,
 	predicates
 } from '$lib/models';
+import { isPartOf } from '$lib/relations';
 
 export type ProgramObjectives = {
 	program: string;
@@ -17,8 +18,8 @@ export type ProgramObjectives = {
 
 export type ReviewObjective = {
 	program: string;
-	// The goal the objective is a direct part of, unless it is not visible
-	goal?: Container<GoalPayload>;
+	// The goal the objective is a direct part of
+	goal: Container<GoalPayload>;
 	objective: Container<ObjectivePayload>;
 };
 
@@ -45,21 +46,18 @@ export default async function fetchProgramObjectives(
 	};
 }
 
-function parentGoal(objective: Container<ObjectivePayload>, goals: Container<GoalPayload>[]) {
-	const parent = objective.relation.find(
-		({ predicate, subject }) =>
-			predicate === predicates.enum['is-part-of'] && subject === objective.guid
-	)?.object;
-	return goals.find(({ guid }) => guid === parent);
-}
-
 // Groups objectives by the indicators they are objectives for, keeping track
 // of the program each objective was found in and the goal it belongs to.
+// Objectives are left out when their goal is not visible, so the review
+// treats them as if they could not be seen either.
 export function groupObjectivesByIndicator(programObjectives: ProgramObjectives[]) {
 	const map = new Map<string, ReviewObjective[]>();
 	for (const { program, goals, objectives } of programObjectives) {
 		for (const objective of objectives) {
-			const goal = parentGoal(objective, goals);
+			const goal = isPartOf(objective, goals);
+			if (!goal) {
+				continue;
+			}
 			for (const { object, predicate, subject } of objective.relation) {
 				if (predicate !== predicates.enum['is-objective-for'] || subject !== objective.guid) {
 					continue;

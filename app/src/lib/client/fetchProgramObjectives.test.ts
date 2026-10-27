@@ -85,21 +85,22 @@ test('rejects when the request fails', async () => {
 });
 
 test('groups objectives by indicator and keeps their program', () => {
+	const g = container(goal, 'goal') as Container<GoalPayload>;
 	const o1 = objective('00000000-0000-4000-8000-000000000101', [indicatorX]);
 	const o2 = objective('00000000-0000-4000-8000-000000000102', [indicatorX, indicatorY]);
 	const o3 = objective('00000000-0000-4000-8000-000000000103', []);
 
 	const map = groupObjectivesByIndicator([
-		{ program: programA, goals: [], objectives: [o1, o3] },
-		{ program: programB, goals: [], objectives: [o2] }
+		{ program: programA, goals: [g], objectives: [o1, o3] },
+		{ program: programB, goals: [g], objectives: [o2] }
 	]);
 
 	expect([...map.keys()].sort()).toEqual([indicatorX, indicatorY]);
 	expect(map.get(indicatorX)).toEqual([
-		{ program: programA, goal: undefined, objective: o1 },
-		{ program: programB, goal: undefined, objective: o2 }
+		{ program: programA, goal: g, objective: o1 },
+		{ program: programB, goal: g, objective: o2 }
 	]);
-	expect(map.get(indicatorY)).toEqual([{ program: programB, goal: undefined, objective: o2 }]);
+	expect(map.get(indicatorY)).toEqual([{ program: programB, goal: g, objective: o2 }]);
 });
 
 test('keeps the goal an objective is a direct part of', () => {
@@ -114,7 +115,16 @@ test('keeps the goal an objective is a direct part of', () => {
 	expect(map.get(indicatorX)).toEqual([{ program: programA, goal: g, objective: o1 }]);
 });
 
+test('leaves out objectives whose goal is not visible', () => {
+	const o1 = objective('00000000-0000-4000-8000-000000000101', [indicatorX]);
+
+	expect(
+		groupObjectivesByIndicator([{ program: programA, goals: [], objectives: [o1] }]).size
+	).toBe(0);
+});
+
 test('ignores is-objective-for relations pointing at the objective', () => {
+	const g = container(goal, 'goal') as Container<GoalPayload>;
 	const o1 = objective('00000000-0000-4000-8000-000000000101', []);
 	o1.relation.push({
 		object: o1.guid,
@@ -124,6 +134,6 @@ test('ignores is-objective-for relations pointing at the objective', () => {
 	});
 
 	expect(
-		groupObjectivesByIndicator([{ program: programA, goals: [], objectives: [o1] }]).size
+		groupObjectivesByIndicator([{ program: programA, goals: [g], objectives: [o1] }]).size
 	).toBe(0);
 });

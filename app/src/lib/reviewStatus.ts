@@ -152,8 +152,6 @@ export type GoalReview = {
 
 export type ProgramReview = {
 	program: string;
-	status: ReviewStatus;
-	target: Target | undefined;
 	goals: GoalReview[];
 };
 
@@ -166,8 +164,7 @@ function soleTarget(targets: Target[]) {
 // goals behind the review of a program can be told apart. Goals without a
 // target are left out.
 function reviewStatusByGoal(basis: ReviewBasis, objectives: ReviewObjective[]): GoalReview[] {
-	const withGoal = objectives.flatMap(({ goal, objective }) => (goal ? [{ goal, objective }] : []));
-	return Array.from(Map.groupBy(withGoal, ({ goal }) => goal.guid).values(), (goalObjectives) => {
+	return Array.from(Map.groupBy(objectives, ({ goal }) => goal.guid).values(), (goalObjectives) => {
 		const targets = targetsOf(
 			basis,
 			goalObjectives.map(({ objective }) => objective.payload)
@@ -180,27 +177,18 @@ function reviewStatusByGoal(basis: ReviewBasis, objectives: ReviewObjective[]): 
 	}).filter(({ status }) => status !== 'review_status.no_target');
 }
 
-// Compares an indicator with the objectives of each program under review on
-// its own, and with the objectives of each of its goals. The target is
-// undefined when a program has none or diverging ones.
+// Compares an indicator with the objectives of the goals of each program under
+// review. A program without goals wants no development of the indicator.
 export function reviewStatusByProgram(
 	basis: ReviewBasis,
 	objectives: ReviewObjective[]
 ): ProgramReview[] {
 	return Array.from(
 		Map.groupBy(objectives, ({ program }) => program),
-		([program, programObjectives]) => {
-			const targets = targetsOf(
-				basis,
-				programObjectives.map(({ objective }) => objective.payload)
-			);
-			return {
-				program,
-				status: computeReviewStatus(basis.actual, targets, basis.missingActual),
-				target: soleTarget(targets),
-				goals: reviewStatusByGoal(basis, programObjectives)
-			};
-		}
+		([program, programObjectives]) => ({
+			program,
+			goals: reviewStatusByGoal(basis, programObjectives)
+		})
 	);
 }
 

@@ -4,7 +4,7 @@
 	import TargetCheck from '$lib/components/TargetCheck.svelte';
 	import { getReviewContext } from '$lib/contexts/review.svelte';
 	import { overlayKey, overlayURL } from '$lib/models';
-	import { type IndicatorReview, isAssessed, type Target } from '$lib/reviewStatus';
+	import { type IndicatorReview, type Target } from '$lib/reviewStatus';
 	import { reviewStatusAuraColor, reviewStatusColors, reviewStatusIcons } from '$lib/theme/models';
 
 	let { programs, status }: IndicatorReview = $props();
@@ -49,11 +49,8 @@
 	</header>
 
 	<ul class="programs">
-		{#each programRows as { container, goals, status, target } (container.guid)}
+		{#each programRows as { container, goals } (container.guid)}
 			<li>
-				{#if goals.length === 0 && isAssessed(status)}
-					<TargetCheck {status} />
-				{/if}
 				<div>
 					<a href={overlayURL(page.url, overlayKey.enum.view, container.guid)}>
 						{container.payload.title}
@@ -74,10 +71,8 @@
 								</li>
 							{/each}
 						</ul>
-					{:else if status === 'review_status.no_target'}
+					{:else}
 						<span>{$_('review_banner.no_target')}</span>
-					{:else if target !== undefined}
-						<span>{targetText(target)}</span>
 					{/if}
 				</div>
 			</li>
@@ -154,15 +149,11 @@
 		gap: 0.5rem;
 	}
 
-	/* Program and goal rows use the small icon size */
+	/* Goal rows use the small icon size */
 	li > :global(.target-check) {
 		flex-shrink: 0;
-		height: 1.3125rem;
-		width: 1rem;
-	}
-
-	.goals li > :global(.target-check) {
 		height: 1.125rem;
+		width: 1rem;
 	}
 
 	li > :global(.target-check svg) {
