@@ -6,8 +6,9 @@
 	import { page } from '$app/state';
 	import createComparisonData from '$lib/client/createComparisonData.svelte';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
-	import ChartLineIcon from '~icons/flowbite/chart-outline';
 	import TableIcon from '~icons/flowbite/table-row-outline';
+	import ChartBarIcon from '~icons/knotdots/chart-bar';
+	import ChartLineIcon from '~icons/knotdots/chart-line';
 	import Card from '$lib/components/Card.svelte';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
 	import CreateTemplateButton from '$lib/components/CreateTemplateButton.svelte';
@@ -95,7 +96,7 @@
 		comparisonContainers?.some(({ payload }) => payload.values.length > 0) ?? false
 	);
 
-	let viewMode = $state('chart');
+	let viewMode = $state<'line' | 'column' | 'table'>('line');
 </script>
 
 {#snippet header()}
@@ -114,18 +115,20 @@
 					<ReviewBanner {...indicatorReview} />
 				{/if}
 				<div class="segmented-button">
-					<label class="button">
-						<ChartLineIcon />
-						{$_('indicator.view_mode.chart')}
-						<input
-							name="mode"
-							oninput={(e) => e.stopPropagation()}
-							type="radio"
-							value="chart"
-							bind:group={viewMode}
-							class="is-visually-hidden"
-						/>
-					</label>
+					{#each [{ icon: ChartLineIcon, value: 'line' }, { icon: ChartBarIcon, value: 'column' }] as const as option (option.value)}
+						<label class="button">
+							<option.icon />
+							{$_(`indicator.view_mode.${option.value}`)}
+							<input
+								name="mode"
+								oninput={(e) => e.stopPropagation()}
+								type="radio"
+								value={option.value}
+								bind:group={viewMode}
+								class="is-visually-hidden"
+							/>
+						</label>
+					{/each}
 					<label class="button">
 						<TableIcon />
 						{$_('indicator.view_mode.table')}
@@ -140,11 +143,21 @@
 					</label>
 				</div>
 
-				{#if viewMode === 'chart'}
+				{#if viewMode !== 'table'}
 					{#if relatedContainers.some((c) => isEffectContainer(c) || isObjectiveContainer(c)) && !hasComparisonData}
-						<ImpactMonitoringChart {container} {relatedContainers} showLegend />
+						<ImpactMonitoringChart
+							chartType={viewMode}
+							{container}
+							{relatedContainers}
+							showLegend
+						/>
 					{:else}
-						<NewIndicatorChart {container} {relatedContainers} {comparisonContainers} />
+						<NewIndicatorChart
+							chartType={viewMode}
+							{container}
+							{relatedContainers}
+							{comparisonContainers}
+						/>
 					{/if}
 				{:else}
 					<NewIndicatorTable

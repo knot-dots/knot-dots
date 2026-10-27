@@ -2,6 +2,8 @@
 	import * as Plot from '@observablehq/plot';
 	import type { Attachment } from 'svelte/attachments';
 	import { _, number } from 'svelte-i18n';
+	import IndicatorChartLegend from '$lib/components/IndicatorChartLegend.svelte';
+	import IndicatorColumnChart from '$lib/components/IndicatorColumnChart.svelte';
 	import { indicatorActualData, indicatorActualDataContainers } from '$lib/indicatorActualData';
 	import {
 		type Container,
@@ -16,12 +18,20 @@
 	} from '$lib/models';
 
 	interface Props {
+		chartType?: 'line' | 'column';
 		container: Container<IndicatorPayload>;
 		relatedContainers?: Container[];
 		showLegend?: boolean;
 	}
 
-	let { container, relatedContainers = [], showLegend = false }: Props = $props();
+	let {
+		chartType = 'line',
+		container,
+		relatedContainers = [],
+		showLegend = false
+	}: Props = $props();
+
+	let isColumnChart = $derived(chartType === 'column');
 
 	let unit = $derived($_(container.payload.unit));
 
@@ -172,6 +182,73 @@
 			: [...effects, ...actualValues.map((t) => ({ ...t, status: 'trend' }))]
 	);
 
+	// Stacking order from bottom to top
+	let columnOrder = $derived(
+		effects[0]?.value < 0
+			? [
+					'trend',
+					status.enum['status.idea'],
+					status.enum['status.in_planning'],
+					status.enum['status.in_implementation'],
+					status.enum['status.done']
+				]
+			: [
+					'trend',
+					status.enum['status.done'],
+					status.enum['status.in_implementation'],
+					status.enum['status.in_planning'],
+					status.enum['status.idea']
+				]
+	);
+
+	let columnColors = $derived(
+		columnOrder.map((key) => colorRange[colorDomain.indexOf(key)] ?? 'currentColor')
+	);
+
+	let columnLabels = $derived(
+		new Map(
+			columnOrder.map((key) => [key, key === 'trend' ? $_('indicator.table.actual_data') : $_(key)])
+		)
+	);
+
+	// One column segment per year and status
+	let columnData = $derived(
+		[
+			...actualValuesWithEffects
+				.reduce((accumulator, { date, status, value }) => {
+					const key = `${date.getFullYear()}-${status}`;
+					const datum = accumulator.get(key) ?? {
+						key: status,
+						value: 0,
+						year: date.getFullYear()
+					};
+					accumulator.set(key, { ...datum, value: datum.value + value });
+					return accumulator;
+				}, new Map<string, { key: string; value: number; year: number }>())
+				.values()
+		].filter(
+			({ key, year }) =>
+				columnOrder.includes(key) &&
+				// Effects are stacked on the actual value of their year, so years without one are left
+				// out, unless there are no actual values at all
+				(actualValues.length === 0 || actualValuesByYear.has(year))
+		)
+	);
+
+	// Only years with wanted values, unlike the line, which starts from the actual value before.
+	// Wanted values are relative to the actual value, so years without one have no target.
+	let objectiveTargets = $derived.by(() => {
+		const leafObjectives = findLeafObjectives(relatedContainers.filter(isObjectiveContainer));
+		return objectives.flatMap(({ date, value }) => {
+			const titles = leafObjectives
+				.filter(({ payload }) => payload.wantedValues.some(([year]) => year == date.getFullYear()))
+				.map(({ payload }) => payload.title);
+			return titles.length > 0 && actualValuesByYear.has(date.getFullYear())
+				? [{ label: titles.join(', '), value, year: date.getFullYear() }]
+				: [];
+		});
+	});
+
 	// Create a reactive state for the container's width
 	let currentWidth = $state(0);
 
@@ -275,10 +352,55 @@
 
 {#if actualDataContainer.length > 0 || effects.length > 0 || objectives.length > 0}
 	<figure>
-		<div role="img" {@attach chart}></div>
+		{#if isColumnChart}
+			<IndicatorColumnChart
+				colorDomain={columnOrder}
+				colorRange={columnColors}
+				data={columnData}
+				labels={columnLabels}
+				layout="stack"
+				targets={objectiveTargets}
+				tooltipValue={({ key, value, year }) =>
+					key === 'trend' ? (actualValuesByYear.get(year) ?? value) : value}
+				{unit}
+			/>
+
+			{#if showLegend}
+				<IndicatorChartLegend
+					items={[
+						...columnOrder
+							.filter((key) => columnData.some((d) => d.key === key))
+							.map((key) => ({
+								color: columnColors[columnOrder.indexOf(key)],
+								label: columnLabels.get(key) ?? key,
+								shape: 'rect' as const
+							})),
+						...(objectiveTargets.length > 0
+							? [
+									{
+										color: 'var(--indicator-color-objective)',
+										dashed: true,
+										label: $_('objective'),
+										shape: 'line' as const
+									}
+								]
+							: [])
+					]}
+				/>
+			{/if}
+		{:else}
+			<div role="img" {@attach chart}></div>
+		{/if}
 
 		{#if actualDataContainer[0]?.payload.source}
 			<figcaption>{$_('indicator.source')}: {actualDataContainer[0].payload.source}</figcaption>
 		{/if}
 	</figure>
 {/if}
+
+<style>
+	figure {
+		background-color: white;
+		border-radius: 8px;
+	}
+</style>
