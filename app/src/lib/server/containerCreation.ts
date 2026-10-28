@@ -13,6 +13,7 @@ import {
 	grantForNewContainer,
 	isStructuralCopyPredicate,
 	mayHaveStructuralParent,
+	type NewContainer,
 	newContainer,
 	predicates,
 	type Container,
@@ -61,13 +62,14 @@ export function containerCreationHttpError(caught: unknown): never {
 	throw caught;
 }
 
-export function createAuthorizedContainer({
-	afterCreate,
+// Validates a new container and checks that the user may create it. The
+// returned container carries its creator and is ready to be persisted, either
+// alone by createAuthorizedContainer or with others by createManyContainers.
+export function authorizeNewContainer({
 	data,
 	features,
 	user
 }: {
-	afterCreate?: AfterContainerCreated;
 	data: unknown;
 	features: string[];
 	user: User;
@@ -116,7 +118,7 @@ export function createAuthorizedContainer({
 		}
 	}
 
-	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>> => {
+	return async (connection: DatabaseConnection): Promise<NewContainer> => {
 		if (availabilityGuid !== undefined) {
 			let scope: Container<AnyPayload>;
 			try {
@@ -173,17 +175,31 @@ export function createAuthorizedContainer({
 			throw new ContainerCreationError('forbidden');
 		}
 
-		return createContainer(
-			{
-				...parseResult.data,
-				user: [
-					{
-						predicate: predicates.enum['is-creator-of'],
-						subject: user.guid
-					}
-				]
-			},
-			{ afterCreate }
-		)(connection);
+		return {
+			...parseResult.data,
+			user: [
+				{
+					predicate: predicates.enum['is-creator-of'],
+					subject: user.guid
+				}
+			]
+		};
 	};
+}
+
+export function createAuthorizedContainer({
+	afterCreate,
+	data,
+	features,
+	user
+}: {
+	afterCreate?: AfterContainerCreated;
+	data: unknown;
+	features: string[];
+	user: User;
+}) {
+	const authorize = authorizeNewContainer({ data, features, user });
+
+	return async (connection: DatabaseConnection) =>
+		createContainer(await authorize(connection), { afterCreate })(connection);
 }
