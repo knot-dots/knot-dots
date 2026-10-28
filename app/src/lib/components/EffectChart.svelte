@@ -95,6 +95,6 @@
 	};
 </script>
 
-<figure>
+<figure class="chart">
 	<div role="img" {@attach chart}></div>
 </figure>

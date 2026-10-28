@@ -54,7 +54,7 @@
 </script>
 
 {#snippet header()}
-	<Header>
+	<Header review>
 		{#snippet settings()}
 			<SettingsDropdown {container} {relatedContainers} />
 		{/snippet}

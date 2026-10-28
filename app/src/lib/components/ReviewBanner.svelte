@@ -4,7 +4,7 @@
 	import TargetCheck from '$lib/components/TargetCheck.svelte';
 	import { getReviewContext } from '$lib/contexts/review.svelte';
 	import { overlayKey, overlayURL } from '$lib/models';
-	import { type IndicatorReview, isAssessed, type Target } from '$lib/reviewStatus';
+	import { type IndicatorReview, type Target } from '$lib/reviewStatus';
 	import { reviewStatusAuraColor, reviewStatusColors, reviewStatusIcons } from '$lib/theme/models';
 
 	let { programs, status }: IndicatorReview = $props();
@@ -27,6 +27,10 @@
 		[true, 'fulfilled'],
 		[false, 'unfulfilled']
 	]);
+
+	function targetText(target: Target) {
+		return $_('review_banner.target', { values: { target: targetNames.get(target) } });
+	}
 </script>
 
 <section
@@ -44,22 +48,31 @@
 		</p>
 	</header>
 
-	<ul>
-		{#each programRows as { container, status, target } (container.guid)}
+	<ul class="programs">
+		{#each programRows as { container, goals } (container.guid)}
 			<li>
-				{#if isAssessed(status)}
-					<TargetCheck {status} />
-				{/if}
 				<div>
 					<a href={overlayURL(page.url, overlayKey.enum.view, container.guid)}>
 						{container.payload.title}
 					</a>
-					{#if status === 'review_status.no_target'}
+					{#if goals.length > 0}
+						<ul class="goals">
+							{#each goals as { goal, status, target } (goal.guid)}
+								<li>
+									<TargetCheck {status} />
+									<div>
+										<a href={overlayURL(page.url, overlayKey.enum.view, goal.guid)}>
+											{goal.payload.title}
+										</a>
+										{#if target !== undefined}
+											<span>{targetText(target)}</span>
+										{/if}
+									</div>
+								</li>
+							{/each}
+						</ul>
+					{:else}
 						<span>{$_('review_banner.no_target')}</span>
-					{:else if target !== undefined}
-						<span>
-							{$_('review_banner.target', { values: { target: targetNames.get(target) } })}
-						</span>
 					{/if}
 				</div>
 			</li>
@@ -116,10 +129,18 @@
 
 	ul {
 		display: flex;
-		flex: 1;
 		flex-direction: column;
-		gap: 0.75rem;
+	}
+
+	.programs {
+		flex: 1;
+		gap: 1rem;
 		min-width: 12rem;
+	}
+
+	.goals {
+		gap: 0.5rem;
+		padding-top: 0.25rem;
 	}
 
 	li {
@@ -128,10 +149,10 @@
 		gap: 0.5rem;
 	}
 
-	/* The program rows use the small icon size */
+	/* Goal rows use the small icon size */
 	li > :global(.target-check) {
 		flex-shrink: 0;
-		height: 1.3125rem;
+		height: 1.125rem;
 		width: 1rem;
 	}
 
@@ -153,6 +174,10 @@
 		font-weight: 500;
 		line-height: 1.5;
 		text-decoration: underline;
+	}
+
+	.goals a {
+		font-size: 0.75rem;
 	}
 
 	span {

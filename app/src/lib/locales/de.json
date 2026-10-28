@@ -744,6 +744,7 @@
 	"review_status.in_target_direction": "In Zielrichtung",
 	"review_status.insufficient_data": "Zu wenige Daten",
 	"review_status.no_clear_trend": "Kein klarer Trend",
+	"review_status.no_expectation": "Keine Erwartung angegeben",
 	"review_status.no_target": "Keine Zielsetzung",
 	"review_with": "Überprüfen anhand",
 	"role": {

@@ -99,12 +99,10 @@ test.describe('Measures section', () => {
 			.fill(subMeasureTitle);
 		await dotsBoard.page.getByRole('dialog').getByLabel('Measure type').first().click();
 		await dotsBoard.page.getByRole('dialog').getByRole('radio', { name: 'Module' }).click();
-		const saveResponse = dotsBoard.page.waitForResponse(
-			(r) => r.url().includes('/copy') && r.request().method() === 'POST'
-		);
 		await dotsBoard.page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
-		await saveResponse;
 
+		// Going back before the new sub-measure is open returns to a stale view of the measure
+		await expect(dotsBoard.overlay.title).toHaveText(subMeasureTitle);
 		await dotsBoard.overlay.backButton.click();
 		await expect(dotsBoard.overlay.title).toHaveText(testMeasure.payload.title);
 		await expect(subMeasureSection.getByRole('heading', { level: 2 })).toHaveText('Modules');
