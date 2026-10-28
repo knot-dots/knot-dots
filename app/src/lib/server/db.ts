@@ -175,10 +175,6 @@ const typeAliases = {
 	}),
 	organizationalUnitContainer: createContainerSchema(organizationalUnitPayload),
 	relation,
-	teamContainer: createContainerSchema(organizationalUnitPayload).omit({
-		relation: true,
-		user: true
-	}),
 	relationPath: z.object({}).catchall(z.string().uuid()),
 	revision: z.object({ revision: z.number().int().positive() }),
 	spatialFeature: z.object({
@@ -1635,28 +1631,14 @@ export function getManyOrganizationContainers(
 	};
 }
 
-// The teams of an organization: the units marked as such, with their rows
-// and relations so the matrices can show them and the rules can judge them.
+// The teams of an organization: the units marked as such.
 export function getManyTeamContainers(filters: { organization: string }) {
-	return async (
-		connection: DatabaseConnection
-	): Promise<Container<OrganizationalUnitPayload>[]> => {
-		const containerResult = await connection.any(sql.typeAlias('teamContainer')`
-			SELECT *
-			FROM container
-			WHERE valid_currently
-				AND NOT deleted
-				AND organization = ${filters.organization}
-				AND payload->>'type' = ${payloadTypes.enum.organizational_unit}
-				AND payload->>'organizationalUnitType' = ${organizationalUnitType.enum['organizational_unit_type.team']}
-			ORDER BY payload->>'name'
-		`);
-
-		return enrichContainers(
-			connection,
-			await withUserAndRelation<Container<OrganizationalUnitPayload>>(connection, containerResult)
-		);
-	};
+	return getManyOrganizationalUnitContainers({
+		include: {
+			organization: [filters.organization],
+			organizationalUnitType: [organizationalUnitType.enum['organizational_unit_type.team']]
+		}
+	});
 }
 
 // The members of the given teams, keyed by team guid (teams without members
@@ -1694,6 +1676,7 @@ export function getManyOrganizationalUnitContainers(filters: {
 		guid?: string[];
 		level?: number;
 		organization: string[];
+		organizationalUnitType?: string[];
 		terms?: string;
 	};
 	exclude?: {
@@ -1744,6 +1727,11 @@ export function getManyOrganizationalUnitContainers(filters: {
 				filters.include.guid?.length
 					? sql.fragment`(${scopeCondition} OR c.guid = ANY (${sql.array(filters.include.guid, 'uuid')}))`
 					: scopeCondition
+			);
+		}
+		if (filters.include?.organizationalUnitType?.length) {
+			conditions.push(
+				sql.fragment`c.payload->>'organizationalUnitType' = ANY (${sql.array(filters.include.organizationalUnitType, 'text')})`
 			);
 		}
 		if (filters.include?.terms) {
