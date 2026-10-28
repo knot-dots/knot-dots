@@ -3,8 +3,10 @@ import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
+import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 import {
 	type BinaryIndicatorPayload,
+	computeFacetCount,
 	type Container,
 	indicatorCategories,
 	type IndicatorPayload,
@@ -14,6 +16,7 @@ import {
 	payloadTypes,
 	scoreIndicatorsByRelevanceForGoalOrMeasure
 } from '$lib/models';
+import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from '$lib/pagination';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
 import {
 	getAllContainersRelatedToIndicators,
@@ -28,6 +31,10 @@ export const GET = (async ({ locals, params, url }) => {
 	const expectedParams = z.object({
 		indicatorCategory: z.array(indicatorCategories).default([]),
 		indicatorType: z.array(indicatorTypes).default([]),
+		limit: z
+			.array(z.coerce.number().int().positive().max(MAX_PAGE_SIZE))
+			.default([DEFAULT_PAGE_SIZE]),
+		offset: z.array(z.coerce.number().int().nonnegative()).default([0]),
 		organization: z.array(z.uuid()).default([]),
 		organizationalUnit: z.array(z.uuid()).default([]),
 		terms: z.array(z.string()).default([])
@@ -112,5 +119,33 @@ export const GET = (async ({ locals, params, url }) => {
 		);
 	});
 
-	return json(suggestion);
+	// Facets count all suggestions, not only those of the requested page.
+	const facets = computeFacetCount(
+		new Map([
+			...buildCategoryFacetsWithCounts(
+				filterCategoryContext(categoryContext, [payloadTypes.enum.indicator]).options
+			),
+			['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
+			['indicatorType', new Map(indicatorTypes.options.map((v) => [v as string, 0]))]
+		]),
+		suggestion.map(({ indicator }) => indicator)
+	);
+
+	const limit = parseResult.data.limit[0];
+	const offset = parseResult.data.offset[0];
+	const hasMore = offset + limit < suggestion.length;
+
+	return json({
+		facets: Object.fromEntries(
+			Array.from(facets, ([key, values]) => [key, Object.fromEntries(values)])
+		),
+		page: {
+			hasMore,
+			limit,
+			nextOffset: hasMore ? offset + limit : null,
+			offset,
+			total: suggestion.length
+		},
+		suggestions: suggestion.slice(offset, offset + limit)
+	});
 }) satisfies RequestHandler;
