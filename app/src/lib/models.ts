@@ -1445,6 +1445,7 @@ const eventPayload = z
 				onlyPanel: [
 					'startDate',
 					'endDate',
+					'category.*',
 					'editorialState',
 					'visibility',
 					'organization',
@@ -1601,6 +1602,7 @@ export const helpPayload = z
 				onlyPanel: [
 					'image',
 					'slug',
+					'category.*',
 					'visibility',
 					'organization',
 					'organizational_unit',
@@ -1794,9 +1796,9 @@ export const knowledgePayload = z
 			detail: {
 				headerAndPanel: ['type'],
 				onlyPanel: [
-					'category.*',
 					'program',
 					'parent',
+					'category.*',
 					'editorialState',
 					'visibility',
 					'organization',
@@ -2154,6 +2156,7 @@ const postPayload = z
 				headerAndPanel: ['type'],
 				onlyPanel: [
 					'publicationDate',
+					'category.*',
 					'editorialState',
 					'visibility',
 					'organization',
@@ -2358,6 +2361,7 @@ const reportPayload = z
 				headerAndPanel: ['type'],
 				onlyPanel: [
 					'image',
+					'category.*',
 					'editorialState',
 					'visibility',
 					'organization',
@@ -2681,6 +2685,7 @@ const simpleMeasurePayload = z
 					'endDate',
 					'program',
 					'parent',
+					'category.*',
 					'editorialState',
 					'visibility',
 					'organization',
@@ -2760,6 +2765,7 @@ const taskPayload = z
 					'assignee',
 					'measure',
 					'parent',
+					'category.*',
 					'visibility',
 					'organization',
 					'organizational_unit',
