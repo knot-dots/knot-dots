@@ -75,6 +75,7 @@
 	);
 
 	const defaultPayloadType = $derived([
+		payloadTypes.enum.binary_indicator,
 		payloadTypes.enum.event,
 		payloadTypes.enum.goal,
 		payloadTypes.enum.help,
