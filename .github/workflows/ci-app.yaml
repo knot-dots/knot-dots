@@ -22,7 +22,7 @@ env:
 jobs:
   check:
     timeout-minutes: 10
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     defaults:
       run:
         working-directory: app
@@ -51,7 +51,7 @@ jobs:
   build:
     needs: check
     timeout-minutes: 10
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     steps:
       - uses: actions/checkout@v6
       - name: Set up Docker Buildx for caching
@@ -72,7 +72,7 @@ jobs:
   test-unit:
     needs: build
     timeout-minutes: 10
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     steps:
       - uses: actions/checkout@v6
       - name: Set up Docker Buildx for caching
@@ -86,7 +86,7 @@ jobs:
           file: "./app/Dockerfile"
           target: dev
           load: true
-          tags: app:test
+          tags: app:test-unit
           cache-from: type=gha
       - name: Apply database migrations
         run: docker compose run --rm migrate
@@ -104,15 +104,10 @@ jobs:
 
   test-e2e:
     # test-unit is a prerequisite so that a failing unit or integration test
-    # fails fast instead of burning four end-to-end shards.
+    # fails fast instead of burning a large runner on end-to-end tests.
     needs: test-unit
     timeout-minutes: 60
-    runs-on: ubuntu-24.04-arm-large
-    strategy:
-      fail-fast: false
-      matrix:
-        shardIndex: [1, 2, 3, 4]
-        shardTotal: [4]
+    runs-on: ubuntu-26.04-arm-large
     defaults:
       run:
         working-directory: app
@@ -148,6 +143,8 @@ jobs:
         env:
           TEST_IMAGE: app:test # Use the pre-built image for tests
       - name: Run Playwright tests
+        # Six workers worked best on the 8 vCPU runner, which also runs the
+        # services of the E2E environment.
         run: >-
           docker run --rm --init --ipc=host --network=host
           --add-host keycloak:127.0.0.1
@@ -156,56 +153,25 @@ jobs:
           --env CI
           --env PLAYWRIGHT_EXTERNAL_SERVER=true
           "$PLAYWRIGHT_IMAGE"
-          npx playwright test --shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+          npx playwright test --workers 6
       - name: Show E2E service logs
         if: ${{ failure() }}
         run: docker compose logs --no-color --tail=200
-      - name: Upload blob report
+      - name: Upload HTML report
         uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
-          name: blob-report-${{ matrix.shardIndex }}
-          path: ./app/blob-report
-          retention-days: 1
+          name: html-report--attempt-${{ github.run_attempt }}
+          path: ./app/playwright-report
+          retention-days: 14
       - name: Stop E2E environment
         if: ${{ always() }}
         run: docker compose down --volumes
 
-  merge-reports:
-    needs: test-e2e
-    if: ${{ !cancelled() }}
-    timeout-minutes: 10
-    runs-on: ubuntu-24.04-arm
-    defaults:
-      run:
-        working-directory: app
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: "npm"
-          cache-dependency-path: ./package-lock.json
-      - run: npm clean-install
-      - name: Download all blob reports
-        uses: actions/download-artifact@v7
-        with:
-          path: ./app/all-blob-reports
-          pattern: blob-report-*
-          merge-multiple: true
-      - name: Merge into HTML report
-        run: npx playwright merge-reports --reporter html ./all-blob-reports
-      - name: Upload HTML report
-        uses: actions/upload-artifact@v7
-        with:
-          name: html-report--attempt-${{ github.run_attempt }}
-          path: app/playwright-report
-          retention-days: 14
-
   publish:
     needs: test-e2e
     if: success() && github.event_name == 'push'
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     steps:
       - uses: actions/checkout@v6
       - uses: docker/login-action@v4
