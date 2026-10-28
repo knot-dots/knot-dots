@@ -26,6 +26,9 @@ export default defineConfig({
 		})
 	],
 	test: {
+		// The app container enables Roarr for the dev server, but in tests the
+		// logs of Slonik and the indexing queue drown out the results.
+		env: { ROARR_LOG: 'false' },
 		include: ['src/**/*.{test,spec}.{js,ts}']
 	}
 });
