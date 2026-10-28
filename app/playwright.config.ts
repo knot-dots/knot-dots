@@ -24,7 +24,7 @@ const config: PlaywrightTestConfig = {
 		}
 	],
 	reporter: process.env.CI ? [['html', { open: 'never' }], ['github'], ['list']] : [['list']],
-	retries: process.env.CI ? 1 : 0,
+	retries: process.env.CI ? 2 : 0,
 	testDir: 'tests',
 	use: {
 		baseURL: 'http://localhost:3000',
