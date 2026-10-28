@@ -3,23 +3,22 @@
 	import { _ } from 'svelte-i18n';
 	import InfoCircle from '~icons/flowbite/info-circle-solid';
 	import { page } from '$app/state';
-	import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
+	import { filterCategoryContext } from '$lib/categoryOptions';
 	import fetchSuggestedContainers from '$lib/client/fetchSuggestedContainers';
+	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import RelevanceBadge from '$lib/components/RelevanceBadge.svelte';
 	import SearchToolbar from '$lib/components/SearchToolbar.svelte';
 	import SingleChoiceSelectableCardSet from '$lib/components/SingleChoiceSelectableCardSet.svelte';
 	import {
 		type BinaryIndicatorPayload,
-		computeFacetCount,
 		type Container,
 		type GoalPayload,
-		indicatorCategories,
 		type IndicatorPayload,
-		indicatorTypes,
 		isEffectContainer,
 		type MeasurePayload,
 		payloadTypes
 	} from '$lib/models';
+	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 
 	interface Props {
 		onSelect: (container: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>) => void;
@@ -41,23 +40,55 @@
 
 	let terms = $state('');
 
+	function fetchPage(
+		query: Parameters<typeof fetchSuggestedContainers>[1],
+		offset: number,
+		init?: RequestInit
+	) {
+		return fetchSuggestedContainers(target.guid, query, { limit: DEFAULT_PAGE_SIZE, offset }, init);
+	}
+
+	// The first page keeps its query, which the pages loaded on scrolling
+	// continue even while the filters are being changed.
 	const searchResource = resource(
 		[() => $state.snapshot(filter), () => terms],
-		async ([filter, terms], _, { signal }) => {
-			if (target) {
-				return fetchSuggestedContainers(
-					target.guid,
-					{ ...filter, organization: [page.data.currentOrganization.guid], terms },
-					{ signal }
-				);
-			}
+		async (_, __, { signal }) => {
+			const query = {
+				...$state.snapshot(filter),
+				organization: [page.data.currentOrganization.guid],
+				terms
+			};
+			return { ...(await fetchPage(query, 0, { signal })), query };
 		},
 		{
 			debounce: 300
 		}
 	);
 
-	let suggestions = $derived(searchResource.current ?? []);
+	type SuggestionPage = Awaited<ReturnType<typeof fetchSuggestedContainers>>;
+
+	// Pages loaded on scrolling, which belong to the first page they continue
+	// and are dropped along with it once the filters change.
+	let morePages = $state.raw<{ first: SuggestionPage; pages: SuggestionPage[] }>();
+
+	let loadingMore = $state(false);
+
+	let pages = $derived(
+		searchResource.current
+			? [
+					searchResource.current,
+					...(morePages?.first === searchResource.current ? morePages.pages : [])
+				]
+			: []
+	);
+
+	// The ranking is computed anew for every page, so a page repeats suggestions
+	// of the previous one if the ranking has changed in between.
+	let suggestions = $derived([
+		...new Map(
+			pages.flatMap((p) => p.suggestions).map((s) => [s.indicator.guid, s] as const)
+		).values()
+	]);
 
 	let options = $derived(suggestions.map(({ indicator }) => indicator));
 
@@ -65,15 +96,29 @@
 		new Map(suggestions.map(({ indicator, relevance }) => [indicator.guid, relevance]))
 	);
 
-	let facets = $derived.by(() => {
-		const facets = new Map([
-			...buildCategoryFacetsWithCounts(categoryContext.options),
-			['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
-			['indicatorType', new Map(indicatorTypes.options.map((v) => [v as string, 0]))]
-		]);
+	let facets = $derived(searchResource.current?.facets ?? new Map<string, Map<string, number>>());
 
-		return computeFacetCount(facets, options);
-	});
+	let nextOffset = $derived(pages.at(-1)?.page.nextOffset ?? null);
+
+	async function loadMore() {
+		const first = searchResource.current;
+		if (!first || loadingMore || nextOffset === null) {
+			return;
+		}
+
+		loadingMore = true;
+		try {
+			const next = await fetchPage(first.query, nextOffset);
+			if (searchResource.current === first) {
+				morePages = {
+					first,
+					pages: [...(morePages?.first === first ? morePages.pages : []), next]
+				};
+			}
+		} finally {
+			loadingMore = false;
+		}
+	}
 </script>
 
 <SearchToolbar bind:filter bind:terms {categoryContext} {facets}>
@@ -96,6 +141,8 @@
 				<RelevanceBadge score={relevanceByGuid.get(option.guid) ?? 0} />
 			{/snippet}
 		</SingleChoiceSelectableCardSet>
+
+		<LazyLoadSentinel hasMore={nextOffset !== null} loading={loadingMore} onLoadMore={loadMore} />
 	{/if}
 </div>
 
