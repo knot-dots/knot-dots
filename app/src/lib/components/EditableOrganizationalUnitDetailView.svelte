@@ -9,6 +9,7 @@
 	import requestSubmit from '$lib/client/requestSubmit';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
+	import { createFeatureDecisions } from '$lib/features';
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import CoverUpload from '$lib/components/CoverUpload.svelte';
@@ -112,6 +113,9 @@
 
 	const handleSubmit = $derived(autoSave(container, 2000));
 
+	// teams only mean something while the permission matrix is on
+	const teamsEnabled = $derived(createFeatureDecisions(page.data.features).usePermissionMatrix());
+
 	let linkedProfile = $derived(
 		relatedContainers
 			.filter(isOrganizationalUnitContainer)
@@ -177,7 +181,7 @@
 							{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
 								<ImageReplacesNameToggle bind:value={container.payload.imageReplacesName} />
 							{/if}
-							{#if $applicationState.containerDetailView.editable && $ability.can('update', container) && container.payload.organizationalUnitType !== organizationalUnitType.enum['organizational_unit_type.administrative_area']}
+							{#if teamsEnabled && $applicationState.containerDetailView.editable && $ability.can('update', container) && container.payload.organizationalUnitType !== organizationalUnitType.enum['organizational_unit_type.administrative_area']}
 								<!-- a team leaves the sidebar and becomes a subject of other matrices -->
 								<label class="team-toggle">
 									<span>{$_('team')}</span>
