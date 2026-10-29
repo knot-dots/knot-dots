@@ -175,6 +175,29 @@ export function authorizeNewContainer({
 			throw new ContainerCreationError('forbidden');
 		}
 
+		// A relation must not reveal or link a container the user may not read,
+		// which is therefore refused like one that does not exist.
+		const ends = new Set(
+			parseResult.data.relation.flatMap(({ object, subject }) => [object, subject])
+		);
+		for (const guid of ends) {
+			if (guid === undefined) {
+				continue;
+			}
+			let container: Container<AnyPayload>;
+			try {
+				container = guid === parent?.guid ? parent : await getContainerByGuid(guid)(connection);
+			} catch (error) {
+				if (error instanceof NotFoundError) {
+					throw new ContainerCreationError('bad_request');
+				}
+				throw error;
+			}
+			if (ability.cannot('read', container)) {
+				throw new ContainerCreationError('bad_request');
+			}
+		}
+
 		return {
 			...parseResult.data,
 			user: [
