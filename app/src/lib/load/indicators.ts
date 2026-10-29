@@ -7,14 +7,13 @@ import {
 	indicatorCategories,
 	type IndicatorPayload,
 	indicatorTypes,
-	isActualDataContainer,
 	type OrganizationalUnitPayload,
-	payloadTypes,
-	predicates
+	payloadTypes
 } from '$lib/models';
 import {
 	getAllContainersRelatedToIndicators,
-	getAllRelatedOrganizationalUnitContainers
+	getAllRelatedOrganizationalUnitContainers,
+	getIndicatorGuidsInUse
 } from '$lib/server/db';
 import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
@@ -38,9 +37,10 @@ export interface IndicatorLoadResult {
 }
 
 /**
- * Fetch indicators for an organization/org unit with fallback to templates + actual data when none exist.
- * Applies org-unit scoping unless 'all_organizational_units' is included. Returns merged visible containers
- * and a flag indicating template usage. Facets are computed over the final visible set.
+ * Fetch the indicators in use in an organization/org unit, i.e. those measuring a container
+ * or reported on by actual data within the scope. Applies org-unit scoping unless
+ * 'all_organizational_units' is included. Restricting the search to those indicators keeps
+ * the facet counts in line with the containers shown.
  */
 export async function getIndicatorsData(params: {
 	organizationGuid: string;
@@ -71,10 +71,28 @@ export async function getIndicatorsData(params: {
 			.concat(currentOrganizationalUnit.guid);
 	}
 
+	const scope = {
+		organizations: [organizationGuid],
+		organizationalUnits: !filters.included.includes('all_organizational_units')
+			? organizationalUnits
+			: []
+	};
+	const actualDataScope = {
+		organizations: [organizationGuid],
+		organizationalUnits: currentOrganizationalUnit ? [currentOrganizationalUnit.guid] : null
+	};
+
+	const guid = await connect(getIndicatorGuidsInUse(scope, actualDataScope));
+
+	if (guid.length === 0) {
+		return { containers: [], related: [], combined: [] };
+	}
+
 	const esResult = await getManyContainersWithES(
 		[],
 		{
 			customCategories: filters.customCategories,
+			guid,
 			indicatorCategories: filters.indicatorCategories,
 			indicatorTypes: filters.indicatorTypes,
 			template: false,
@@ -84,39 +102,13 @@ export async function getIndicatorsData(params: {
 		'alpha',
 		{ customCategoryKeys: customCategoryKeys, includeFacets: true }
 	);
-	const indicators = esResult.containers as Array<
+	const containers = esResult.containers as Array<
 		Container<BinaryIndicatorPayload | IndicatorPayload>
 	>;
 	const facetData = esResult.facets;
 
 	const related = await connect(
-		getAllContainersRelatedToIndicators(
-			indicators,
-			{
-				organizations: [organizationGuid],
-				organizationalUnits: !filters.included.includes('all_organizational_units')
-					? organizationalUnits
-					: []
-			},
-			{
-				organizations: [organizationGuid],
-				organizationalUnits: currentOrganizationalUnit ? [currentOrganizationalUnit.guid] : null
-			}
-		)
-	);
-
-	const containers = indicators.filter(
-		(c) =>
-			related.filter(isActualDataContainer).some(({ payload }) => payload.indicator === c.guid) ||
-			related.some(
-				({ guid, relation }) =>
-					relation.some(
-						({ object, predicate }) =>
-							object === c.guid &&
-							(predicate === predicates.enum['is-measured-by'] ||
-								predicate === predicates.enum['is-objective-for'])
-					) && guid !== c.guid
-			)
+		getAllContainersRelatedToIndicators(containers, scope, actualDataScope)
 	);
 
 	const combinedVisible = filterVisible([...containers, ...related], user);
