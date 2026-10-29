@@ -15,6 +15,7 @@
 		extraPrimaryContent?: Snippet;
 		facets: Map<string, Map<string, number>>;
 		filter: Record<string, string[]>;
+		filterContent?: Snippet;
 		sort?: string;
 		sortOptions?: [string, string][];
 		terms: string;
@@ -25,6 +26,7 @@
 		extraPrimaryContent,
 		facets,
 		filter = $bindable(),
+		filterContent,
 		sort = $bindable(),
 		sortOptions = [],
 		terms = $bindable()
@@ -88,6 +90,8 @@
 					<Close />
 				</button>
 			{/if}
+
+			{@render filterContent?.()}
 
 			{#each facets.entries() as [key, foci] (key)}
 				{@const options =

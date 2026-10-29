@@ -6,6 +6,7 @@
 	import { page } from '$app/state';
 	import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 	import fetchSuggestedContainers from '$lib/client/fetchSuggestedContainers';
+	import OrganizationFilterDropDown from '$lib/components/OrganizationFilterDropDown.svelte';
 	import SearchToolbar from '$lib/components/SearchToolbar.svelte';
 	import SingleChoiceSelectableCardSet from '$lib/components/SingleChoiceSelectableCardSet.svelte';
 	import {
@@ -21,6 +22,7 @@
 		indicatorTypes,
 		isEffectContainer,
 		type MeasurePayload,
+		type OrganizationalUnitPayload,
 		payloadTypes
 	} from '$lib/models';
 
@@ -43,6 +45,27 @@
 	});
 
 	let terms = $state('');
+
+	let scopeType = $state<'current' | 'all' | 'explicit'>('all');
+	let includeSubordinateOrganizationalUnits = $state(true);
+	let checkedOrganizations = $state<string[]>([]);
+	let checkedOrganizationalUnits = $state<string[]>([]);
+
+	let organizationOptions = $derived(
+		page.data.organizations.map(({ guid, payload }) => ({
+			value: guid,
+			label: payload.name,
+			subOptions: page.data.organizationalUnits
+				.filter(
+					(organizationalUnit: Container<OrganizationalUnitPayload>) =>
+						organizationalUnit.organization === guid
+				)
+				.map((organizationalUnit) => ({
+					value: organizationalUnit.guid,
+					label: organizationalUnit.payload.name
+				}))
+		}))
+	);
 
 	const searchResource = resource(
 		[() => $state.snapshot(filter), () => terms],
@@ -69,6 +92,28 @@
 		}
 	);
 
+	// The suggestions cover indicators of all organizations, so the
+	// organization scope is applied to the loaded list.
+	let options = $derived(
+		(searchResource.current ?? []).filter((container) => {
+			switch (scopeType) {
+				case 'current':
+					return (
+						container.organization === page.data.currentOrganization.guid &&
+						(includeSubordinateOrganizationalUnits || !container.organizational_unit)
+					);
+				case 'explicit':
+					return (
+						(checkedOrganizations.length === 0 && checkedOrganizationalUnits.length === 0) ||
+						checkedOrganizations.includes(container.organization) ||
+						checkedOrganizationalUnits.includes(container.organizational_unit ?? '')
+					);
+				default:
+					return true;
+			}
+		})
+	);
+
 	let facets = $derived.by(() => {
 		const facets = new Map([
 			...buildCategoryFacetsWithCounts(categoryContext.options),
@@ -76,7 +121,7 @@
 			['indicatorTypes', new Map(indicatorTypes.options.map((v) => [v as string, 0]))]
 		]);
 
-		return computeFacetCount(facets, searchResource.current ?? []);
+		return computeFacetCount(facets, options);
 	});
 </script>
 
@@ -91,11 +136,23 @@
 			{/if}
 		</span>
 	{/snippet}
+
+	{#snippet filterContent()}
+		<OrganizationFilterDropDown
+			allowAll
+			bind:scope={scopeType}
+			bind:includeSubordinateOrganizationalUnits
+			bind:organizationValue={checkedOrganizations}
+			bind:organizationalUnitValue={checkedOrganizationalUnits}
+			mode="select"
+			options={organizationOptions}
+		/>
+	{/snippet}
 </SearchToolbar>
 
 <div class="search-result">
 	{#if searchResource.current}
-		<SingleChoiceSelectableCardSet {onSelect} options={searchResource.current ?? []} {value} />
+		<SingleChoiceSelectableCardSet {onSelect} {options} {value} />
 	{/if}
 </div>
 
