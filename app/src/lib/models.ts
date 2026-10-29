@@ -471,7 +471,10 @@ export const goalType = z.enum(goalTypeValues);
 
 export type GoalType = z.infer<typeof goalType>;
 
-const organizationalUnitTypeValues = ['organizational_unit_type.administrative_area'] as const;
+const organizationalUnitTypeValues = [
+	'organizational_unit_type.administrative_area',
+	'organizational_unit_type.team'
+] as const;
 
 export const organizationalUnitType = z.enum(organizationalUnitTypeValues);
 
@@ -774,7 +777,14 @@ export type InheritedMatrixSection = {
 	active: boolean;
 	scope: { guid: string; title: string };
 	grants: Grant[];
+	teams: TeamWithMembers[];
 	users: User[];
+};
+
+// A team as the matrices show it: the row names the team and opens its roster.
+export type TeamWithMembers = {
+	container: Container<OrganizationalUnitPayload>;
+	members: User[];
 };
 
 export function matrixSectionScope(container: Container<AnyPayload>) {
@@ -2097,6 +2107,20 @@ export function isOrganizationalUnitContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is Container<OrganizationalUnitPayload> {
 	return container.payload.type === payloadTypes.enum.organizational_unit;
+}
+
+// A team is an organizational unit marked as such: a permission matrix can
+// grant rights to it like to a user, and the subjects listed on the team's
+// own matrix hold whatever the team holds there. The team's matrix governs
+// only what lies within the team unit, as with any unit.
+export function isTeamContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<OrganizationalUnitPayload> {
+	return (
+		isOrganizationalUnitContainer(container) &&
+		container.payload.organizationalUnitType ===
+			organizationalUnitType.enum['organizational_unit_type.team']
+	);
 }
 
 const initialOrganizationalUnitPayload = organizationalUnitPayload.partial({ name: true });

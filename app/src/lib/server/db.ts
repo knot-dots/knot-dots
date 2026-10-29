@@ -35,6 +35,7 @@ import {
 	type NewContainer,
 	organizationalUnitPayload,
 	type OrganizationalUnitPayload,
+	organizationalUnitType,
 	organizationPayload,
 	type OrganizationPayload,
 	type PayloadType,
@@ -416,10 +417,24 @@ export function setContainerGrants(object: string, subject: string, set: GrantSe
 	};
 }
 
+// The rows of a user and of the teams the user is listed on: a team's rows
+// reach its members, so the session carries them as if they were the user's
+// own (distinct because a kind may come through both).
 export function getAllGrantsOfUser(subject: string) {
 	return async (connection: DatabaseConnection): Promise<readonly Grant[]> => {
 		return connection.any(sql.typeAlias('grant')`
-			SELECT kind, object, subject, target FROM container_grant WHERE subject = ${subject}
+			SELECT DISTINCT kind, object, subject, target
+			FROM container_grant
+			WHERE subject = ${subject}
+				OR subject IN (
+					SELECT t.guid
+					FROM container_user cu
+					JOIN container t ON t.revision = cu.object
+						AND t.valid_currently AND NOT t.deleted
+						AND t.payload->>'type' = ${payloadTypes.enum.organizational_unit}
+						AND t.payload->>'organizationalUnitType' = ${organizationalUnitType.enum['organizational_unit_type.team']}
+					WHERE cu.subject = ${subject} AND cu.predicate = ${predicates.enum['is-member-of']}
+				)
 		`);
 	};
 }
@@ -941,6 +956,10 @@ export function deleteContainer(container: Container<AnyPayload>, visited = new 
       `);
 
 			await syncContainerGrants(container.guid, [])(txConnection);
+			// a team holds rows as a subject on other matrices
+			await txConnection.query(sql.typeAlias('void')`
+				DELETE FROM container_grant WHERE subject = ${container.guid}
+			`);
 
 			return affectedContainerGuids(relationResult);
 		});
@@ -1612,6 +1631,42 @@ export function getManyOrganizationContainers(
 	};
 }
 
+// The teams of an organization: the units marked as such.
+export function getManyTeamContainers(filters: { organization: string }) {
+	return getManyOrganizationalUnitContainers({
+		include: {
+			organization: [filters.organization],
+			organizationalUnitType: [organizationalUnitType.enum['organizational_unit_type.team']]
+		}
+	});
+}
+
+// The members of the given teams, keyed by team guid (teams without members
+// are absent): everyone with a role on the team's matrix.
+export function getTeamMembersByTeams(guids: string[]) {
+	return async (connection: DatabaseConnection): Promise<Map<string, User[]>> => {
+		if (guids.length === 0) {
+			return new Map();
+		}
+		const rows = await connection.any(sql.type(user.extend({ team: z.uuid() }))`
+			SELECT c.guid AS team, u.*
+			FROM container c
+			JOIN container_user cu ON cu.object = c.revision
+				AND cu.predicate = ${predicates.enum['is-member-of']}
+			JOIN "user" u ON u.guid = cu.subject
+			WHERE c.guid = ANY (${sql.array(guids, 'uuid')})
+				AND c.valid_currently
+				AND NOT c.deleted
+			ORDER BY u.family_name, u.given_name
+		`);
+		const members = new Map<string, User[]>();
+		for (const { team, ...member } of rows) {
+			members.set(team, [...(members.get(team) ?? []), member]);
+		}
+		return members;
+	};
+}
+
 export function getManyOrganizationalUnitContainers(filters: {
 	include?: {
 		administrativeType?: string[];
@@ -1621,6 +1676,7 @@ export function getManyOrganizationalUnitContainers(filters: {
 		guid?: string[];
 		level?: number;
 		organization: string[];
+		organizationalUnitType?: string[];
 		terms?: string;
 	};
 	exclude?: {
@@ -1671,6 +1727,11 @@ export function getManyOrganizationalUnitContainers(filters: {
 				filters.include.guid?.length
 					? sql.fragment`(${scopeCondition} OR c.guid = ANY (${sql.array(filters.include.guid, 'uuid')}))`
 					: scopeCondition
+			);
+		}
+		if (filters.include?.organizationalUnitType?.length) {
+			conditions.push(
+				sql.fragment`c.payload->>'organizationalUnitType' = ANY (${sql.array(filters.include.organizationalUnitType, 'text')})`
 			);
 		}
 		if (filters.include?.terms) {

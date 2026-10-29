@@ -47,6 +47,7 @@ export const load = (async ({ locals, params }) => {
 			return {
 				container,
 				grants: [],
+				teams: [],
 				title: t('members'),
 				users: []
 			};
@@ -71,7 +72,7 @@ export const load = (async ({ locals, params }) => {
 			grants,
 			...(sections
 				? { ...sections, mayManageOrganizationUsers: ability.can('manage-users', organization) }
-				: {}),
+				: { teams: [] }),
 			title: t('members'),
 			users: users.map((u) => ({
 				...u,

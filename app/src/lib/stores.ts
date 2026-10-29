@@ -28,6 +28,7 @@ import {
 	payloadTypes,
 	predicates,
 	type RelationCollectionPayload,
+	type TeamWithMembers,
 	type User as UserRecord
 } from '$lib/models';
 import { extractCustomCategoryFiltersFromParams } from '$lib/utils/customCategoryFilters';
@@ -174,10 +175,12 @@ export type OverlayData =
 	| {
 			key: 'members';
 			admins?: UserRecord[];
+			adminTeams?: TeamWithMembers[];
 			container: Container<AnyPayload>;
 			grants: Grant[];
 			inheritedSections?: InheritedMatrixSection[];
 			mayManageOrganizationUsers?: boolean;
+			teams: TeamWithMembers[];
 			users: UserRecord[];
 	  }
 	| {
@@ -293,10 +296,12 @@ if (browser) {
 			setOverlayIfLatest({
 				key: overlayKey.enum.members,
 				admins: result.data.admins,
+				adminTeams: result.data.adminTeams,
 				container: result.data.container,
 				grants: result.data.grants,
 				inheritedSections: result.data.inheritedSections,
 				mayManageOrganizationUsers: result.data.mayManageOrganizationUsers,
+				teams: result.data.teams,
 				users: result.data.users
 			});
 		} else if (hashParams.has(overlayKey.enum.relations)) {

@@ -32,10 +32,12 @@
 				<div class="details-section">
 					<Members
 						admins={data.admins}
+						adminTeams={data.adminTeams}
 						container={data.container}
 						grants={data.grants}
 						inheritedSections={data.inheritedSections}
 						mayManageOrganizationUsers={data.mayManageOrganizationUsers}
+						teams={data.teams}
 						users={data.users}
 					/>
 				</div>

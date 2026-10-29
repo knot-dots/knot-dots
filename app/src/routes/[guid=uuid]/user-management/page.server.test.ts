@@ -5,6 +5,8 @@ const getMembers = vi.hoisted(() => vi.fn());
 const getAllGrantsByContainers = vi.hoisted(() => vi.fn());
 const getAllRelatedUsersByContainers = vi.hoisted(() => vi.fn());
 const getContainerByGuid = vi.hoisted(() => vi.fn());
+const getManyTeamContainers = vi.hoisted(() => vi.fn());
+const getTeamMembersByTeams = vi.hoisted(() => vi.fn());
 
 locale.set('en');
 
@@ -13,7 +15,9 @@ vi.mock('$lib/server/keycloak', () => ({ getMembers }));
 vi.mock('$lib/server/db', () => ({
 	getAllGrantsByContainers,
 	getAllRelatedUsersByContainers,
-	getContainerByGuid
+	getContainerByGuid,
+	getManyTeamContainers,
+	getTeamMembersByTeams
 }));
 
 import { load } from './+page.server';
@@ -113,6 +117,8 @@ beforeEach(() => {
 	getAllRelatedUsersByContainers.mockReset().mockReturnValue(async () => []);
 	// the inherited sections name their source containers
 	getContainerByGuid.mockReset().mockReturnValue(async () => currentOrganization);
+	getManyTeamContainers.mockReset().mockReturnValue(async () => []);
+	getTeamMembersByTeams.mockReset().mockReturnValue(async () => new Map());
 });
 
 test('grants organization admins access to the user management of an organizational unit', async () => {

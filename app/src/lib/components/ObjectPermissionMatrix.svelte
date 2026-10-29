@@ -5,15 +5,18 @@
 	import ChevronDownIcon from '~icons/flowbite/chevron-down-outline';
 	import ChevronRightIcon from '~icons/flowbite/chevron-right-outline';
 	import InfoIcon from '~icons/flowbite/info-circle-outline';
-	import PlusIcon from '~icons/flowbite/plus-outline';
+	import EnvelopeIcon from '~icons/flowbite/envelope-outline';
 	import TrashBinIcon from '~icons/flowbite/trash-bin-outline';
 	import UserIcon from '~icons/flowbite/user-outline';
 	import RoleIcon from '~icons/knotdots/arrow-circle-down-outline';
 	import tooltip from '$lib/attachments/tooltip';
 	import saveGrantInheritance from '$lib/client/saveGrantInheritance';
 	import saveGrants from '$lib/client/saveGrants';
+	import saveUser from '$lib/client/saveUser';
 	import BadgeDropdown, { type BadgeDropdownValue } from '$lib/components/BadgeDropdown.svelte';
 	import PermissionCheckbox from '$lib/components/PermissionCheckbox.svelte';
+	import SubjectCombobox, { type SubjectSuggestion } from '$lib/components/SubjectCombobox.svelte';
+	import TeamChip from '$lib/components/TeamChip.svelte';
 	import {
 		type AnyPayload,
 		type Container,
@@ -31,11 +34,14 @@
 		memberRoleMatchingGrantSet,
 		memberRoles,
 		predicates,
+		type TeamWithMembers,
 		type User
 	} from '$lib/models';
+	import { ability } from '$lib/stores';
 
 	interface Props {
 		admins: Readonly<Array<User>>;
+		adminTeams?: ReadonlyArray<TeamWithMembers>;
 		container: Container<AnyPayload>;
 		editable?: boolean;
 		grants: Readonly<Array<Grant>>;
@@ -44,11 +50,13 @@
 		mayEdit?: boolean;
 		mayManageOrganizationUsers?: boolean;
 		oninvite?: () => void;
+		teams: ReadonlyArray<TeamWithMembers>;
 		users: Readonly<Array<User>>;
 	}
 
 	let {
 		admins,
+		adminTeams = [],
 		container,
 		editable = false,
 		grants,
@@ -56,8 +64,23 @@
 		mayEdit = editable,
 		mayManageOrganizationUsers = false,
 		oninvite,
+		teams,
 		users
 	}: Props = $props();
+
+	// a row names a user or a team; grants and overrides are keyed by the
+	// subject guid either way
+	type Subject =
+		| { guid: string; team?: undefined; user: User }
+		| { guid: string; team: TeamWithMembers; user?: undefined };
+	const userSubject = (user: User): Subject => ({ guid: user.guid, user });
+	const teamSubject = (team: TeamWithMembers): Subject => ({ guid: team.container.guid, team });
+	// the roster of a team is its own user management, open to those who
+	// manage the users there
+	const manageHrefFor = (team: TeamWithMembers) =>
+		$ability.can('manage-users', team.container)
+			? `/${team.container.guid}/user-management`
+			: undefined;
 
 	// every stored grant is editable individually: the rights on the object
 	// itself and the rights on subordinate objects form separate column groups,
@@ -122,10 +145,10 @@
 	);
 
 	function sectionRows(section: (typeof inheritedSections)[number]) {
-		return section.users
-			.map((user) => ({
-				user,
-				set: grantSetForSubjectOn(section.grants, section.scope.guid, user.guid)
+		return [...section.users.map(userSubject), ...section.teams.map(teamSubject)]
+			.map((subject) => ({
+				subject,
+				set: grantSetForSubjectOn(section.grants, section.scope.guid, subject.guid)
 			}))
 			.filter(({ set }) => set.self.length > 0 || set.subordinates.length > 0);
 	}
@@ -136,8 +159,21 @@
 
 	let setOverrides = new SvelteMap<string, GrantSet>();
 
-	function storedSetFor(user: User) {
-		return grantSetForSubjectOn(grants, container.guid, user.guid);
+	// the container's own rows: every user with a role on it and the teams
+	// holding rows on it (or about to, while an assignment is in flight)
+	const ownRows = $derived([
+		...users.map(userSubject),
+		...teams
+			.filter(
+				({ container: team }) =>
+					setOverrides.has(team.guid) ||
+					grants.some((g) => g.object === container.guid && g.subject === team.guid)
+			)
+			.map(teamSubject)
+	]);
+
+	function storedSetFor(subject: string) {
+		return grantSetForSubjectOn(grants, container.guid, subject);
 	}
 
 	function sameSet(a: GrantSet, b: GrantSet) {
@@ -154,31 +190,32 @@
 	// a render cycle until the fresh props arrive
 	$effect(() => {
 		for (const [guid, set] of setOverrides) {
-			const user = users.find((u) => u.guid === guid);
-			if (!user || sameSet(storedSetFor(user), set)) {
+			const known =
+				users.some((u) => u.guid === guid) || teams.some((t) => t.container.guid === guid);
+			if (!known || sameSet(storedSetFor(guid), set)) {
 				setOverrides.delete(guid);
 			}
 		}
 	});
 
-	function visibleSetFor(user: User): GrantSet {
-		return setOverrides.get(user.guid) ?? storedSetFor(user);
+	function visibleSetFor(subject: string): GrantSet {
+		return setOverrides.get(subject) ?? storedSetFor(subject);
 	}
 
 	function isSelectableRole(value: BadgeDropdownValue): value is MemberRole {
 		return typeof value === 'string' && (selectableRoles as string[]).includes(value);
 	}
 
-	async function save(user: User, set: GrantSet) {
-		const hadPrevious = setOverrides.has(user.guid);
-		const previous = setOverrides.get(user.guid);
-		setOverrides.set(user.guid, set);
+	async function save(subject: string, set: GrantSet) {
+		const hadPrevious = setOverrides.has(subject);
+		const previous = setOverrides.get(subject);
+		setOverrides.set(subject, set);
 
-		const response = await saveGrants(container, { subject: user.guid, ...set });
+		const response = await saveGrants(container, { subject, ...set });
 
 		if (!response.ok) {
-			if (hadPrevious && previous) setOverrides.set(user.guid, previous);
-			else setOverrides.delete(user.guid);
+			if (hadPrevious && previous) setOverrides.set(subject, previous);
+			else setOverrides.delete(subject);
 			console.log(await response.json());
 			return;
 		}
@@ -186,16 +223,21 @@
 		await invalidateAll();
 	}
 
-	async function changeRole(user: User, value: BadgeDropdownValue) {
+	async function changeRole(subject: string, value: BadgeDropdownValue) {
 		if (!isSelectableRole(value)) {
 			return;
 		}
-		await save(user, grantSetForRole(value));
+		await save(subject, grantSetForRole(value));
 	}
 
-	async function toggleKind(user: User, target: GrantTarget, kind: GrantKind, checked: boolean) {
-		const current = visibleSetFor(user);
-		await save(user, {
+	async function toggleKind(
+		subject: string,
+		target: GrantTarget,
+		kind: GrantKind,
+		checked: boolean
+	) {
+		const current = visibleSetFor(subject);
+		await save(subject, {
 			...current,
 			[target]: checked
 				? [...current[target].filter((k) => k !== kind), kind]
@@ -203,8 +245,27 @@
 		});
 	}
 
-	async function removeSubject(user: User) {
-		await save(user, { self: [], subordinates: [] });
+	async function removeSubject(subject: string) {
+		await save(subject, { self: [], subordinates: [] });
+	}
+
+	// adding a row starts with the observer set; registered users who are no
+	// member yet get invited into the container on the way
+	async function addSubject(suggestion: SubjectSuggestion) {
+		if (suggestion.kind === 'team') {
+			await save(suggestion.guid, grantSetForRole(memberRoles.enum.observer));
+			return;
+		}
+		const response = await saveUser({
+			container,
+			email: suggestion.email,
+			role: memberRoles.enum.observer
+		});
+		if (!response.ok) {
+			console.log(await response.json());
+			return;
+		}
+		await invalidateAll();
 	}
 
 	async function toggleIndividualRights(checked: boolean) {
@@ -229,6 +290,19 @@
 		)}`;
 	}
 </script>
+
+{#snippet subjectName(subject: Subject, author: boolean)}
+	<span class="user-cell">
+		{#if subject.team}
+			<TeamChip manageHref={manageHrefFor(subject.team)} team={subject.team} />
+		{:else}
+			<span class="user-name">{displayName(subject.user)}</span>
+		{/if}
+		{#if author}
+			<span class="badge badge--large badge--yellow">{$_('role.author')}</span>
+		{/if}
+	</span>
+{/snippet}
 
 <div class="table-wrapper wide">
 	<table>
@@ -302,12 +376,10 @@
 				</td>
 			</tr>
 			{#if adminsExpanded}
-				{#each admins as user (user.guid)}
+				{#each [...admins.map(userSubject), ...adminTeams.map(teamSubject)] as subject (subject.guid)}
 					<tr>
 						<td class="col-name" class:locked={!viewOnly}>
-							<span class="user-cell">
-								<span class="user-name">{displayName(user)}</span>
-							</span>
+							{@render subjectName(subject, false)}
 						</td>
 						<td class="col-role" class:locked={!viewOnly}>
 							<BadgeDropdown
@@ -381,17 +453,12 @@
 				</td>
 			</tr>
 			{#if ownExpanded}
-				{#each users as user (user.guid)}
-					{@const set = visibleSetFor(user)}
+				{#each ownRows as subject (subject.guid)}
+					{@const set = visibleSetFor(subject.guid)}
 					{@const cellState = inherits ? 'inactive' : editable ? 'editable' : 'readonly'}
 					<tr>
 						<td class="col-name" class:locked={!viewOnly && inherits}>
-							<span class="user-cell">
-								<span class="user-name">{displayName(user)}</span>
-								{#if creators.includes(user.guid)}
-									<span class="badge badge--large badge--yellow">{$_('role.author')}</span>
-								{/if}
-							</span>
+							{@render subjectName(subject, creators.includes(subject.guid))}
 						</td>
 						<td class="col-role" class:locked={!viewOnly && inherits}>
 							<BadgeDropdown
@@ -400,7 +467,7 @@
 								options={roleOptions}
 								editable={editable && !inherits}
 								emptyLabel={$_('role.custom')}
-								onchange={(value) => changeRole(user, value)}
+								onchange={(value) => changeRole(subject.guid, value)}
 							/>
 						</td>
 						{#each columnGroups as group (group.target)}
@@ -422,7 +489,7 @@
 											: cellState === 'readonly' && viewOnly
 												? $_('permission_matrix.tooltip_readonly')
 												: undefined}
-										onchange={(value) => toggleKind(user, group.target, kind, value)}
+										onchange={(value) => toggleKind(subject.guid, group.target, kind, value)}
 									/>
 								</td>
 							{/each}
@@ -433,7 +500,7 @@
 									aria-label={$_('user.remove')}
 									class="action-button"
 									type="button"
-									onclick={() => removeSubject(user)}
+									onclick={() => removeSubject(subject.guid)}
 								>
 									<TrashBinIcon />
 								</button>
@@ -441,17 +508,23 @@
 						</td>
 					</tr>
 				{/each}
-				{#if oninvite && editable && !inherits}
+				{#if editable && !inherits}
 					<tr class="add-row">
 						<td colspan={columnCount + 1}>
-							<button
-								class="button-alternate button-xs system-primary"
-								type="button"
-								onclick={oninvite}
-							>
-								<PlusIcon />
-								<span>{$_('add_item')}</span>
-							</button>
+							<span class="add-controls">
+								<SubjectCombobox
+									excluded={ownRows.map(({ guid }) => guid)}
+									onselect={addSubject}
+									organization={container.organization}
+									{teams}
+								/>
+								{#if oninvite}
+									<button class="button-alternate button-xs" type="button" onclick={oninvite}>
+										<EnvelopeIcon />
+										<span>{$_('invite.heading')}</span>
+									</button>
+								{/if}
+							</span>
 						</td>
 					</tr>
 				{/if}
@@ -489,13 +562,11 @@
 					</td>
 				</tr>
 				{#if expanded}
-					{#each sectionRows(section) as { set, user } (user.guid)}
+					{#each sectionRows(section) as { set, subject } (subject.guid)}
 						{@const cellState = section.active ? 'readonly' : 'inactive'}
 						<tr>
 							<td class="col-name" class:locked={!viewOnly}>
-								<span class="user-cell">
-									<span class="user-name">{displayName(user)}</span>
-								</span>
+								{@render subjectName(subject, false)}
 							</td>
 							<td class="col-role" class:locked={!viewOnly}>
 								<BadgeDropdown
@@ -751,6 +822,12 @@
 	}
 
 	.user-cell {
+		align-items: center;
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.add-controls {
 		align-items: center;
 		display: flex;
 		gap: 0.5rem;

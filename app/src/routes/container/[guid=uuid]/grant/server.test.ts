@@ -1,9 +1,11 @@
+import { NotFoundError } from 'slonik';
 import { beforeEach, expect, test, vi } from 'vitest';
 import { locale } from 'svelte-i18n';
 
 const getContainerByGuid = vi.hoisted(() => vi.fn());
 const getManyOrganizationalUnitContainers = vi.hoisted(() => vi.fn());
 const setContainerGrants = vi.hoisted(() => vi.fn());
+const updateContainer = vi.hoisted(() => vi.fn());
 const updateMemberRole = vi.hoisted(() => vi.fn());
 
 locale.set('en');
@@ -12,6 +14,7 @@ vi.mock('$lib/server/db', () => ({
 	getContainerByGuid,
 	getManyOrganizationalUnitContainers,
 	setContainerGrants,
+	updateContainer,
 	updateMemberRole
 }));
 
@@ -28,6 +31,7 @@ const measureGuid = '00000000-0000-4000-8000-000000000002';
 const adminGuid = '00000000-0000-4000-8000-000000000003';
 const otherAdminGuid = '00000000-0000-4000-8000-000000000004';
 const memberGuid = '00000000-0000-4000-8000-000000000005';
+const teamGuid = '00000000-0000-4000-8000-000000000006';
 
 const admin = {
 	familyName: 'Admin',
@@ -76,17 +80,44 @@ function organization(adminSubjects: string[]) {
 	};
 }
 
-function measure() {
+function measure(ownMatrix = true) {
 	return {
 		guid: measureGuid,
-		managed_by: [measureGuid],
+		managed_by: [ownMatrix ? measureGuid : organizationGuid],
 		organization: organizationGuid,
 		organizational_unit: null,
+		own_matrix: ownMatrix,
 		payload: { title: 'Measure', type: 'measure', visibility: 'organization' },
 		relation: [],
 		user_grant: userGrants(measureGuid),
 		user: [{ predicate: 'is-member-of', subject: memberGuid }]
 	};
+}
+
+function team(organization = organizationGuid) {
+	return {
+		guid: teamGuid,
+		managed_by: [organization],
+		organization,
+		organizational_unit: null,
+		own_matrix: false,
+		payload: {
+			name: 'Team',
+			organizationalUnitType: 'organizational_unit_type.team',
+			type: 'organizational_unit',
+			visibility: 'organization'
+		},
+		relation: [],
+		user: [{ predicate: 'is-member-of', subject: memberGuid }]
+	};
+}
+
+// the endpoint resolves the subject as a container; users are not found
+function containersByGuid(...containers: Array<{ guid: string }>) {
+	getContainerByGuid.mockImplementation((guid: string) => {
+		const container = containers.find((c) => c.guid === guid);
+		return container ?? Promise.reject(new NotFoundError('not found', { sql: '', values: [] }));
+	});
 }
 
 function post(guid: string, assignment: unknown) {
@@ -113,7 +144,40 @@ function post(guid: string, assignment: unknown) {
 beforeEach(() => {
 	vi.resetAllMocks();
 	setContainerGrants.mockReturnValue(vi.fn());
+	updateContainer.mockReturnValue(vi.fn());
 	updateMemberRole.mockReturnValue(vi.fn());
+});
+
+test('a team as the subject gets rows but no member role', async () => {
+	containersByGuid(measure(), team());
+
+	const response = await post(measureGuid, { subject: teamGuid, ...headSet });
+
+	expect(response.status).toBe(204);
+	expect(updateMemberRole).not.toHaveBeenCalled();
+	expect(updateContainer).not.toHaveBeenCalled();
+	expect(setContainerGrants).toHaveBeenCalledWith(measureGuid, teamGuid, headSet);
+});
+
+test('rows of a team decouple an inheriting container', async () => {
+	containersByGuid(measure(false), team());
+
+	const response = await post(measureGuid, { subject: teamGuid, ...headSet });
+
+	expect(response.status).toBe(204);
+	expect(updateContainer).toHaveBeenCalledWith(
+		expect.objectContaining({ guid: measureGuid, managed_by: [measureGuid], own_matrix: true })
+	);
+	expect(setContainerGrants).toHaveBeenCalledWith(measureGuid, teamGuid, headSet);
+});
+
+test('a team of another organization is rejected', async () => {
+	containersByGuid(measure(), team('00000000-0000-4000-8000-000000000007'));
+
+	await expect(post(measureGuid, { subject: teamGuid, ...headSet })).rejects.toMatchObject({
+		status: 422
+	});
+	expect(setContainerGrants).not.toHaveBeenCalled();
 });
 
 test('stores an individual grant set and derives the member role', async () => {

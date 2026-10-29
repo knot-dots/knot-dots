@@ -9,6 +9,7 @@
 	import requestSubmit from '$lib/client/requestSubmit';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
+	import { createFeatureDecisions } from '$lib/features';
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import CoverUpload from '$lib/components/CoverUpload.svelte';
@@ -27,6 +28,7 @@
 		helpSlug,
 		isOrganizationalUnitContainer,
 		type OrganizationalUnitPayload,
+		isTeamContainer,
 		organizationalUnitType,
 		payloadTypes,
 		predicates
@@ -111,6 +113,9 @@
 
 	const handleSubmit = $derived(autoSave(container, 2000));
 
+	// teams only mean something while the permission matrix is on
+	const teamsEnabled = $derived(createFeatureDecisions(page.data.features).usePermissionMatrix());
+
 	let linkedProfile = $derived(
 		relatedContainers
 			.filter(isOrganizationalUnitContainer)
@@ -175,6 +180,23 @@
 							/>
 							{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
 								<ImageReplacesNameToggle bind:value={container.payload.imageReplacesName} />
+							{/if}
+							{#if teamsEnabled && $applicationState.containerDetailView.editable && $ability.can('update', container) && container.payload.organizationalUnitType !== organizationalUnitType.enum['organizational_unit_type.administrative_area']}
+								<!-- a team leaves the sidebar and becomes a subject of other matrices -->
+								<label class="team-toggle">
+									<span>{$_('team')}</span>
+									<input
+										bind:checked={
+											() => isTeamContainer(container),
+											(checked) =>
+												(container.payload.organizationalUnitType = checked
+													? organizationalUnitType.enum['organizational_unit_type.team']
+													: undefined)
+										}
+										class="toggle"
+										type="checkbox"
+									/>
+								</label>
 							{/if}
 
 							{#if linkedProfile}
@@ -308,5 +330,11 @@
 	.profile-switch-item--active {
 		background: var(--color-indigo-800);
 		color: white;
+	}
+	.team-toggle {
+		align-items: center;
+		display: inline-flex;
+		font-size: 0.875rem;
+		gap: 0.5rem;
 	}
 </style>

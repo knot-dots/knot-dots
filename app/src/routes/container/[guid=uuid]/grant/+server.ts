@@ -6,6 +6,7 @@ import {
 	type Container,
 	findAncestors,
 	grantSetAssignment,
+	isTeamContainer,
 	memberRoleFromGrantSet,
 	memberRoles,
 	predicates,
@@ -15,6 +16,7 @@ import {
 	getContainerByGuid,
 	getManyOrganizationalUnitContainers,
 	setContainerGrants,
+	updateContainer,
 	updateMemberRole
 } from '$lib/server/db';
 import type { RequestHandler } from './$types';
@@ -67,6 +69,30 @@ export const POST = (async ({ locals, params, request }) => {
 
 	const { self, subject, subordinates } = parseResult.data;
 	const set = { self, subordinates };
+
+	// A team as the subject: its members hold the set. Teams carry no member
+	// role, so only the rows get stored; assigning them still decouples an
+	// inheriting container like any row would.
+	const team = await locals.pool.connect(getContainerByGuid(subject)).then(
+		(candidate) => (isTeamContainer(candidate) ? candidate : null),
+		(reason) => {
+			if (reason instanceof NotFoundError) return null;
+			throw reason;
+		}
+	);
+	if (team !== null) {
+		if (team.organization !== container.organization) {
+			error(422, { message: unwrapFunctionStore(_)('error.unprocessable_entity') });
+		}
+		await locals.pool.transaction(async (connection) => {
+			const decoupled = withOwnMatrix(container);
+			if (decoupled !== container && (self.length > 0 || subordinates.length > 0)) {
+				await updateContainer(decoupled)(connection);
+			}
+			await setContainerGrants(container.guid, subject, set)(connection);
+		});
+		return new Response(null, { status: 204 });
+	}
 
 	// a subject holding every grant counts as an administrator
 	const role = memberRoleFromGrantSet(set);

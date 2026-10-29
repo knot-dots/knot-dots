@@ -19,6 +19,7 @@
 	import logo from '$lib/assets/logo.svg';
 	import saveContainer from '$lib/client/saveContainer';
 	import saveUser from '$lib/client/saveUser';
+	import { createFeatureDecisions } from '$lib/features';
 	import AdministrationMenu from '$lib/components/AdministrationMenu.svelte';
 	import EditableFavorite from '$lib/components/EditableFavorite.svelte';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
@@ -29,6 +30,7 @@
 		type Container,
 		getContextIdentifier,
 		getOrganizationURL,
+		isTeamContainer,
 		type OrganizationalUnitPayload,
 		type OrganizationPayload,
 		payloadTypes,
@@ -66,9 +68,14 @@
 		)
 	);
 
+	// teams are units too, but they live in the matrices, not in the sidebar —
+	// as long as the permission matrix is on
+	const teamsEnabled = $derived(createFeatureDecisions(page.data.features).usePermissionMatrix());
 	let organizationalUnits = $derived(
 		page.data.organizationalUnits.filter(
-			(c) => c.organization === page.data.currentOrganization.organization
+			(c) =>
+				c.organization === page.data.currentOrganization.organization &&
+				!(teamsEnabled && isTeamContainer(c))
 		)
 	);
 

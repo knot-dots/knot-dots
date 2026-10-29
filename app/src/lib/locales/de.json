@@ -575,6 +575,7 @@
 	},
 	"permission_matrix": {
 		"active": "Aktiv",
+		"add_subject": "Team oder Nutzer*in hinzufügen",
 		"admins": "Admins",
 		"always_all_rights": "Immer alle Rechte",
 		"create_objects": "Objekte Anlegen",
@@ -588,8 +589,11 @@
 		"inherited_from": "Vererbt von {name}",
 		"manage_in_organization": "In der Nutzerverwaltung der Organisation ändern",
 		"manage_permissions": "Rechte Verwalten",
+		"no_suggestions": "Keine Treffer",
 		"not_granted": "nicht erteilt",
 		"subordinate_objects": "Unterobjekte",
+		"suggestions_teams": "Teams",
+		"suggestions_users": "Nutzer*innen",
 		"this_object": "Dieses Objekt",
 		"tooltip_dormant": "Gilt derzeit nicht – Individuelle Rechte sind aktiv",
 		"tooltip_dormant_own": "Gilt derzeit nicht – Rechte werden vererbt",
@@ -843,6 +847,12 @@
 	"task_status.label": "Status",
 	"tasks": "Aufgaben",
 	"team": "Team",
+	"teams": {
+		"manage": "In der Nutzerverwaltung bearbeiten",
+		"members": "Mitglieder",
+		"no_members": "Noch keine Mitglieder",
+		"show_members": "Mitglieder von {name} anzeigen"
+	},
 	"teaser": "Teaser",
 	"teaser_highlight": "Spotlight Teaser",
 	"teaser_image_alt_text": "Alt-Text eingeben",
