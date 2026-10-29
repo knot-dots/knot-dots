@@ -2,7 +2,7 @@
 // managed per deployment via pod annotations (see $lib/server/podFeatures)
 // and deliberately absent from these user-facing rings.
 export const featureFlags = new Map([
-	['alpha', ['OpenAI', 'Adoptions', 'Templating', 'MCP', 'Timeline', 'TrafficLight'] as const],
+	['alpha', ['OpenAI', 'Adoptions', 'Templating', 'MCP'] as const],
 	[
 		'beta',
 		[
@@ -14,6 +14,8 @@ export const featureFlags = new Map([
 			'NewPropertyPanel',
 			'ResourceV2',
 			'SubMeasures',
+			'Timeline',
+			'TrafficLight',
 			'UrlSlug'
 		] as const
 	]
