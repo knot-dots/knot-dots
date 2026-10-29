@@ -65,6 +65,9 @@ test.describe('Resource Data Collections', () => {
 		// Save the item
 		await dotsBoard.page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
 
+		// Verify we're in the resource data detail view
+		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
+
 		// Navigate back to the measure overlay
 		await dotsBoard.overlay.backButton.click();
 
@@ -205,6 +208,9 @@ test.describe('Resource Data Collections in Goals', () => {
 
 		// Save the item
 		await dotsBoard.page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
+
+		// Verify we're in the resource data detail view
+		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
 
 		// Navigate back to the goal overlay
 		await dotsBoard.overlay.backButton.click();
