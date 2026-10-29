@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { setContext } from 'svelte';
+	import { onMount, setContext } from 'svelte';
 	import { overrideItemIdKeyNameBeforeInitialisingDndZones } from 'svelte-dnd-action';
 	import '../app.css';
 	import type { LayoutProps } from './$types';
@@ -20,6 +20,11 @@
 		expand() {
 			sidebarExpanded = true;
 		}
+	});
+
+	// Lets end-to-end tests wait until the client router has started.
+	onMount(() => {
+		document.documentElement.dataset.hydrated = '';
 	});
 </script>
 

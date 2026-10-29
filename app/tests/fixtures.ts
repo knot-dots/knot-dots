@@ -2,6 +2,7 @@ import {
 	type APIRequest,
 	type APIRequestContext,
 	type BrowserContext,
+	type Response as PlaywrightResponse,
 	test as base
 } from '@playwright/test';
 import { locale } from 'svelte-i18n';
@@ -534,6 +535,27 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		]);
 
 		await use(organizationalUnitWithActualData);
+	},
+	page: async ({ baseURL, page }, use) => {
+		const goto = page.goto.bind(page);
+		const reload = page.reload.bind(page);
+
+		// The load event can fire before SvelteKit has hydrated the page and
+		// started its router. Wait for the marker set by the root layout so
+		// that tests don't interact with server-rendered markup only.
+		async function waitForHydration(response: PlaywrightResponse | null) {
+			const isApp = !!response && new URL(response.url()).origin === new URL(baseURL!).origin;
+			const isHTML = response?.headers()['content-type']?.startsWith('text/html') ?? false;
+			if (isApp && isHTML) {
+				await page.locator('html[data-hydrated]').waitFor({ state: 'attached' });
+			}
+			return response;
+		}
+
+		page.goto = async (url, options) => waitForHydration(await goto(url, options));
+		page.reload = async (options) => waitForHydration(await reload(options));
+
+		await use(page);
 	},
 	programPage: async ({ page }, use) => {
 		await use(new ProgramPage(page));
