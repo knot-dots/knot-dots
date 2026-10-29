@@ -15,6 +15,7 @@
 	import EditableHtmlSection from '$lib/components/EditableHtmlSection.svelte';
 	import EditableImageSection from '$lib/components/EditableImageSection.svelte';
 	import EditableIndicatorCollection from '$lib/components/EditableIndicatorCollection.svelte';
+	import EditableIndicatorDashboard from '$lib/components/EditableIndicatorDashboard.svelte';
 	import EditableInlineHelpSection from '$lib/components/EditableInlineHelpSection.svelte';
 	import EditableMapSection from '$lib/components/EditableMapSection.svelte';
 	import EditableMeasureCollection from '$lib/components/EditableMeasureCollection.svelte';
@@ -49,6 +50,7 @@
 		isIgniteVideoContainer,
 		isImageContainer,
 		isIndicatorCollectionContainer,
+		isIndicatorDashboardContainer,
 		isInlineHelpTextContainer,
 		isMapContainer,
 		isMeasureCollectionContainer,
@@ -199,6 +201,14 @@
 			<EditableHtmlSection bind:container bind:parentContainer bind:relatedContainers {editable} />
 		{:else if isIndicatorCollectionContainer(container)}
 			<EditableIndicatorCollection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				{editable}
+				{heading}
+			/>
+		{:else if isIndicatorDashboardContainer(container)}
+			<EditableIndicatorDashboard
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
