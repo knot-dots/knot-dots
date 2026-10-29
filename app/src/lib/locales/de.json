@@ -204,6 +204,7 @@
 		"restore_unsupported": "Organisationen können nicht wiederhergestellt werden.",
 		"program_template_required": "Objekte in einem Programm müssen aus einer in diesem Programm verfügbaren Vorlage erstellt werden.",
 		"scoped_template_required": "Objekte in einem Programm oder einer Maßnahme müssen aus einer im jeweiligen Arbeitsbereich verfügbaren Vorlage erstellt werden.",
+		"guid_not_available": "Diese ID ist bereits vergeben.",
 		"slug_not_available": "Dieser URL-Slug ist bereits vergeben.",
 		"unsupported_media_type": "Diese Anfrage muss JSON enthalten.",
 		"unexpected": "Wir arbeiten daran."

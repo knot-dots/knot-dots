@@ -204,6 +204,7 @@
 		"restore_unsupported": "Organizations cannot be restored.",
 		"program_template_required": "Objects in a program must be created from a template available in that program.",
 		"scoped_template_required": "Objects in a program or measure must be created from a template available in that workspace.",
+		"guid_not_available": "This ID is already in use.",
 		"slug_not_available": "This URL slug is already in use.",
 		"unsupported_media_type": "This request must contain JSON.",
 		"unexpected": "We are working on it."
