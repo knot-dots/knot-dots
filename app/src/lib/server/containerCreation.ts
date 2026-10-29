@@ -68,10 +68,14 @@ export function containerCreationHttpError(caught: unknown): never {
 export function authorizeNewContainer({
 	data,
 	features,
+	pending = new Set(),
 	user
 }: {
 	data: unknown;
 	features: string[];
+	// Guids of containers created along with this one; relations may point to
+	// them although they don't exist yet.
+	pending?: ReadonlySet<string>;
 	user: User;
 }) {
 	const parseResult = newContainer.safeParse(data);
@@ -153,6 +157,10 @@ export function authorizeNewContainer({
 			)?.object ??
 			parseResult.data.organizational_unit ??
 			parseResult.data.organization;
+		// Grants derive from a parent that exists already.
+		if (pending.has(parentGuid)) {
+			throw new ContainerCreationError('bad_request');
+		}
 		let parent: Container<AnyPayload> | undefined;
 		try {
 			parent = await getContainerByGuid(parentGuid)(connection);
@@ -181,7 +189,7 @@ export function authorizeNewContainer({
 			parseResult.data.relation.flatMap(({ object, subject }) => [object, subject])
 		);
 		for (const guid of ends) {
-			if (guid === undefined) {
+			if (guid === undefined || pending.has(guid)) {
 				continue;
 			}
 			let container: Container<AnyPayload>;

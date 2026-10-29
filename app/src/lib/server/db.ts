@@ -495,9 +495,10 @@ export function getAllGrantsByContainers(guids: string[]) {
 }
 
 /**
- * Persists ordinary containers already validated by createContainerCopyPlan() on an existing
- * transaction. Explicit GUIDs remain internal to server code; organization creation stays on
- * createContainer() because it provisions external Keycloak state.
+ * Persists ordinary containers on an existing transaction, once they have been validated by
+ * createContainerCopyPlan() or authorizeNewContainer(). Explicit GUIDs remain internal to server
+ * code; organization creation stays on createContainer() because it provisions external Keycloak
+ * state.
  */
 export function createManyContainers(inserts: readonly NewContainerWithGuid[]) {
 	if (inserts.some((c) => c.payload.type === payloadTypes.enum.organization)) {
