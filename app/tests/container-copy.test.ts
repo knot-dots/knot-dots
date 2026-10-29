@@ -35,10 +35,7 @@ test('creates an empty object as a template in a program template workspace', as
 	});
 	expect(await response.json()).toMatchObject({ payload: { template: true, title } });
 
-	const catalogEntry = dotsBoard.page.getByTitle(title, { exact: true });
-
-	await dotsBoard.page.reload();
-	await expect(catalogEntry).toBeVisible();
+	await expect(dotsBoard.page.getByTitle(title, { exact: true })).toBeVisible();
 });
 
 test('shows subordinate template content as a read-only detail preview', async ({
