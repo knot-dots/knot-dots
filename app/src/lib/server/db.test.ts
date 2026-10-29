@@ -31,6 +31,7 @@ import {
 	getAllGrantsOfUserFromMemberRoles,
 	getContainerCopyGraph,
 	getContainerByGuid,
+	getIndicatorGuidsInUse,
 	getManyContainers,
 	getManyOrganizationalUnitContainers,
 	sql,
@@ -915,6 +916,83 @@ test('omitting the template filter returns a complete mixed program hierarchy', 
 	expect(nonTemplates.map(({ guid }) => guid)).toContain(section.guid);
 	expect(nonTemplates.map(({ guid }) => guid)).not.toContain(program.guid);
 	expect(nonTemplates.map(({ guid }) => guid)).not.toContain(measure.guid);
+});
+
+test('getIndicatorGuidsInUse returns the indicators measured or reported on within scope', async ({
+	connection
+}) => {
+	const otherOrganization = uuid();
+	const organizationalUnit = uuid();
+	const indicator = (title: string) =>
+		initializeNewContainer({ title, type: payloadTypes.enum.indicator, unit: 'unit.percent' }, []);
+	const actualData = (indicator: string) =>
+		({
+			indicator,
+			title: 'Actual data',
+			type: payloadTypes.enum.actual_data
+		}) as Partial<AnyPayload> & Pick<AnyPayload, 'type'>;
+	const measuredBy = (indicator: string): PartialRelation[] => [
+		{ object: indicator, position: 0, predicate: predicates.enum['is-measured-by'] }
+	];
+	const elsewhere = (
+		payload: Partial<AnyPayload> & Pick<AnyPayload, 'type'>,
+		relation: PartialRelation[]
+	) =>
+		newContainer.parse({
+			managed_by: otherOrganization,
+			organization: otherOrganization,
+			organizational_unit: null,
+			payload,
+			realm,
+			relation
+		});
+
+	const measured = await createContainer(indicator('Measured'))(connection);
+	const objective = await createContainer(indicator('Objective'))(connection);
+	const reported = await createContainer(indicator('Reported'))(connection);
+	const reportedInUnit = await createContainer(indicator('Reported in unit'))(connection);
+	const measuredElsewhere = await createContainer(indicator('Measured elsewhere'))(connection);
+	const reportedElsewhere = await createContainer(indicator('Reported elsewhere'))(connection);
+	const unused = await createContainer(indicator('Unused'))(connection);
+
+	await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.measure), measuredBy(measured.guid))
+	)(connection);
+	await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [
+			{ object: objective.guid, position: 0, predicate: predicates.enum['is-objective-for'] }
+		])
+	)(connection);
+	await createContainer(initializeNewContainer(actualData(reported.guid), []))(connection);
+	await createContainer(
+		newContainer.parse({
+			managed_by: organization,
+			organization,
+			organizational_unit: organizationalUnit,
+			payload: actualData(reportedInUnit.guid),
+			realm,
+			relation: []
+		})
+	)(connection);
+	await createContainer(
+		elsewhere(simplePayload(payloadTypes.enum.measure), measuredBy(measuredElsewhere.guid))
+	)(connection);
+	await createContainer(elsewhere(actualData(reportedElsewhere.guid), []))(connection);
+
+	const inOrganization = await getIndicatorGuidsInUse(
+		{ organizations: [organization] },
+		{ organizations: [organization], organizationalUnits: null }
+	)(connection);
+	expect(inOrganization.sort()).toEqual([measured.guid, objective.guid, reported.guid].sort());
+	expect(inOrganization).not.toContain(unused.guid);
+	expect(inOrganization).not.toContain(measuredElsewhere.guid);
+	expect(inOrganization).not.toContain(reportedElsewhere.guid);
+
+	const inUnit = await getIndicatorGuidsInUse(
+		{ organizations: [organization], organizationalUnits: [organizationalUnit] },
+		{ organizations: [organization], organizationalUnits: [organizationalUnit] }
+	)(connection);
+	expect(inUnit).toEqual([reportedInUnit.guid]);
 });
 
 test('getContainerCopyGraph follows current downward copy edges once and stops at cycles', async ({
