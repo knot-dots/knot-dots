@@ -133,6 +133,9 @@
 	// expanded states follow the active sections until toggled by hand
 	let adminsExpanded = $state(true);
 	let ownExpandedOverride = $state<boolean | undefined>();
+
+	// whether the add row is searching for a subject
+	let adding = $state(false);
 	let sectionExpandedOverrides = new SvelteMap<string, boolean>();
 	const ownExpanded = $derived(ownExpandedOverride ?? !inherits);
 	const sectionExpanded = (section: (typeof inheritedSections)[number]) =>
@@ -509,24 +512,62 @@
 					</tr>
 				{/each}
 				{#if editable && !inherits}
-					<tr class="add-row">
-						<td colspan={columnCount + 1}>
-							<span class="add-controls">
+					{#if adding}
+						<!-- the row being added: the search in the name cell, the rest empty -->
+						<tr>
+							<td class="col-name">
 								<SubjectCombobox
 									excluded={ownRows.map(({ guid }) => guid)}
 									onselect={addSubject}
 									organization={container.organization}
 									{teams}
+									bind:open={adding}
 								/>
-								{#if oninvite}
-									<button class="button-alternate button-xs" type="button" onclick={oninvite}>
-										<EnvelopeIcon />
-										<span>{$_('invite.heading')}</span>
-									</button>
-								{/if}
-							</span>
-						</td>
-					</tr>
+							</td>
+							<td class="col-role">
+								<BadgeDropdown
+									allowEmpty={false}
+									value={undefined}
+									options={roleOptions}
+									editable={false}
+									emptyLabel={$_('empty')}
+								/>
+							</td>
+							{#each columnGroups as group (group.target)}
+								{#each group.kinds as kind (kind)}
+									<td class="col-grant" class:col-group-start={kind === group.kinds[0]}>
+										<PermissionCheckbox
+											ariaLabel={`${$_(`permission.${kind}`)} (${$_(`permission_matrix.${group.label}`)})`}
+											checked={false}
+											disabled
+											state="editable"
+										/>
+									</td>
+								{/each}
+							{/each}
+							<td class="col-actions"></td>
+						</tr>
+					{:else}
+						<tr class="add-row">
+							<td colspan={columnCount + 1}>
+								<span class="add-controls">
+									<SubjectCombobox
+										excluded={ownRows.map(({ guid }) => guid)}
+										onselect={addSubject}
+										organization={container.organization}
+										{teams}
+										bind:open={adding}
+									/>
+									{#if oninvite}
+										<button class="button-alternate button-xs" type="button" onclick={oninvite}>
+											<EnvelopeIcon />
+											<span>{$_('invite.heading')}</span>
+										</button>
+									{/if}
+								</span>
+							</td>
+						</tr>
+					{/if}
 				{/if}
 			{/if}
 

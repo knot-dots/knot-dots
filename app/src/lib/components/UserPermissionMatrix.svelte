@@ -81,6 +81,8 @@
 		observer: 'gray'
 	};
 
+	// whether the add row is searching for a subject
+	let adding = $state(false);
 	const roleOptions = $derived(
 		selectableRoles.map((role) => ({
 			label: $_(`role.${role}`),
@@ -286,24 +288,62 @@
 				</tr>
 			{/each}
 			{#if editable}
-				<tr class="add-row">
-					<td colspan={10}>
-						<span class="add-controls">
+				{#if adding}
+					<!-- the row being added: the search in the name cell, the rest empty -->
+					<tr>
+						<td class="col-name">
 							<SubjectCombobox
 								excluded={rows.map(({ guid }) => guid)}
 								onselect={addSubject}
 								organization={container.organization}
 								{teams}
+								bind:open={adding}
 							/>
-							{#if oninvite}
-								<button class="button-alternate button-xs" type="button" onclick={oninvite}>
-									<EnvelopeIcon />
-									<span>{$_('invite.heading')}</span>
-								</button>
-							{/if}
-						</span>
-					</td>
-				</tr>
+						</td>
+						<td class="col-role">
+							<BadgeDropdown
+								allowEmpty={false}
+								value={undefined}
+								options={roleOptions}
+								editable={false}
+								emptyLabel={$_('empty')}
+							/>
+						</td>
+						{#each columnGroups as group (group.target)}
+							{#each group.kinds as kind (kind)}
+								<td class="col-grant">
+									<input
+										type="checkbox"
+										aria-label={`${$_(`permission.${kind}`)} (${$_(`permission_matrix.${group.label}`)})`}
+										checked={false}
+										disabled
+									/>
+								</td>
+							{/each}
+						{/each}
+						<td class="col-actions"></td>
+					</tr>
+				{:else}
+					<tr class="add-row">
+						<td colspan={10}>
+							<span class="add-controls">
+								<SubjectCombobox
+									excluded={rows.map(({ guid }) => guid)}
+									onselect={addSubject}
+									organization={container.organization}
+									{teams}
+									bind:open={adding}
+								/>
+								{#if oninvite}
+									<button class="button-alternate button-xs" type="button" onclick={oninvite}>
+										<EnvelopeIcon />
+										<span>{$_('invite.heading')}</span>
+									</button>
+								{/if}
+							</span>
+						</td>
+					</tr>
+				{/if}
 			{/if}
 		</tbody>
 	</table>
