@@ -8,7 +8,7 @@ import {
 	fromCounts,
 	taskCategories
 } from '$lib/models';
-import { getAllContainersRelatedToUser } from '$lib/server/db';
+import { getAllContainersRelatedToUser, getTeamGuidsOfUser } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -16,10 +16,13 @@ export const load: PageServerLoad = async ({ locals }) => {
 		error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 	}
 
-	const containers = await locals.pool.connect(getAllContainersRelatedToUser(locals.user.guid));
+	const { containers, teams } = await locals.pool.connect(async (connection) => ({
+		containers: await getAllContainersRelatedToUser(locals.user.guid)(connection),
+		teams: await getTeamGuidsOfUser(locals.user.guid)(connection)
+	}));
 
 	const filtered = filterVisible(
-		containers.filter(isTaskContainer).filter(isAssignedTo(locals.user)),
+		containers.filter(isTaskContainer).filter(isAssignedTo(locals.user, teams)),
 		locals.user
 	);
 

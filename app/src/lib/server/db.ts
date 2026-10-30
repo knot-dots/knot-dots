@@ -2556,9 +2556,38 @@ export function getAllContainersRelatedToMeasure(
 	};
 }
 
+// The teams (units marked as such) the user is a member of: everyone with a
+// role on the team's matrix.
+const teamsOfUser = (guid: string) => sql.fragment`
+	SELECT t.guid
+	FROM container_user cu
+	JOIN container t ON t.revision = cu.object
+		AND t.valid_currently AND NOT t.deleted
+		AND t.payload->>'type' = ${payloadTypes.enum.organizational_unit}
+		AND t.payload->>'organizationalUnitType' = ${organizationalUnitType.enum['organizational_unit_type.team']}
+	WHERE cu.subject = ${guid} AND cu.predicate = ${predicates.enum['is-member-of']}
+`;
+
+export function getTeamGuidsOfUser(guid: string) {
+	return async (connection: DatabaseConnection): Promise<string[]> => {
+		const rows = await connection.any(sql.type(z.object({ guid: z.uuid() }))`
+			${teamsOfUser(guid)}
+		`);
+		return rows.map(({ guid }) => guid);
+	};
+}
+
+// Everything the user takes part in: the contents of the areas and the areas
+// the user has a role on, the containers granting rows to one of the user's
+// teams, and the tasks assigned to the user or to one of the teams.
 export function getAllContainersRelatedToUser(guid: string) {
 	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>[]> => {
 		const containerResult = await connection.any(sql.typeAlias('anyContainer')`
+			WITH subjects AS (
+				SELECT ${guid}::uuid AS guid
+				UNION
+				${teamsOfUser(guid)}
+			)
 			SELECT c.* FROM container c
 			JOIN container m ON c.managed_by = m.guid
 			JOIN container_user cu ON cu.subject = ${guid}
@@ -2568,6 +2597,13 @@ export function getAllContainersRelatedToUser(guid: string) {
 				AND NOT m.deleted
 			WHERE c.payload->>'type' IN ('measure', 'program', 'simple_measure')
 			  AND c.valid_currently
+				AND NOT c.deleted
+			UNION
+			SELECT c.* FROM container c
+			JOIN container_grant g ON g.object = c.guid
+				AND g.subject IN (SELECT guid FROM subjects WHERE guid <> ${guid})
+			WHERE c.payload->>'type' IN ('measure', 'program', 'simple_measure')
+				AND c.valid_currently
 				AND NOT c.deleted
 			UNION
 			SELECT c.* FROM container c
@@ -2581,7 +2617,7 @@ export function getAllContainersRelatedToUser(guid: string) {
 			SELECT c.* FROM container c
 			WHERE c.valid_currently
 				AND NOT c.deleted
-				AND c.payload->'assignee' ? ${guid}
+				AND c.payload->'assignee' ?| ARRAY(SELECT guid::text FROM subjects)
 			ORDER BY valid_from DESC
 		`);
 		return enrichContainers(connection, await withUserAndRelation(connection, containerResult));
