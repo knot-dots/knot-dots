@@ -81,8 +81,8 @@
 
 	input {
 		appearance: none;
-		background-color: var(--color-surface-default);
-		border: 1px solid var(--color-border-strong);
+		background-color: var(--color-surface-container);
+		border: 1px solid var(--color-border-default);
 		border-radius: 4px;
 		height: 16px;
 		margin: 0;
