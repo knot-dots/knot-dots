@@ -18,6 +18,5 @@ export class Table {
 export class AllTable extends Table {
 	async goto(baseURL: string) {
 		await this.page.goto(`${baseURL}/all/table`);
-		await this.page.waitForLoadState('networkidle');
 	}
 }

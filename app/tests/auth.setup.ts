@@ -61,8 +61,10 @@ persons.forEach((person) => {
 			});
 		}
 
-		// Navigate to the login page
+		// Navigate to the login page. Unlike the page fixture of the tests, the page of
+		// the setup doesn't wait for hydration, so the button would not work yet.
 		await page.goto('/');
+		await page.locator('html[data-hydrated]').waitFor({ state: 'attached' });
 		await page.getByRole('button', { name: 'Log in' }).click();
 
 		// Perform the login actions

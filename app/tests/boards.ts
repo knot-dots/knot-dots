@@ -36,28 +36,24 @@ export class Board {
 export class CategoriesBoard extends Board {
 	async goto(baseURL: string) {
 		await this.page.goto(`${baseURL}/categories`);
-		await this.page.waitForLoadState('networkidle');
 	}
 }
 
 export class DotsBoard extends Board {
 	async goto(baseURL: string) {
 		await this.page.goto(`${baseURL}/all/level`);
-		await this.page.waitForLoadState('networkidle');
 	}
 }
 
 export class GoalsBoard extends Board {
 	async goto(baseURL: string) {
 		await this.page.goto(`${baseURL}/goals/level`);
-		await this.page.waitForLoadState('networkidle');
 	}
 }
 
 export class TaskStatusBoard extends Board {
 	async goto(baseURL: string) {
 		await this.page.goto(`${baseURL}/tasks/status`);
-		await this.page.waitForLoadState('networkidle');
 	}
 
 	async addTaskToColumn(title: string, columnHeading: string) {

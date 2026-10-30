@@ -9,7 +9,6 @@ export default class MeasurePage {
 	}
 	async goto(measure: Container<MeasurePayload | SimpleMeasurePayload>) {
 		await this.page.goto(`/${measure.organization}/${measure.guid}`);
-		await this.page.waitForLoadState('networkidle');
 		await this.header.editModeToggle.check();
 	}
 	get goals() {
