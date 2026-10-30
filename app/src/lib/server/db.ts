@@ -2220,6 +2220,32 @@ export function getAllRelatedContainersByProgramType(
 	};
 }
 
+// Guids of the indicators in use within the given scopes: those a container
+// is measured by or has an objective for, and those actual data reports on.
+export function getIndicatorGuidsInUse(
+	filters: { organizations?: string[]; organizationalUnits?: string[] },
+	actualDataFilters: { organizations?: string[]; organizationalUnits?: string[] | null }
+) {
+	return async (connection: DatabaseConnection): Promise<string[]> => {
+		const result = await connection.any(sql.typeAlias('guid')`
+			SELECT cr.object AS guid
+			FROM container c
+			JOIN container_relation cr ON c.guid = cr.subject
+				AND cr.predicate IN (${predicates.enum['is-measured-by']}, ${predicates.enum['is-objective-for']})
+				AND cr.valid_currently
+				AND NOT cr.deleted
+			WHERE ${prepareWhereCondition(filters)}
+			UNION
+			SELECT (c.payload->>'indicator')::uuid AS guid
+			FROM container c
+			WHERE ${prepareWhereCondition(actualDataFilters)}
+				AND c.payload->>'type' = ${payloadTypes.enum.actual_data}
+				AND c.payload->>'indicator' IS NOT NULL
+		`);
+		return result.map(({ guid }) => guid);
+	};
+}
+
 export function getAllContainersRelatedToIndicators(
 	containers: Array<Container<BinaryIndicatorPayload | IndicatorPayload>>,
 	filters: { organizations?: string[]; organizationalUnits?: string[] },
