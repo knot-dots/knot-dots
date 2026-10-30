@@ -2,6 +2,7 @@
 	import { SvelteMap } from 'svelte/reactivity';
 	import { invalidateAll } from '$app/navigation';
 	import { _ } from 'svelte-i18n';
+	import CheckIcon from '~icons/flowbite/check-outline';
 	import ChevronDownIcon from '~icons/flowbite/chevron-down-outline';
 	import ChevronRightIcon from '~icons/flowbite/chevron-right-outline';
 	import InfoIcon from '~icons/flowbite/info-circle-outline';
@@ -14,6 +15,7 @@
 	import saveGrants from '$lib/client/saveGrants';
 	import saveUser from '$lib/client/saveUser';
 	import BadgeDropdown, { type BadgeDropdownValue } from '$lib/components/BadgeDropdown.svelte';
+	import ConfirmInheritDialog from '$lib/components/ConfirmInheritDialog.svelte';
 	import PermissionCheckbox from '$lib/components/PermissionCheckbox.svelte';
 	import SubjectCombobox, { type SubjectSuggestion } from '$lib/components/SubjectCombobox.svelte';
 	import TeamChip from '$lib/components/TeamChip.svelte';
@@ -33,11 +35,13 @@
 		type MemberRole,
 		memberRoleMatchingGrantSet,
 		memberRoles,
+		payloadTypes,
 		predicates,
 		type TeamWithMembers,
 		type User
 	} from '$lib/models';
-	import { ability } from '$lib/stores';
+	import { getToastContext } from '$lib/contexts/toast';
+	import { ability, user } from '$lib/stores';
 
 	interface Props {
 		admins: Readonly<Array<User>>;
@@ -131,6 +135,22 @@
 	const inherits = $derived(inheritsOverride ?? storedInherits);
 	const viewOnly = $derived(!mayEdit);
 
+	// below a program the program's matrix stays in effect, so the own rows
+	// add to it rather than replacing the area
+	const underProgram = $derived(
+		inheritedSections.some(
+			(section) => section.active && section.scope.type === payloadTypes.enum.program
+		)
+	);
+
+	// one's own row is locked: nobody takes rights from themselves by accident
+	const isSelf = (subject: Subject) => subject.user?.guid === $user.guid;
+	const nameOf = (subject: Subject) =>
+		subject.team ? subject.team.container.payload.name : displayName(subject.user);
+
+	const toast = getToastContext();
+	let confirmInheritDialog: HTMLDialogElement = $state(undefined!);
+
 	// expanded states follow the active sections until toggled by hand
 	let adminsExpanded = $state(true);
 	let ownExpandedOverride = $state<boolean | undefined>();
@@ -210,6 +230,10 @@
 		return typeof value === 'string' && (selectableRoles as string[]).includes(value);
 	}
 
+	function reportFailure() {
+		toast({ heading: $_('permission_matrix.error_saving'), status: 'error' });
+	}
+
 	async function save(subject: string, set: GrantSet) {
 		const hadPrevious = setOverrides.has(subject);
 		const previous = setOverrides.get(subject);
@@ -220,11 +244,12 @@
 		if (!response.ok) {
 			if (hadPrevious && previous) setOverrides.set(subject, previous);
 			else setOverrides.delete(subject);
-			console.log(await response.json());
-			return;
+			reportFailure();
+			return false;
 		}
 
 		await invalidateAll();
+		return true;
 	}
 
 	async function changeRole(subject: string, value: BadgeDropdownValue) {
@@ -249,8 +274,21 @@
 		});
 	}
 
-	async function removeSubject(subject: string) {
-		await save(subject, { self: [], subordinates: [] });
+	// removing a row can be undone from the toast: the previous set is saved
+	// again (for a user, that invites them into the container once more)
+	async function removeSubject(subject: Subject) {
+		const previous = visibleSetFor(subject.guid);
+		if (await save(subject.guid, { self: [], subordinates: [] })) {
+			toast({
+				action: {
+					label: $_('permission_matrix.undo'),
+					onclick: () => save(subject.guid, previous)
+				},
+				heading: $_('permission_matrix.removed', { values: { name: nameOf(subject) } }),
+				icon: CheckIcon,
+				status: 'success'
+			});
+		}
 	}
 
 	// adding a row starts with the observer set; registered users who are no
@@ -266,13 +304,43 @@
 			role: memberRoles.enum.observer
 		});
 		if (!response.ok) {
-			console.log(await response.json());
+			reportFailure();
 			return;
 		}
 		await invalidateAll();
 	}
 
+	// whether the current user would lose access once the container inherits:
+	// no administrator of an area, and no row with read on any governing
+	// matrix (the dormant area applies again) for them or one of their teams
+	const subjectsOfSelf = $derived([
+		$user.guid,
+		...teams
+			.filter(({ members }) => members.some(({ guid }) => guid === $user.guid))
+			.map(({ container }) => container.guid)
+	]);
+	const wouldLockOut = $derived(
+		!admins.some(({ guid }) => guid === $user.guid) &&
+			!adminTeams.some(({ container }) => subjectsOfSelf.includes(container.guid)) &&
+			!inheritedSections.some((section) =>
+				subjectsOfSelf.some((subject) =>
+					grantSetForSubjectOn(section.grants, section.scope.guid, subject).self.includes('read')
+				)
+			)
+	);
+	const inheritSource = $derived(
+		(inheritedSections.find(({ active }) => !active) ?? inheritedSections[0])?.scope.title ?? ''
+	);
+
 	async function toggleIndividualRights(checked: boolean) {
+		if (!checked && wouldLockOut) {
+			confirmInheritDialog.showModal();
+			return;
+		}
+		await saveInheritance(checked);
+	}
+
+	async function saveInheritance(checked: boolean) {
 		inheritsOverride = !checked;
 		ownExpandedOverride = undefined;
 		sectionExpandedOverrides.clear();
@@ -281,7 +349,7 @@
 
 		if (!response.ok) {
 			inheritsOverride = undefined;
-			console.log(await response.json());
+			reportFailure();
 			return;
 		}
 
@@ -300,7 +368,11 @@
 		{#if subject.team}
 			<TeamChip manageHref={manageHrefFor(subject.team)} team={subject.team} />
 		{:else}
-			<span class="user-name">{displayName(subject.user)}</span>
+			<span class="user-name">
+				{isSelf(subject)
+					? `${displayName(subject.user)} ${$_('permission_matrix.you')}`
+					: displayName(subject.user)}
+			</span>
 		{/if}
 		{#if author}
 			<span class="badge badge--large badge--yellow">{$_('role.author')}</span>
@@ -407,7 +479,7 @@
 										state="readonly"
 										tooltip={viewOnly
 											? $_('permission_matrix.tooltip_readonly')
-											: $_('permission_matrix.always_all_rights')}
+											: $_('permission_matrix.tooltip_admin')}
 									/>
 								</td>
 							{/each}
@@ -433,9 +505,12 @@
 							>
 								{#if ownExpanded}<ChevronDownIcon />{:else}<ChevronRightIcon />{/if}
 								<span class="section-title">
-									{$_('permission_matrix.individual_rights_for', {
-										values: { name: titleOf(container) }
-									})}
+									{$_(
+										underProgram
+											? 'permission_matrix.additional_rights_for'
+											: 'permission_matrix.individual_rights_for',
+										{ values: { name: titleOf(container) } }
+									)}
 								</span>
 							</button>
 							<span class="badge section-badge">
@@ -444,12 +519,23 @@
 						</span>
 						{#if editable}
 							<label class="inherit-toggle">
-								<span>{$_('permission_matrix.individual_rights')}</span>
+								<span>
+									{$_(
+										underProgram
+											? 'permission_matrix.additional_rights'
+											: 'permission_matrix.individual_rights'
+									)}
+								</span>
 								<input
 									checked={!inherits}
 									class="toggle"
 									type="checkbox"
-									onchange={(event) => toggleIndividualRights(event.currentTarget.checked)}
+									onchange={(event) => {
+										const input = event.currentTarget;
+										toggleIndividualRights(input.checked);
+										// the dialog decides; until then the switch shows the stored state
+										input.checked = !inherits;
+									}}
 								/>
 							</label>
 						{/if}
@@ -459,17 +545,19 @@
 			{#if ownExpanded}
 				{#each ownRows as subject (subject.guid)}
 					{@const set = visibleSetFor(subject.guid)}
-					{@const cellState = inherits ? 'inactive' : editable ? 'editable' : 'readonly'}
+					{@const self = isSelf(subject)}
+					{@const locked = !viewOnly && (inherits || (editable && self))}
+					{@const cellState = inherits ? 'inactive' : editable && !self ? 'editable' : 'readonly'}
 					<tr>
-						<td class="col-name" class:locked={!viewOnly && inherits}>
+						<td class="col-name" class:locked>
 							{@render subjectName(subject, creators.includes(subject.guid))}
 						</td>
-						<td class="col-role" class:locked={!viewOnly && inherits}>
+						<td class="col-role" class:locked>
 							<BadgeDropdown
 								allowEmpty={false}
 								value={memberRoleMatchingGrantSet(set) ?? undefined}
 								options={roleOptions}
-								editable={editable && !inherits}
+								editable={editable && !inherits && !self}
 								emptyLabel={$_('role.custom')}
 								onchange={(value) => changeRole(subject.guid, value)}
 							/>
@@ -477,11 +565,7 @@
 						{#each columnGroups as group (group.target)}
 							{#each group.kinds as kind (kind)}
 								{@const checked = set[group.target].includes(kind)}
-								<td
-									class="col-grant"
-									class:locked={!viewOnly && inherits}
-									class:col-group-start={kind === group.kinds[0]}
-								>
+								<td class="col-grant" class:locked class:col-group-start={kind === group.kinds[0]}>
 									<PermissionCheckbox
 										ariaLabel={cellState === 'editable'
 											? `${$_(`permission.${kind}`)} (${$_(`permission_matrix.${group.label}`)})`
@@ -492,24 +576,30 @@
 											? $_('permission_matrix.tooltip_dormant_own')
 											: cellState === 'readonly' && viewOnly
 												? $_('permission_matrix.tooltip_readonly')
-												: undefined}
+												: cellState === 'readonly' && self
+													? $_('permission_matrix.tooltip_own_row')
+													: undefined}
 										onchange={(value) => toggleKind(subject.guid, group.target, kind, value)}
 									/>
 								</td>
 							{/each}
 						{/each}
-						<td class="col-actions" class:locked={!viewOnly && inherits}>
-							{#if editable && !inherits}
+						<td class="col-actions" class:locked>
+							{#if editable && !inherits && !self}
 								<button
 									aria-label={$_('user.remove')}
 									class="action-button"
 									type="button"
-									onclick={() => removeSubject(subject.guid)}
+									onclick={() => removeSubject(subject)}
 								>
 									<TrashBinIcon />
 								</button>
 							{/if}
 						</td>
+					</tr>
+				{:else}
+					<tr class="empty-row">
+						<td colspan={columnCount + 1}>{$_('permission_matrix.no_entries')}</td>
 					</tr>
 				{/each}
 				{#if editable && !inherits}
@@ -644,6 +734,10 @@
 							{/each}
 							<td class="col-actions" class:locked={!viewOnly}></td>
 						</tr>
+					{:else}
+						<tr class="empty-row">
+							<td colspan={columnCount + 1}>{$_('permission_matrix.no_entries')}</td>
+						</tr>
 					{/each}
 				{/if}
 			{/each}
@@ -651,7 +745,19 @@
 	</table>
 </div>
 
+<ConfirmInheritDialog
+	bind:dialog={confirmInheritDialog}
+	onconfirm={() => saveInheritance(false)}
+	source={inheritSource}
+/>
+
 <style>
+	/* the surrounding page scrolls, so the head sticks to it; a wrapper that
+	   scrolls itself would trap the sticky head (it never scrolls vertically) */
+	.table-wrapper {
+		overflow: visible;
+	}
+
 	table {
 		border-collapse: separate;
 		border-spacing: 0;
@@ -754,6 +860,14 @@
 		padding-top: 0;
 	}
 
+	/* the hint of an empty section, in the muted text of the design */
+	tr.empty-row td {
+		border: none;
+		color: var(--color-text-subtle);
+		font-weight: 400;
+		height: 3rem;
+	}
+
 	/* the group heads take their colors from the system mode of the row:
 	   .system-success while the group is active, the base mode otherwise */
 	tr.section-row--individual td,
@@ -820,9 +934,13 @@
 	.admins-link {
 		background-color: var(--color-surface-container-raised);
 		color: var(--color-text-link);
+		min-width: 0;
+		overflow: hidden;
 		padding-left: 0.5rem;
 		position: sticky;
 		right: 0.5rem;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.inherit-toggle {

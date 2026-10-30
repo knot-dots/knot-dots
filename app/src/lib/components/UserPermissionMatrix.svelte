@@ -3,6 +3,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { _ } from 'svelte-i18n';
 	import CheckCircleIcon from '~icons/flowbite/check-circle-outline';
+	import CheckIcon from '~icons/flowbite/check-outline';
 	import EnvelopeIcon from '~icons/flowbite/envelope-outline';
 	import TrashBinIcon from '~icons/flowbite/trash-bin-outline';
 	import UserIcon from '~icons/flowbite/user-outline';
@@ -30,7 +31,8 @@
 		type TeamWithMembers,
 		type User
 	} from '$lib/models';
-	import { ability } from '$lib/stores';
+	import { getToastContext } from '$lib/contexts/toast';
+	import { ability, user } from '$lib/stores';
 
 	interface Props {
 		container: Container<AnyPayload>;
@@ -92,6 +94,13 @@
 		}))
 	);
 
+	// one's own row is locked: nobody takes rights from themselves by accident
+	const isSelf = (subject: Subject) => subject.user?.guid === $user.guid;
+	const nameOf = (subject: Subject) =>
+		subject.team ? subject.team.container.payload.name : displayName(subject.user);
+
+	const toast = getToastContext();
+
 	let setOverrides = new SvelteMap<string, GrantSet>();
 
 	// every user with a role on the organization and the teams holding rows on
@@ -141,6 +150,10 @@
 		return typeof value === 'string' && (selectableRoles as string[]).includes(value);
 	}
 
+	function reportFailure() {
+		toast({ heading: $_('permission_matrix.error_saving'), status: 'error' });
+	}
+
 	async function save(subject: string, set: GrantSet) {
 		const hadPrevious = setOverrides.has(subject);
 		const previous = setOverrides.get(subject);
@@ -151,11 +164,12 @@
 		if (!response.ok) {
 			if (hadPrevious && previous) setOverrides.set(subject, previous);
 			else setOverrides.delete(subject);
-			console.log(await response.json());
-			return;
+			reportFailure();
+			return false;
 		}
 
 		await invalidateAll();
+		return true;
 	}
 
 	async function changeRole(subject: string, value: BadgeDropdownValue) {
@@ -178,8 +192,21 @@
 		await save(subject, { ...current, [target]: kinds });
 	}
 
-	async function removeSubject(subject: string) {
-		await save(subject, { self: [], subordinates: [] });
+	// removing a row can be undone from the toast: the previous set is saved
+	// again (for a user, that invites them into the container once more)
+	async function removeSubject(subject: Subject) {
+		const previous = visibleSetFor(subject.guid);
+		if (await save(subject.guid, { self: [], subordinates: [] })) {
+			toast({
+				action: {
+					label: $_('permission_matrix.undo'),
+					onclick: () => save(subject.guid, previous)
+				},
+				heading: $_('permission_matrix.removed', { values: { name: nameOf(subject) } }),
+				icon: CheckIcon,
+				status: 'success'
+			});
+		}
 	}
 
 	// adding a row starts with the observer set; registered users who are no
@@ -195,7 +222,7 @@
 			role: memberRoles.enum.observer
 		});
 		if (!response.ok) {
-			console.log(await response.json());
+			reportFailure();
 			return;
 		}
 		await invalidateAll();
@@ -240,50 +267,61 @@
 		<tbody>
 			{#each rows as subject (subject.guid)}
 				{@const set = visibleSetFor(subject.guid)}
+				{@const self = isSelf(subject)}
+				{@const locked = !editable || self}
 				<tr>
-					<td class="col-name" class:locked={!editable}>
+					<td class="col-name" class:locked>
 						<span class="user-cell">
 							{#if subject.team}
 								<TeamChip manageHref={manageHrefFor(subject.team)} team={subject.team} />
 							{:else}
-								<span class="user-name">{displayName(subject.user)}</span>
+								<span class="user-name">
+									{self
+										? `${displayName(subject.user)} ${$_('permission_matrix.you')}`
+										: displayName(subject.user)}
+								</span>
 							{/if}
 						</span>
 					</td>
-					<td class="col-role" class:locked={!editable}>
+					<td class="col-role" class:locked>
 						<BadgeDropdown
 							allowEmpty={false}
 							value={memberRoleMatchingGrantSet(set) ?? undefined}
 							options={roleOptions}
-							{editable}
+							editable={editable && !self}
 							emptyLabel={$_('role.custom')}
 							onchange={(value) => changeRole(subject.guid, value)}
 						/>
 					</td>
 					{#each columnGroups as group (group.target)}
 						{#each group.kinds as kind (kind)}
-							<td class="col-grant" class:locked={!editable}>
+							<td class="col-grant" class:locked>
 								<PermissionCheckbox
 									ariaLabel={`${$_(`permission.${kind}`)} (${$_(`permission_matrix.${group.label}`)})`}
 									checked={set[group.target].includes(kind)}
-									state={editable ? 'editable' : 'readonly'}
+									state={editable && !self ? 'editable' : 'readonly'}
+									tooltip={editable && self ? $_('permission_matrix.tooltip_own_row') : undefined}
 									onchange={(value) => toggleKind(subject.guid, group.target, kind, value)}
 								/>
 							</td>
 						{/each}
 					{/each}
-					<td class="col-actions" class:locked={!editable}>
-						{#if editable}
+					<td class="col-actions" class:locked>
+						{#if editable && !self}
 							<button
 								aria-label={$_('user.remove')}
 								class="action-button"
 								type="button"
-								onclick={() => removeSubject(subject.guid)}
+								onclick={() => removeSubject(subject)}
 							>
 								<TrashBinIcon />
 							</button>
 						{/if}
 					</td>
+				</tr>
+			{:else}
+				<tr class="empty-row">
+					<td colspan={10}>{$_('permission_matrix.no_entries')}</td>
 				</tr>
 			{/each}
 			{#if editable}
@@ -349,6 +387,12 @@
 </div>
 
 <style>
+	/* the surrounding page scrolls, so the head sticks to it; a wrapper that
+	   scrolls itself would trap the sticky head (it never scrolls vertically) */
+	.table-wrapper {
+		overflow: visible;
+	}
+
 	table {
 		border-collapse: separate;
 		border-spacing: 0;
@@ -472,5 +516,13 @@
 		height: 3rem;
 		padding-bottom: 0;
 		padding-top: 0;
+	}
+
+	/* the hint of an empty matrix, in the muted text of the design */
+	.empty-row td {
+		border: none;
+		color: var(--color-text-subtle);
+		font-weight: 400;
+		height: 3rem;
 	}
 </style>

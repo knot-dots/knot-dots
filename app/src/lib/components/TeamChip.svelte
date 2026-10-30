@@ -55,7 +55,7 @@
 			use:popover.button
 			onclick={loadMembers}
 		>
-			<span class="team-name">{name}</span>
+			<span class="team-name">{members ? `${name} · ${members.length}` : name}</span>
 		</button>
 	{/snippet}
 

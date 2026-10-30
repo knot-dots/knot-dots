@@ -775,7 +775,7 @@ export type UserGrants = z.infer<typeof userGrants>;
 // inherits.
 export type InheritedMatrixSection = {
 	active: boolean;
-	scope: { guid: string; title: string };
+	scope: { guid: string; title: string; type: PayloadType };
 	grants: Grant[];
 	teams: TeamWithMembers[];
 	users: User[];
@@ -795,7 +795,8 @@ export function matrixSectionScope(container: Container<AnyPayload>) {
 				? container.payload.name
 				: 'title' in container.payload
 					? container.payload.title
-					: ''
+					: '',
+		type: container.payload.type
 	};
 }
 
