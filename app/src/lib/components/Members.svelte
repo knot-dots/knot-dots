@@ -135,117 +135,138 @@
 	}
 </script>
 
-{#if showViewSwitch}
-	<nav class="segmented-button view-switch">
-		<label class="button">
-			<input class="is-visually-hidden" type="radio" bind:group={view} value="list" />
-			{$_('members_view.list')}
-		</label>
-		<label class="button">
-			<input class="is-visually-hidden" type="radio" bind:group={view} value="matrix" />
-			{$_('members_view.matrix')}
-		</label>
-	</nav>
-{/if}
-
-{#if view === 'matrix'}
-	{#if inheritedSections && admins}
-		<ObjectPermissionMatrix
-			{admins}
-			{adminTeams}
-			{container}
-			editable={mayManageMembers}
-			{grants}
-			{inheritedSections}
-			{mayManageOrganizationUsers}
-			oninvite={mayManageMembers ? () => dialog.showModal() : undefined}
-			{teams}
-			{users}
-		/>
-	{:else}
-		<UserPermissionMatrix
-			{container}
-			editable={mayManageMembers}
-			{grants}
-			oninvite={mayManageMembers ? () => dialog.showModal() : undefined}
-			{teams}
-			{users}
-		/>
+<div class="members">
+	{#if showViewSwitch}
+		<nav class="segmented-button view-switch">
+			<label class="button">
+				<input class="is-visually-hidden" type="radio" bind:group={view} value="list" />
+				{$_('members_view.list')}
+			</label>
+			<label class="button">
+				<input class="is-visually-hidden" type="radio" bind:group={view} value="matrix" />
+				{$_('members_view.matrix')}
+			</label>
+		</nav>
 	{/if}
-{:else}
-	<table>
-		<thead>
-			<tr>
-				<th scope="col">{$_('user.email')}</th>
-				<th scope="col">{$_('user.role')}</th>
-				<th></th>
-			</tr>
-		</thead>
-		<tbody>
-			{#each users as u (u.guid)}
+
+	{#if view === 'matrix'}
+		{#if inheritedSections && admins}
+			<ObjectPermissionMatrix
+				{admins}
+				{adminTeams}
+				{container}
+				editable={mayManageMembers}
+				{grants}
+				{inheritedSections}
+				{mayManageOrganizationUsers}
+				oninvite={mayManageMembers ? () => dialog.showModal() : undefined}
+				{teams}
+				{users}
+			/>
+		{:else}
+			<UserPermissionMatrix
+				{container}
+				editable={mayManageMembers}
+				{grants}
+				oninvite={mayManageMembers ? () => dialog.showModal() : undefined}
+				{teams}
+				{users}
+			/>
+		{/if}
+	{:else}
+		<table>
+			<thead>
 				<tr>
-					<td>{displayName(u)}</td>
-					<td>
-						{#if !mayManageMembers}
-							{$_(
-								isAdminOf(u, container)
-									? 'role.administrator'
-									: isHeadOf(u, container)
-										? 'role.head'
-										: isCollaboratorOf(u, container)
-											? 'role.collaborator'
-											: 'role.observer'
-							)}
-						{:else}
-							{#key container.user}
-								<select name="role" onchange={handleChangeRole(u, container)}>
-									<option value="role.observer" selected={isObserverOf(u, container)}>
-										{$_('role.observer')}
-									</option>
-									<option value="role.collaborator" selected={isCollaboratorOf(u, container)}>
-										{$_('role.collaborator')}
-									</option>
-									<option value="role.head" selected={isHeadOf(u, container)}>
-										{$_('role.head')}
-									</option>
-									{#if isOrganizationContainer(container) || isOrganizationalUnitContainer(container) || showViewSwitch}
-										<option value="role.administrator" selected={isAdminOf(u, container)}>
-											{$_('role.administrator')}
-										</option>
-									{/if}
-								</select>
-							{/key}
-						{/if}
-					</td>
-					<td>
-						{#if mayManageMembers}
-							<button
-								class="action-button"
-								type="button"
-								{@attach tooltip($_('user.remove_relations'))}
-								onclick={() => handleRemoveRelations(u, container)}
-							>
-								<TrashBin />
-							</button>
-						{/if}
-					</td>
+					<th scope="col">{$_('user.email')}</th>
+					<th scope="col">{$_('user.role')}</th>
+					<th></th>
 				</tr>
-			{/each}
-		</tbody>
-	</table>
-{/if}
-{#if view === 'list' && mayManageMembers}
-	<div class="content-actions">
-		<button class="button-primary system-primary" type="button" onclick={() => dialog.showModal()}>
-			<UserAdd />
-		</button>
-	</div>
-{/if}
+			</thead>
+			<tbody>
+				{#each users as u (u.guid)}
+					<tr>
+						<td>{displayName(u)}</td>
+						<td>
+							{#if !mayManageMembers}
+								{$_(
+									isAdminOf(u, container)
+										? 'role.administrator'
+										: isHeadOf(u, container)
+											? 'role.head'
+											: isCollaboratorOf(u, container)
+												? 'role.collaborator'
+												: 'role.observer'
+								)}
+							{:else}
+								{#key container.user}
+									<select name="role" onchange={handleChangeRole(u, container)}>
+										<option value="role.observer" selected={isObserverOf(u, container)}>
+											{$_('role.observer')}
+										</option>
+										<option value="role.collaborator" selected={isCollaboratorOf(u, container)}>
+											{$_('role.collaborator')}
+										</option>
+										<option value="role.head" selected={isHeadOf(u, container)}>
+											{$_('role.head')}
+										</option>
+										{#if isOrganizationContainer(container) || isOrganizationalUnitContainer(container) || showViewSwitch}
+											<option value="role.administrator" selected={isAdminOf(u, container)}>
+												{$_('role.administrator')}
+											</option>
+										{/if}
+									</select>
+								{/key}
+							{/if}
+						</td>
+						<td>
+							{#if mayManageMembers}
+								<button
+									class="action-button"
+									type="button"
+									{@attach tooltip($_('user.remove_relations'))}
+									onclick={() => handleRemoveRelations(u, container)}
+								>
+									<TrashBin />
+								</button>
+							{/if}
+						</td>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	{/if}
+	{#if view === 'list' && mayManageMembers}
+		<div class="content-actions">
+			<button
+				class="button-primary system-primary"
+				type="button"
+				onclick={() => dialog.showModal()}
+			>
+				<UserAdd />
+			</button>
+		</div>
+	{/if}
+</div>
 
 <InviteUserDialog {container} bind:dialog />
 
 <style>
+	/* the matrix scrolls within the remaining height, so its head stays put
+	   while the title above keeps its place */
+	.members {
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+	}
+
+	.members > :global(.table-wrapper) {
+		flex: 0 1 auto;
+		margin-bottom: 0;
+		min-height: 0;
+	}
+
 	.view-switch {
+		flex-shrink: 0;
 		margin-bottom: 1rem;
 		width: fit-content;
 	}
