@@ -2,10 +2,12 @@ import type { DatabaseConnection } from 'slonik';
 import {
 	type AnyPayload,
 	type Container,
+	findAncestors,
 	type Grant,
 	grantSetForRole,
 	grantSetForSubjectOn,
 	type InheritedMatrixSection,
+	isOrganizationalUnitContainer,
 	matrixSectionScope,
 	memberRoles,
 	predicates,
@@ -16,6 +18,7 @@ import {
 	getAllGrantsByContainers,
 	getAllRelatedUsersByContainers,
 	getContainerByGuid,
+	getManyOrganizationalUnitContainers,
 	getManyTeamContainers,
 	getTeamMembersByTeams
 } from '$lib/server/db';
@@ -43,6 +46,27 @@ export async function loadTeams(
 	}));
 }
 
+// The organizational units above a container, nearest first: the unit it
+// belongs to (or the unit itself) and the units that one is part of.
+async function unitChainOf(
+	connection: DatabaseConnection,
+	container: Container<AnyPayload>
+): Promise<string[]> {
+	const start = isOrganizationalUnitContainer(container)
+		? container.guid
+		: container.organizational_unit;
+	if (!start) {
+		return [];
+	}
+	const units = await getManyOrganizationalUnitContainers({
+		include: { organization: [container.organization] }
+	})(connection);
+	const unit = units.find(({ guid }) => guid === start);
+	return unit
+		? [unit, ...findAncestors(unit, units, [predicates.enum['is-part-of']])].map(({ guid }) => guid)
+		: [start];
+}
+
 /**
  * Loads what a permission matrix shows besides the container's own rows: the
  * administrators of the surrounding areas, who keep every kind regardless of
@@ -66,11 +90,11 @@ export async function loadMatrixSections(
 	const sourceGuids = (
 		container.user_grant?.sources ?? [container.organizational_unit ?? container.organization]
 	).filter((guid) => guid !== container.guid);
+	// the organization scopes: the organization and the chain of units above
+	// the container (its own unit and every unit that unit is part of) — the
+	// same areas whose administrators computeUserGrants lets through
 	const scopeGuids = [
-		...new Set([
-			container.organization,
-			...(container.organizational_unit ? [container.organizational_unit] : [])
-		])
+		...new Set([container.organization, ...(await unitChainOf(connection, container))])
 	].filter((guid) => guid !== container.guid);
 
 	const dormantGuids = container.user_grant?.dormant ? [container.user_grant.dormant] : [];

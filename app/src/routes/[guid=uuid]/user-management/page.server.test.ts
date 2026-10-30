@@ -5,6 +5,7 @@ const getMembers = vi.hoisted(() => vi.fn());
 const getAllGrantsByContainers = vi.hoisted(() => vi.fn());
 const getAllRelatedUsersByContainers = vi.hoisted(() => vi.fn());
 const getContainerByGuid = vi.hoisted(() => vi.fn());
+const getManyOrganizationalUnitContainers = vi.hoisted(() => vi.fn());
 const getManyTeamContainers = vi.hoisted(() => vi.fn());
 const getTeamMembersByTeams = vi.hoisted(() => vi.fn());
 
@@ -16,6 +17,7 @@ vi.mock('$lib/server/db', () => ({
 	getAllGrantsByContainers,
 	getAllRelatedUsersByContainers,
 	getContainerByGuid,
+	getManyOrganizationalUnitContainers,
 	getManyTeamContainers,
 	getTeamMembersByTeams
 }));
@@ -117,6 +119,7 @@ beforeEach(() => {
 	getAllRelatedUsersByContainers.mockReset().mockReturnValue(async () => []);
 	// the inherited sections name their source containers
 	getContainerByGuid.mockReset().mockReturnValue(async () => currentOrganization);
+	getManyOrganizationalUnitContainers.mockReset().mockReturnValue(async () => []);
 	getManyTeamContainers.mockReset().mockReturnValue(async () => []);
 	getTeamMembersByTeams.mockReset().mockReturnValue(async () => new Map());
 });
