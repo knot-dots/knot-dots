@@ -34,12 +34,14 @@
 		/>
 	</span>
 {:else if state === 'readonly'}
+	<!-- a cell with a tooltip takes focus so the keyboard reaches the hint -->
 	<span
 		aria-label={ariaLabel}
 		class="permission-checkbox"
 		class:permission-checkbox--granted={checked}
 		class:permission-checkbox--not-granted={!checked}
 		role="img"
+		tabindex={tooltipText ? 0 : undefined}
 		{@attach tooltipText ? tooltip(tooltipText, { describe: true }) : undefined}
 	>
 		{#if checked}<CheckIcon />{:else}<MinusIcon />{/if}
@@ -50,6 +52,7 @@
 		aria-label={ariaLabel}
 		class="permission-checkbox permission-checkbox--dormant"
 		role="img"
+		tabindex={tooltipText ? 0 : undefined}
 		{@attach tooltipText ? tooltip(tooltipText, { describe: true }) : undefined}
 	>
 		<CheckIcon />
@@ -74,7 +77,8 @@
 		border-color: var(--color-border-accent-strong);
 	}
 
-	.permission-checkbox--editable:has(input:focus-visible) {
+	.permission-checkbox--editable:has(input:focus-visible),
+	.permission-checkbox:focus-visible {
 		outline: 2px solid var(--color-border-focus);
 		outline-offset: -2px;
 	}
