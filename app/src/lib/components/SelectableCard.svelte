@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resource } from 'runed';
+	import type { Snippet } from 'svelte';
 	import { _, date } from 'svelte-i18n';
 	import Lightbulb from '~icons/flowbite/lightbulb-solid';
 	import { page } from '$app/state';
@@ -36,6 +37,7 @@
 	interface Props {
 		checked?: boolean;
 		container: Container<AnyPayload>;
+		footer?: Snippet;
 		inputType?: 'checkbox' | 'radio';
 		name?: string;
 		onchange: (event: Event & { currentTarget: HTMLInputElement }) => void;
@@ -45,6 +47,7 @@
 	let {
 		checked = false,
 		container,
+		footer,
 		inputType = 'checkbox',
 		name = 'item',
 		onchange,
@@ -223,7 +226,9 @@
 	</div>
 
 	<footer>
-		{#if computedProgressSegments}
+		{#if footer}
+			{@render footer()}
+		{:else if computedProgressSegments}
 			<StackedProgress segments={computedProgressSegments} />
 		{:else if isContainerWithProgress(container) && container.payload.progress != null && !isSimpleMeasureContainer(container)}
 			<Progress value={container.payload.progress} />

@@ -1,4 +1,10 @@
-import { NotFoundError, type DatabaseConnection } from 'slonik';
+import { error } from '@sveltejs/kit';
+import {
+	NotFoundError,
+	type DatabaseConnection,
+	UniqueIntegrityConstraintViolationError
+} from 'slonik';
+import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import defineAbilityFor from '$lib/authorization';
 import { isServerOwnedCopyRelationPredicate } from '$lib/containerCopy';
@@ -7,6 +13,7 @@ import {
 	grantForNewContainer,
 	isStructuralCopyPredicate,
 	mayHaveStructuralParent,
+	type NewContainer,
 	newContainer,
 	predicates,
 	type Container,
@@ -29,15 +36,46 @@ export class ContainerCreationError extends Error {
 	}
 }
 
-export function createAuthorizedContainer({
-	afterCreate,
+// Answers a failed creation with the matching HTTP error, or throws again
+// what is not a creation error.
+export function containerCreationHttpError(caught: unknown): never {
+	if (caught instanceof ContainerCreationError) {
+		if (caught.kind === 'invalid_container') error(422, caught.validationError!);
+		if (caught.kind === 'copy_invalid') {
+			error(422, { message: unwrapFunctionStore(_)('error.copy_invalid') });
+		}
+		if (caught.kind === 'scoped_template_required') {
+			error(422, { message: unwrapFunctionStore(_)('error.scoped_template_required') });
+		}
+		if (caught.kind === 'forbidden') {
+			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
+		}
+		error(422, { message: unwrapFunctionStore(_)('error.bad_request') });
+	}
+	if (
+		caught instanceof UniqueIntegrityConstraintViolationError &&
+		(caught.constraint === 'container_payload_organization_slug_key' ||
+			caught.constraint === 'container_payload_organizational_unit_slug_key')
+	) {
+		error(409, { message: unwrapFunctionStore(_)('error.slug_not_available') });
+	}
+	throw caught;
+}
+
+// Validates a new container and checks that the user may create it. The
+// returned container carries its creator and is ready to be persisted, either
+// alone by createAuthorizedContainer or with others by createManyContainers.
+export function authorizeNewContainer({
 	data,
 	features,
+	pending = new Set(),
 	user
 }: {
-	afterCreate?: AfterContainerCreated;
 	data: unknown;
 	features: string[];
+	// Guids of containers created along with this one; relations may point to
+	// them although they don't exist yet.
+	pending?: ReadonlySet<string>;
 	user: User;
 }) {
 	const parseResult = newContainer.safeParse(data);
@@ -84,7 +122,7 @@ export function createAuthorizedContainer({
 		}
 	}
 
-	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>> => {
+	return async (connection: DatabaseConnection): Promise<NewContainer> => {
 		if (availabilityGuid !== undefined) {
 			let scope: Container<AnyPayload>;
 			try {
@@ -119,6 +157,10 @@ export function createAuthorizedContainer({
 			)?.object ??
 			parseResult.data.organizational_unit ??
 			parseResult.data.organization;
+		// Grants derive from a parent that exists already.
+		if (pending.has(parentGuid)) {
+			throw new ContainerCreationError('bad_request');
+		}
 		let parent: Container<AnyPayload> | undefined;
 		try {
 			parent = await getContainerByGuid(parentGuid)(connection);
@@ -141,17 +183,54 @@ export function createAuthorizedContainer({
 			throw new ContainerCreationError('forbidden');
 		}
 
-		return createContainer(
-			{
-				...parseResult.data,
-				user: [
-					{
-						predicate: predicates.enum['is-creator-of'],
-						subject: user.guid
-					}
-				]
-			},
-			{ afterCreate }
-		)(connection);
+		// A relation must not reveal or link a container the user may not read,
+		// which is therefore refused like one that does not exist.
+		const ends = new Set(
+			parseResult.data.relation.flatMap(({ object, subject }) => [object, subject])
+		);
+		for (const guid of ends) {
+			if (guid === undefined || pending.has(guid)) {
+				continue;
+			}
+			let container: Container<AnyPayload>;
+			try {
+				container = guid === parent?.guid ? parent : await getContainerByGuid(guid)(connection);
+			} catch (error) {
+				if (error instanceof NotFoundError) {
+					throw new ContainerCreationError('bad_request');
+				}
+				throw error;
+			}
+			if (ability.cannot('read', container)) {
+				throw new ContainerCreationError('bad_request');
+			}
+		}
+
+		return {
+			...parseResult.data,
+			user: [
+				{
+					predicate: predicates.enum['is-creator-of'],
+					subject: user.guid
+				}
+			]
+		};
 	};
+}
+
+export function createAuthorizedContainer({
+	afterCreate,
+	data,
+	features,
+	user
+}: {
+	afterCreate?: AfterContainerCreated;
+	data: unknown;
+	features: string[];
+	user: User;
+}) {
+	const authorize = authorizeNewContainer({ data, features, user });
+
+	return async (connection: DatabaseConnection) =>
+		createContainer(await authorize(connection), { afterCreate })(connection);
 }

@@ -1,6 +1,33 @@
 import { z } from 'zod';
 import { page } from '$app/state';
-import { container } from '$lib/models';
+import { binaryIndicatorPayload, createContainerSchema, indicatorPayload } from '$lib/models';
+
+const responseSchema = z.object({
+	facets: z
+		.record(z.string(), z.record(z.string(), z.number()))
+		.transform(
+			(record) =>
+				new Map(
+					Object.entries(record).map(([key, values]) => [key, new Map(Object.entries(values))])
+				)
+		),
+	page: z.object({
+		hasMore: z.boolean(),
+		limit: z.number(),
+		nextOffset: z.number().nullable(),
+		offset: z.number(),
+		total: z.number()
+	}),
+	suggestions: z.array(
+		z.object({
+			indicator: z.union([
+				createContainerSchema(indicatorPayload),
+				createContainerSchema(binaryIndicatorPayload)
+			]),
+			relevance: z.number()
+		})
+	)
+});
 
 export default async function fetchSuggestedContainers(
 	guid: string,
@@ -12,6 +39,7 @@ export default async function fetchSuggestedContainers(
 		organizationalUnit?: string[];
 		terms?: string;
 	},
+	{ limit, offset }: { limit: number; offset: number },
 	init?: RequestInit
 ) {
 	const params = new URLSearchParams();
@@ -35,7 +63,11 @@ export default async function fetchSuggestedContainers(
 	if (filters.terms) {
 		params.append('terms', filters.terms);
 	}
+	params.set('limit', String(limit));
+	params.set('offset', String(offset));
 	const response = await fetch(`/container/${guid}/suggestion?${params}`, init);
-	const data = await response.json();
-	return z.array(container).parse(data);
+	if (!response.ok) {
+		throw new Error(`Failed to fetch suggestions: ${response.status} ${await response.text()}`);
+	}
+	return responseSchema.parse(await response.json());
 }
