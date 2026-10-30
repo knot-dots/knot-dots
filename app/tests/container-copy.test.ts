@@ -293,15 +293,15 @@ test('falls back to an administered location when the current context is denied'
 	await dotsBoard.overlay.editModeToggle.check();
 	await dotsBoard.overlay.locator.getByRole('button', { name: 'Copy', exact: true }).click();
 
-	const copyResponsePromise = dotsBoard.page.waitForResponse(
-		(response) =>
-			response.url().endsWith('/container/copy') && response.request().method() === 'POST'
+	// Only the request is checked: the fallback is the first organization the user
+	// administers, which can belong to a test running in parallel and be deleted
+	// before the copy is saved.
+	const copyRequestPromise = dotsBoard.page.waitForRequest(
+		(request) => request.url().endsWith('/container/copy') && request.method() === 'POST'
 	);
 	await dotsBoard.page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
-	const copyResponse = await copyResponsePromise;
 
-	expect(copyResponse.status()).toBe(201);
-	const request = copyResponse.request().postDataJSON();
+	const request = (await copyRequestPromise).postDataJSON();
 	expect(request).toMatchObject({
 		operation: 'copy',
 		sourceGuid: testPublicProgram.guid
