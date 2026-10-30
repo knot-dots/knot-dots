@@ -54,3 +54,18 @@
 
 	<ContextTabs slug="members" />
 </div>
+
+<style>
+	/* the matrix scrolls on its own, so its head stays put (see Members) */
+	.details {
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+
+	.details-section {
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+	}
+</style>

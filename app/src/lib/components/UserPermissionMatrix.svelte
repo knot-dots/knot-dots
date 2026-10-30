@@ -387,12 +387,6 @@
 </div>
 
 <style>
-	/* the surrounding page scrolls, so the head sticks to it; a wrapper that
-	   scrolls itself would trap the sticky head (it never scrolls vertically) */
-	.table-wrapper {
-		overflow: visible;
-	}
-
 	table {
 		border-collapse: separate;
 		border-spacing: 0;
