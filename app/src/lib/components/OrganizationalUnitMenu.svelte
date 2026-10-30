@@ -142,14 +142,12 @@
 		}, []);
 	}
 
-	const treeItems = $derived(
-		searchQuery
-			? filterTree(buildTree(organizationalUnits), searchQuery)
-			: buildTree(organizationalUnits)
-	);
+	const treeItems = $derived(buildTree(organizationalUnits));
+
+	const filteredTreeItems = $derived(searchQuery ? filterTree(treeItems, searchQuery) : treeItems);
 
 	const tree = new Tree<OrgUnitTreeItem>({
-		items: () => treeItems,
+		items: () => filteredTreeItems,
 		selected: () => currentOrganizationalUnit?.guid,
 		expandOnClick: false,
 		onSelectedChange: (value: string | undefined) => {
