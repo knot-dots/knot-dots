@@ -6,12 +6,21 @@
 	interface Props {
 		ariaLabel: string;
 		checked: boolean;
+		// an editable box that cannot be toggled yet, e.g. in a row being added
+		disabled?: boolean;
 		onchange?: (checked: boolean) => void;
 		state: 'editable' | 'readonly' | 'inactive';
 		tooltip?: string;
 	}
 
-	let { ariaLabel, checked, onchange, state, tooltip: tooltipText }: Props = $props();
+	let {
+		ariaLabel,
+		checked,
+		disabled = false,
+		onchange,
+		state,
+		tooltip: tooltipText
+	}: Props = $props();
 </script>
 
 {#if state === 'editable'}
@@ -19,6 +28,7 @@
 		<input
 			aria-label={ariaLabel}
 			{checked}
+			{disabled}
 			type="checkbox"
 			onchange={(event) => onchange?.(event.currentTarget.checked)}
 		/>

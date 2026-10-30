@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import ChevronDownIcon from '~icons/flowbite/chevron-down-outline';
 	import Dropdown from '$lib/components/Dropdown.svelte';
 
 	export type BadgeDropdownValue = string | number | null | undefined;
@@ -63,8 +62,7 @@
 				type="button"
 				use:popover.button
 			>
-				<span class="truncated">{selectedLabel}</span>
-				<ChevronDownIcon />
+				{selectedLabel}
 			</button>
 		{/snippet}
 
@@ -95,18 +93,14 @@
 
 <style>
 	.dropdown-button {
+		/* the small chevron of the design */
+		--dropdown-button-chevron-icon-size: 0.75rem;
+
 		border-radius: 6px;
 		font-size: 0.875rem;
 		gap: 0.25rem;
 		padding: 0.25rem 0.75rem;
 		width: fit-content;
-	}
-
-	/* the chevron of the design marks the editable cells */
-	.dropdown-button > :global(svg) {
-		flex-shrink: 0;
-		height: 0.75rem;
-		width: 0.75rem;
 	}
 
 	.dropdown-button.dropdown-button--empty {

@@ -29,6 +29,7 @@ import {
 	type TaskPayload,
 	trendDirection,
 	units,
+	type UserGrants,
 	userRelationsForMemberRole
 } from '$lib/models';
 import { addRelation } from '$lib/relations';
@@ -706,7 +707,7 @@ test.each([
 test('isMemberOrTeamMemberOf accepts a row of the user or of one of their teams', () => {
 	const member = '7db24631-935d-4e35-a6d5-5db07f0f4d75';
 	const teamMember = '0a4b09c1-92a9-4fa3-8912-1e37c8f38fd5';
-	const grants = {
+	const grants: Omit<UserGrants, 'own'> = {
 		admin: false,
 		scope_sourced: false,
 		member: true,

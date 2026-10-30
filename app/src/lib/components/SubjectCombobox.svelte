@@ -18,36 +18,37 @@
 	interface Props {
 		excluded: ReadonlyArray<string>;
 		onselect: (suggestion: SubjectSuggestion) => Promise<void> | void;
+		// whether the search is open; bound so the matrix can lay out the row
+		open?: boolean;
 		organization: string;
 		teams: ReadonlyArray<TeamWithMembers>;
 	}
 
-	let { excluded, onselect, organization, teams }: Props = $props();
+	let { excluded, onselect, open = $bindable(false), organization, teams }: Props = $props();
 
-	let open = $state(false);
 	let input: HTMLInputElement | undefined = $state();
 	let panel: HTMLDivElement | undefined = $state();
+	let anchor: HTMLDivElement | undefined = $state();
 	let registeredUsers: KeycloakUser[] = $state([]);
 	let registeredUsersLoaded = false;
 
 	const combobox = createCombobox({ label: $_('permission_matrix.add_subject') });
 
 	// fixed keeps the panel out of the scrolling table wrapper; the offset
-	// pulls it up and left over the add row (undoing the cell padding of
-	// 0.5rem/0.625rem), where the design places it
+	// moves it onto the top left corner of the surrounding cell, where the
+	// design places it over the row being added
+	function cellOffset() {
+		const own = anchor?.getBoundingClientRect();
+		const cell = anchor?.closest('td')?.getBoundingClientRect();
+		return own && cell ? [cell.left - own.left, cell.top - own.bottom] : [0, 0];
+	}
+
 	const [popperRef, popperContent] = createPopperActions({
 		placement: 'bottom-start',
 		strategy: 'fixed',
 		modifiers: [
-			{
-				name: 'offset',
-				options: {
-					offset: ({ reference }: { reference: { height: number } }) => [
-						-8,
-						-(reference.height + 10)
-					]
-				}
-			}
+			{ name: 'flip', enabled: false },
+			{ name: 'offset', options: { offset: cellOffset } }
 		]
 	});
 
@@ -71,7 +72,6 @@
 
 	function start() {
 		open = true;
-		loadRegisteredUsers();
 	}
 
 	function cancel() {
@@ -90,8 +90,10 @@
 		}
 	}
 
+	// the search may also open through the binding, so loading starts here
 	$effect(() => {
 		if (open && input) {
+			loadRegisteredUsers();
 			input.focus();
 			combobox.open();
 		}
@@ -152,7 +154,7 @@
 	});
 </script>
 
-<div class="subject-combobox" use:popperRef>
+<div bind:this={anchor} class="subject-combobox" use:popperRef>
 	{#if open}
 		<div bind:this={panel} class="dropdown-panel" use:popperContent>
 			<div class="combobox-input">
