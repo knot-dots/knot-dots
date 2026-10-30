@@ -47,6 +47,7 @@
 			<EditableAssignee
 				{editable}
 				candidatesPromise={assigneeCandidatesPromise}
+				organization={container.organization}
 				bind:value={container.payload.assignee}
 			/>
 		{/if}
@@ -73,6 +74,7 @@
 			<EditableAssignee
 				{editable}
 				candidatesPromise={assigneeCandidatesPromise}
+				organization={container.organization}
 				bind:value={container.payload.assignee}
 			/>
 		{/if}
