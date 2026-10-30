@@ -208,7 +208,7 @@
 									<option value="role.head" selected={isHeadOf(u, container)}>
 										{$_('role.head')}
 									</option>
-									{#if isOrganizationContainer(container) || isOrganizationalUnitContainer(container)}
+									{#if isOrganizationContainer(container) || isOrganizationalUnitContainer(container) || showViewSwitch}
 										<option value="role.administrator" selected={isAdminOf(u, container)}>
 											{$_('role.administrator')}
 										</option>

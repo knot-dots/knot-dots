@@ -2,6 +2,7 @@ import { error, json } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
 import defineAbilityFor from '$lib/authorization';
+import { createFeatureDecisions } from '$lib/features';
 import type { Predicate, User } from '$lib/models';
 import {
 	memberRolePredicates,
@@ -57,10 +58,12 @@ export const POST = (async ({ locals, request }) => {
 
 	const role = parseResult.data.role ?? memberRoles.enum.observer;
 
+	// with the permission matrix, objects have administrators of their own
 	if (
 		role === memberRoles.enum.administrator &&
 		container.payload.type !== payloadTypes.enum.organization &&
-		container.payload.type !== payloadTypes.enum.organizational_unit
+		container.payload.type !== payloadTypes.enum.organizational_unit &&
+		!createFeatureDecisions(locals.features).usePermissionMatrix()
 	) {
 		error(422, { message: unwrapFunctionStore(_)('error.unprocessable_entity') });
 	}
