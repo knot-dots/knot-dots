@@ -311,8 +311,9 @@
 	}
 
 	// whether the current user would lose access once the container inherits:
-	// no administrator of an area, and no row with read on any governing
-	// matrix (the dormant area applies again) for them or one of their teams
+	// their access rests on an own row (directly or through a team), they
+	// administer no area, and no governing matrix (the dormant area applies
+	// again) grants them read
 	const subjectsOfSelf = $derived([
 		$user.guid,
 		...teams
@@ -320,7 +321,8 @@
 			.map(({ container }) => container.guid)
 	]);
 	const wouldLockOut = $derived(
-		!admins.some(({ guid }) => guid === $user.guid) &&
+		ownRows.some(({ guid }) => subjectsOfSelf.includes(guid)) &&
+			!admins.some(({ guid }) => guid === $user.guid) &&
 			!adminTeams.some(({ container }) => subjectsOfSelf.includes(container.guid)) &&
 			!inheritedSections.some((section) =>
 				subjectsOfSelf.some((subject) =>
