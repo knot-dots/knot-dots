@@ -207,7 +207,11 @@
 			</ul>
 		</div>
 	{:else}
-		<button class="button-alternate button-xs system-primary" type="button" onclick={start}>
+		<button
+			class="button-alternate button-xs system-primary add-button"
+			type="button"
+			onclick={start}
+		>
 			<PlusIcon />
 			<span>{$_('add_item')}</span>
 		</button>
@@ -215,6 +219,13 @@
 </div>
 
 <style>
+	/* the design sets the button in the body size, not the small button size */
+	.add-button {
+		font-size: 0.875rem;
+		gap: 0.25rem;
+		min-height: 1.75rem;
+	}
+
 	/* the panel of the design: a raised container the width of the name
 	   column, holding the field and the grouped suggestions */
 	.dropdown-panel {
