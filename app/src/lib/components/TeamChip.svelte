@@ -10,18 +10,35 @@
 
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import fetchMembers from '$lib/client/fetchMembers';
 	import Dropdown from '$lib/components/Dropdown.svelte';
 	import { displayName, type TeamWithMembers, type User } from '$lib/models';
 
 	interface Props {
 		manageHref?: string;
-		team: TeamWithMembers;
+		// without members the roster is fetched once the popover opens
+		team: Omit<TeamWithMembers, 'members'> & Partial<Pick<TeamWithMembers, 'members'>>;
 	}
 
 	let { manageHref, team }: Props = $props();
 
 	const color = $derived(teamColor(team.container.guid));
 	const name = $derived(team.container.payload.name);
+
+	let fetchedMembers: User[] | undefined = $state();
+	const members = $derived(team.members ?? fetchedMembers);
+
+	async function loadMembers() {
+		if (team.members || fetchedMembers) {
+			return;
+		}
+		try {
+			fetchedMembers = await fetchMembers(team.container.guid);
+		} catch (error) {
+			console.log(error);
+			fetchedMembers = [];
+		}
+	}
 
 	// members who have not signed up yet carry no name
 	function memberName(member: User) {
@@ -36,6 +53,7 @@
 			class="badge badge--large badge--team badge--{color} team-chip"
 			type="button"
 			use:popover.button
+			onclick={loadMembers}
 		>
 			<span class="team-name">{name}</span>
 		</button>
@@ -44,9 +62,11 @@
 	{#snippet panel()}
 		<div class="team-members">
 			<strong>{$_('teams.members')}</strong>
-			{#if team.members.length > 0}
+			{#if members === undefined}
+				<p>{$_('loading')}</p>
+			{:else if members.length > 0}
 				<ul>
-					{#each team.members as member (member.guid)}
+					{#each members as member (member.guid)}
 						<li>{memberName(member)}</li>
 					{/each}
 				</ul>
