@@ -11,6 +11,7 @@
 		isAssignedTo,
 		isContainerWithEffect,
 		isMemberOf,
+		isMemberOrTeamMemberOf,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		isProgramContainer,
@@ -28,9 +29,11 @@
 
 	interface Props {
 		containers: Container<AnyPayload>[];
+		// the teams the user is a member of, whose tasks and rows count as theirs
+		teams?: ReadonlyArray<string>;
 	}
 
-	let { containers }: Props = $props();
+	let { containers, teams = [] }: Props = $props();
 
 	let taskStatusFilter: TaskStatus[] = $state([
 		status.enum['status.in_planning'],
@@ -95,7 +98,7 @@
 		<ul class="carousel">
 			{#each containers
 				.filter(isTaskContainer)
-				.filter(isAssignedTo($user))
+				.filter(isAssignedTo($user, teams))
 				.filter(byTaskStatus(taskStatusFilter))
 				.toSorted(bySortOption(sort)) as task (task.guid)}
 				<li>
@@ -110,7 +113,7 @@
 		<ul class="carousel">
 			{#each containers
 				.filter(isContainerWithEffect)
-				.filter( (c: Container<MeasurePayload | SimpleMeasurePayload>) => isMemberOf($user, c) ) as measure (measure.guid)}
+				.filter( (c: Container<MeasurePayload | SimpleMeasurePayload>) => isMemberOrTeamMemberOf($user, c) ) as measure (measure.guid)}
 				<li>
 					<Card container={measure} />
 				</li>
@@ -136,7 +139,7 @@
 		<ul class="carousel">
 			{#each containers
 				.filter(isProgramContainer)
-				.filter((c: Container<ProgramPayload>) => isMemberOf($user, c)) as program (program.guid)}
+				.filter( (c: Container<ProgramPayload>) => isMemberOrTeamMemberOf($user, c) ) as program (program.guid)}
 				<li>
 					<Card container={program} />
 				</li>

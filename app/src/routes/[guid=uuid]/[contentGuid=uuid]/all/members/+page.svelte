@@ -49,8 +49,21 @@
 </PageLayout>
 
 <style>
+	/* the matrix below the title scrolls on its own, so the page does not */
 	.details {
+		display: flex;
+		flex-direction: column;
 		height: 100%;
-		overflow-y: auto;
+		overflow: hidden;
+	}
+
+	.details-title {
+		flex-shrink: 0;
+	}
+
+	.details-section {
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
 	}
 </style>

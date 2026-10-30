@@ -775,7 +775,7 @@ export type UserGrants = z.infer<typeof userGrants>;
 // inherits.
 export type InheritedMatrixSection = {
 	active: boolean;
-	scope: { guid: string; title: string };
+	scope: { guid: string; title: string; type: PayloadType };
 	grants: Grant[];
 	teams: TeamWithMembers[];
 	users: User[];
@@ -795,7 +795,8 @@ export function matrixSectionScope(container: Container<AnyPayload>) {
 				? container.payload.name
 				: 'title' in container.payload
 					? container.payload.title
-					: ''
+					: '',
+		type: container.payload.type
 	};
 }
 
@@ -3634,8 +3635,18 @@ export function memberRoleOf(
 	return null;
 }
 
-export function isAssignedTo(user: { guid: string }) {
-	return (container: Container<TaskPayload>) => container.payload.assignee.includes(user.guid);
+// Whether the user holds a row on the container: a member role of their own,
+// or a row of one of their teams on the container's own matrix (user_grant.own
+// is computed for the request user with the teams expanded). A team row lying
+// dormant — the container inherits again — grants nothing and does not count.
+export function isMemberOrTeamMemberOf(user: { guid: string }, container: Container<AnyPayload>) {
+	return isMemberOf(user, container) || (container.user_grant?.own.length ?? 0) > 0;
+}
+
+// Whether the task is assigned to the user or to one of the given teams.
+export function isAssignedTo(user: { guid: string }, teams: ReadonlyArray<string> = []) {
+	return (container: Container<TaskPayload>) =>
+		container.payload.assignee.some((guid) => guid === user.guid || teams.includes(guid));
 }
 
 // Computes the grant field of a new container from its direct scope — the

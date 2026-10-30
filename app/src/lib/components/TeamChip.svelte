@@ -1,6 +1,7 @@
 <script module lang="ts">
-	// a stable color per team, so it looks the same wherever it turns up
-	const colors = ['indigo', 'purple', 'pink', 'teal', 'amber'];
+	// a stable color per team, so it looks the same wherever it turns up; the
+	// two colors of the design keep the role colors free
+	const colors = ['purple', 'pink'];
 
 	export function teamColor(guid: string) {
 		return colors[[...guid].reduce((sum, char) => sum + char.charCodeAt(0), 0) % colors.length];
@@ -9,19 +10,35 @@
 
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import UsersGroupIcon from '~icons/flowbite/users-group-outline';
+	import fetchMembers from '$lib/client/fetchMembers';
 	import Dropdown from '$lib/components/Dropdown.svelte';
 	import { displayName, type TeamWithMembers, type User } from '$lib/models';
 
 	interface Props {
 		manageHref?: string;
-		team: TeamWithMembers;
+		// without members the roster is fetched once the popover opens
+		team: Omit<TeamWithMembers, 'members'> & Partial<Pick<TeamWithMembers, 'members'>>;
 	}
 
 	let { manageHref, team }: Props = $props();
 
 	const color = $derived(teamColor(team.container.guid));
 	const name = $derived(team.container.payload.name);
+
+	let fetchedMembers: User[] | undefined = $state();
+	const members = $derived(team.members ?? fetchedMembers);
+
+	async function loadMembers() {
+		if (team.members || fetchedMembers) {
+			return;
+		}
+		try {
+			fetchedMembers = await fetchMembers(team.container.guid);
+		} catch (error) {
+			console.log(error);
+			fetchedMembers = [];
+		}
+	}
 
 	// members who have not signed up yet carry no name
 	function memberName(member: User) {
@@ -32,18 +49,24 @@
 
 <Dropdown label={$_('teams.show_members', { values: { name } })} strategy="fixed">
 	{#snippet button(popover)}
-		<button class="badge badge--large badge--{color} team-chip" type="button" use:popover.button>
-			<UsersGroupIcon />
-			<span class="team-name">{name}</span>
+		<button
+			class="badge badge--large badge--team badge--{color} team-chip"
+			type="button"
+			use:popover.button
+			onclick={loadMembers}
+		>
+			<span class="team-name">{members ? `${name} · ${members.length}` : name}</span>
 		</button>
 	{/snippet}
 
 	{#snippet panel()}
 		<div class="team-members">
 			<strong>{$_('teams.members')}</strong>
-			{#if team.members.length > 0}
+			{#if members === undefined}
+				<p>{$_('loading')}</p>
+			{:else if members.length > 0}
 				<ul>
-					{#each team.members as member (member.guid)}
+					{#each members as member (member.guid)}
 						<li>{memberName(member)}</li>
 					{/each}
 				</ul>
@@ -58,13 +81,13 @@
 </Dropdown>
 
 <style>
-	.team-chip {
-		align-items: center;
-		border: none;
+	/* the button keeps the badge colors against the global button states */
+	.team-chip,
+	.team-chip:hover,
+	.team-chip:active {
+		background: var(--badge-background-color);
+		border-color: var(--badge-border-color, var(--color-border-raised));
 		cursor: pointer;
-		display: inline-flex;
-		gap: 0.25rem;
-		max-width: 100%;
 	}
 
 	.team-name {

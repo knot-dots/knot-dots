@@ -105,6 +105,7 @@
 						bind:value={container.payload.assignee}
 						{candidatesPromise}
 						{editable}
+						organization={container.organization}
 					/>
 				{:else if item == 'cardStyle' && isTeaserContainer(container)}
 					<InlineEditableCardStyle bind:value={container.payload.cardStyle} {editable} />

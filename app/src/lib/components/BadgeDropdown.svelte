@@ -62,7 +62,7 @@
 				type="button"
 				use:popover.button
 			>
-				{selectedLabel}
+				<span class="truncated">{selectedLabel}</span>
 			</button>
 		{/snippet}
 
@@ -92,22 +92,52 @@
 {/if}
 
 <style>
+	/* the badge of the design: 28px high, 8px inset, 8px radius, a small
+	   chevron tinted in the badge's own hue */
 	.dropdown-button {
-		border-radius: 6px;
+		--dropdown-button-chevron-icon-size: 0.75rem;
+		--dropdown-button-min-height: 1.75rem;
+		--dropdown-button-padding: 0 0.5rem;
+
+		border-radius: 8px;
 		font-size: 0.875rem;
 		gap: 0.25rem;
-		padding: 0.25rem 0.75rem;
+		max-width: 10rem;
 		width: fit-content;
+	}
+
+	.badge.badge--empty {
+		--badge-background-color: transparent;
+		--badge-color: var(--color-text-default);
 	}
 
 	.dropdown-button.dropdown-button--empty {
 		--dropdown-button-default-background: transparent;
-		--dropdown-button-default-color: var(--color-gray-500);
+		--dropdown-button-default-color: var(--color-text-default);
 		--dropdown-button-expanded-background: rgb(from var(--color-primary-500) r g b / 0.15);
+	}
+
+	.dropdown-button.dropdown-button--red {
+		--dropdown-button-active-background: rgb(from var(--color-red-500) r g b / 0.25);
+		--dropdown-button-chevron-default-color: var(--color-red-500);
+		--dropdown-button-default-background: var(--color-red-100);
+		--dropdown-button-default-color: var(--color-red-700);
+		--dropdown-button-expanded-background: rgb(from var(--color-red-500) r g b / 0.15);
+		--dropdown-button-hover-background: rgb(from var(--color-red-500) r g b / 0.1);
+	}
+
+	.dropdown-button.dropdown-button--blue {
+		--dropdown-button-active-background: rgb(from var(--color-blue-700) r g b / 0.25);
+		--dropdown-button-chevron-default-color: var(--color-blue-700);
+		--dropdown-button-default-background: var(--color-blue-100);
+		--dropdown-button-default-color: var(--color-blue-700);
+		--dropdown-button-expanded-background: rgb(from var(--color-blue-700) r g b / 0.15);
+		--dropdown-button-hover-background: rgb(from var(--color-blue-700) r g b / 0.1);
 	}
 
 	.dropdown-button.dropdown-button--orange {
 		--dropdown-button-active-background: rgb(from var(--color-orange-500) r g b / 0.25);
+		--dropdown-button-chevron-default-color: var(--color-orange-500);
 		--dropdown-button-default-background: var(--color-orange-100);
 		--dropdown-button-default-color: var(--color-orange-700);
 		--dropdown-button-expanded-background: rgb(from var(--color-orange-500) r g b / 0.15);
@@ -122,6 +152,7 @@
 
 	.dropdown-button.dropdown-button--indigo {
 		--dropdown-button-active-background: rgb(from var(--color-indigo-500) r g b / 0.25);
+		--dropdown-button-chevron-default-color: var(--color-indigo-500);
 		--dropdown-button-default-background: var(--color-indigo-100);
 		--dropdown-button-default-color: var(--color-indigo-700);
 		--dropdown-button-expanded-background: rgb(from var(--color-indigo-500) r g b / 0.15);
@@ -130,6 +161,7 @@
 
 	.dropdown-button.dropdown-button--yellow {
 		--dropdown-button-active-background: rgb(from var(--color-yellow-500) r g b / 0.25);
+		--dropdown-button-chevron-default-color: var(--color-yellow-500);
 		--dropdown-button-default-background: var(--color-yellow-100);
 		--dropdown-button-default-color: var(--color-yellow-700);
 		--dropdown-button-expanded-background: rgb(from var(--color-yellow-500) r g b / 0.15);

@@ -35,7 +35,7 @@
 
 		{#snippet main()}
 			<div class="content-details">
-				<ProfileView {containers} />
+				<ProfileView {containers} teams={data.teams} />
 				<ContextTabs slug="profile" />
 			</div>
 		{/snippet}

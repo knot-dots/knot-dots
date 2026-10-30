@@ -2,7 +2,12 @@ import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterVisible } from '$lib/authorization';
 import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
-import { isContainerWithEffect, isMemberOf, computeFacetCount, payloadTypes } from '$lib/models';
+import {
+	isContainerWithEffect,
+	isMemberOrTeamMemberOf,
+	computeFacetCount,
+	payloadTypes
+} from '$lib/models';
 import { getAllContainersRelatedToUser } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
@@ -20,7 +25,7 @@ export const load = (async ({ locals, parent }) => {
 	const containers = await locals.pool.connect(getAllContainersRelatedToUser(locals.user.guid));
 
 	const filtered = filterVisible(
-		containers.filter(isContainerWithEffect).filter((c) => isMemberOf(locals.user, c)),
+		containers.filter(isContainerWithEffect).filter((c) => isMemberOrTeamMemberOf(locals.user, c)),
 		locals.user
 	);
 
