@@ -102,10 +102,11 @@
 		memberRoles.enum.observer
 	];
 
+	// the role colors of the design
 	const roleColors: Record<MemberRole, string> = {
-		administrator: 'orange',
+		administrator: 'red',
 		head: 'yellow',
-		collaborator: 'indigo',
+		collaborator: 'blue',
 		observer: 'gray'
 	};
 
@@ -714,13 +715,13 @@
 	}
 
 	th {
-		color: var(--color-text-default);
+		color: var(--color-gray-600);
 		font-weight: 400;
 		height: 2.5rem;
 	}
 
 	td {
-		color: var(--color-text-strong);
+		color: var(--color-gray-800);
 		font-weight: 500;
 		height: 3.125rem;
 		padding: 0.625rem 0.5rem;
@@ -748,6 +749,9 @@
 
 	tr.add-row td {
 		border: none;
+		height: 3rem;
+		padding-bottom: 0;
+		padding-top: 0;
 	}
 
 	/* the group heads take their colors from the system mode of the row:
@@ -885,7 +889,8 @@
 	}
 
 	.col-role {
-		min-width: 9.125rem;
+		min-width: 10.3125rem;
+		width: 10.3125rem;
 	}
 
 	.col-grant {

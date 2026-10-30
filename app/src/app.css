@@ -124,6 +124,10 @@
 	--color-primary-700: #1a56db;
 	--color-primary-800: #1e429f;
 	--color-primary-900: #233876;
+	/* the blue of the role badges in the design */
+	--color-blue-100: #d1ebfa;
+	--color-blue-700: #2d6486;
+
 	--color-blue-gray-025: #f8fafc;
 	--color-blue-gray-050: #f0f6fa;
 	--color-blue-gray-100: #dae7f1;
@@ -1652,11 +1656,17 @@ h4.details-heading {
 	--badge-color: var(--color-indigo-700);
 }
 
+.badge.badge--blue {
+	--badge-background-color: var(--color-blue-100);
+	--badge-color: var(--color-blue-700);
+}
+
 /* a team as the matrices and the task assignment show it: a bordered badge
    that truncates long names */
 .badge.badge--team {
 	--badge-border-width: 1px;
 
+	line-height: 1;
 	max-width: 10rem;
 }
 

@@ -9,6 +9,7 @@
 	import saveGrants from '$lib/client/saveGrants';
 	import saveUser from '$lib/client/saveUser';
 	import BadgeDropdown, { type BadgeDropdownValue } from '$lib/components/BadgeDropdown.svelte';
+	import PermissionCheckbox from '$lib/components/PermissionCheckbox.svelte';
 	import SubjectCombobox, { type SubjectSuggestion } from '$lib/components/SubjectCombobox.svelte';
 	import TeamChip from '$lib/components/TeamChip.svelte';
 	import {
@@ -75,9 +76,9 @@
 	];
 
 	const roleColors: Record<MemberRole, string> = {
-		administrator: 'orange',
+		administrator: 'red',
 		head: 'yellow',
-		collaborator: 'indigo',
+		collaborator: 'blue',
 		observer: 'gray'
 	};
 
@@ -262,13 +263,11 @@
 					{#each columnGroups as group (group.target)}
 						{#each group.kinds as kind (kind)}
 							<td class="col-grant" class:locked={!editable}>
-								<input
-									type="checkbox"
-									aria-label={`${$_(`permission.${kind}`)} (${$_(`permission_matrix.${group.label}`)})`}
+								<PermissionCheckbox
+									ariaLabel={`${$_(`permission.${kind}`)} (${$_(`permission_matrix.${group.label}`)})`}
 									checked={set[group.target].includes(kind)}
-									disabled={!editable}
-									onchange={(event) =>
-										toggleKind(subject.guid, group.target, kind, event.currentTarget.checked)}
+									state={editable ? 'editable' : 'readonly'}
+									onchange={(value) => toggleKind(subject.guid, group.target, kind, value)}
 								/>
 							</td>
 						{/each}
@@ -312,11 +311,11 @@
 						{#each columnGroups as group (group.target)}
 							{#each group.kinds as kind (kind)}
 								<td class="col-grant">
-									<input
-										type="checkbox"
-										aria-label={`${$_(`permission.${kind}`)} (${$_(`permission_matrix.${group.label}`)})`}
+									<PermissionCheckbox
+										ariaLabel={`${$_(`permission.${kind}`)} (${$_(`permission_matrix.${group.label}`)})`}
 										checked={false}
 										disabled
+										state="editable"
 									/>
 								</td>
 							{/each}
@@ -378,7 +377,8 @@
 
 	th,
 	td {
-		border-right: 1px solid var(--color-gray-100);
+		border-bottom: 1px solid var(--color-border-subtle);
+		border-right: 1px solid var(--color-border-subtle);
 		padding: 0.5rem;
 		white-space: nowrap;
 	}
@@ -396,7 +396,7 @@
 	td {
 		color: var(--color-gray-800);
 		font-weight: 500;
-		height: 3.25rem;
+		height: 3.125rem;
 		padding: 0.625rem 0.5rem;
 	}
 
@@ -410,10 +410,6 @@
 			rgba(255, 235, 235, 0.75) 2px,
 			rgba(255, 235, 235, 0.75) 4px
 		);
-	}
-
-	td.locked input[type='checkbox'] {
-		accent-color: var(--color-gray-600);
 	}
 
 	.header-content {
@@ -457,7 +453,8 @@
 	}
 
 	.col-role {
-		min-width: 9rem;
+		min-width: 10.3125rem;
+		width: 10.3125rem;
 	}
 
 	.col-grant {
@@ -472,5 +469,8 @@
 
 	.add-row td {
 		border-right: none;
+		height: 3rem;
+		padding-bottom: 0;
+		padding-top: 0;
 	}
 </style>

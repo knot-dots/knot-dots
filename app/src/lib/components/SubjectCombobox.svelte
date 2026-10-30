@@ -182,7 +182,7 @@
 						<label>
 							<input checked={active} tabindex="-1" type="radio" value={suggestion.guid} />
 							<span class="badge badge--large badge--team badge--{teamColor(suggestion.guid)}">
-								{suggestion.label}
+								<span class="truncated">{suggestion.label}</span>
 							</span>
 						</label>
 					</li>
@@ -223,8 +223,10 @@
 <style>
 	/* the design sets the button in the body size, not the small button size */
 	.add-button {
+		border-radius: 4px;
 		font-size: 0.875rem;
 		gap: 0.25rem;
+		line-height: 1;
 		min-height: 1.75rem;
 	}
 
@@ -243,12 +245,13 @@
 
 	.combobox-input {
 		align-items: center;
-		border: 1px solid var(--focus-color);
+		background: var(--color-surface-default);
+		border: 2px solid var(--focus-color);
 		border-radius: 8px;
 		display: flex;
 		gap: 0.25rem;
 		min-height: 2.25rem;
-		padding: 0 0.25rem 0 0.375rem;
+		padding: 0 0.25rem 0 0.75rem;
 	}
 
 	.combobox-input > input {
@@ -272,7 +275,7 @@
 		--padding-y: 0.25rem;
 
 		border: none;
-		color: var(--color-icon-subtle);
+		color: var(--color-icon-default);
 	}
 
 	.clear-button > :global(svg) {
@@ -304,6 +307,12 @@
 		font-weight: 500;
 		min-height: 2.5rem;
 		padding: 0.5rem;
+	}
+
+	.option > label > input[type='radio'] {
+		flex-shrink: 0;
+		height: 1rem;
+		width: 1rem;
 	}
 
 	.option--user > label {
