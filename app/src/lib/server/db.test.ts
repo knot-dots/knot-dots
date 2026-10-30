@@ -1,5 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import { expect } from 'vitest';
+import { z } from 'zod';
 import { type Fixtures, test } from '$lib/fixtures';
 import {
 	type AnyPayload,
@@ -10,6 +11,7 @@ import {
 	modifiedContainer,
 	type NewContainer,
 	newContainer,
+	type OrganizationalUnitPayload,
 	type PartialRelation,
 	type PayloadType,
 	payloadTypes,
@@ -21,11 +23,13 @@ import {
 } from '$lib/models';
 import {
 	changeManyContainerRelations,
+	ContainerRestoreError,
 	ContainerRevisionConflictError,
 	createContainer,
 	createOrUpdateUser,
 	deleteContainer,
 	deleteContainerRecursively,
+	deleteOrganizationalUnitContainer,
 	getAdoptedContainerGuids,
 	getAllContainersRelatedToProgram,
 	getAllGrantsOfUserFromMemberRoles,
@@ -33,11 +37,13 @@ import {
 	getContainerByGuid,
 	getManyContainers,
 	getManyOrganizationalUnitContainers,
+	restoreContainerRecursively,
 	sql,
 	updateContainer,
 	updateManyContainerRelations
 } from '$lib/server/db';
 import { computeManagedBy } from '$lib/server/computeManagedBy';
+import { computeUserGrants } from '$lib/server/computeUserGrants';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 
 const organization = uuid();
@@ -853,6 +859,395 @@ test('a measure in two programs survives one program but not its own goal', asyn
 		connection
 	);
 	await expect(getContainerByGuid(measure.guid)(connection)).rejects.toThrow();
+});
+
+// The revision history of a container as [deleted, valid_currently] per row,
+// oldest first. The read API hides the deleted revisions, so restore tests
+// look at the rows themselves.
+function revisionHistory(connection: Fixtures['connection'], guid: string) {
+	return connection.any(sql.type(z.object({ deleted: z.boolean(), valid_currently: z.boolean() }))`
+		SELECT deleted, valid_currently
+		FROM container
+		WHERE guid = ${guid}
+		ORDER BY revision
+	`);
+}
+
+test('restoring a deleted container adds a revision equal to the one before the deletion', async ({
+	connection
+}: Fixtures) => {
+	const member = await createTestUser(connection);
+	const deleter = await createTestUser(connection);
+	const goal = await createContainer(
+		newManagedByContainer(payloadTypes.enum.goal, { memberOf: member })
+	)(connection);
+	const before = await getContainerByGuid(goal.guid)(connection);
+
+	await deleteContainer({
+		...before,
+		user: [{ predicate: predicates.enum['is-creator-of'], subject: deleter }]
+	})(connection);
+	await expect(getContainerByGuid(goal.guid)(connection)).rejects.toThrow();
+
+	const restored = await restoreContainerRecursively(goal.guid)(connection);
+
+	expect(restored.revision).toBeGreaterThan(before.revision);
+	expect(restored).toEqual({
+		...before,
+		revision: restored.revision,
+		valid_from: restored.valid_from
+	});
+	expect(await getContainerByGuid(goal.guid)(connection)).toEqual(restored);
+	expect(await revisionHistory(connection, goal.guid)).toEqual([
+		{ deleted: false, valid_currently: false },
+		{ deleted: true, valid_currently: false },
+		{ deleted: false, valid_currently: true }
+	]);
+});
+
+// The rows of one relation as [deleted, valid_currently]. Relations carry no
+// revision number and a test runs in one transaction, so the rows are ordered
+// by their flags rather than by age.
+function relationHistory(connection: Fixtures['connection'], relation: Omit<Relation, 'position'>) {
+	return connection.any(sql.type(z.object({ deleted: z.boolean(), valid_currently: z.boolean() }))`
+		SELECT deleted, valid_currently
+		FROM container_relation
+		WHERE object = ${relation.object}
+			AND predicate = ${relation.predicate}
+			AND subject = ${relation.subject}
+		ORDER BY deleted, valid_currently
+	`);
+}
+
+test('restoring a deleted container restores the relations deleted along with it', async ({
+	connection
+}: Fixtures) => {
+	const program = await createContainer(
+		initializeNewContainer({ title: 'Program', type: payloadTypes.enum.program }, [])
+	)(connection);
+	const goal = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [
+			{ object: program.guid, position: 3, predicate: predicates.enum['is-part-of-program'] }
+		])
+	)(connection);
+	const before = await getContainerByGuid(goal.guid)(connection);
+
+	await deleteContainerRecursively(before)(connection);
+	expect((await getContainerByGuid(program.guid)(connection)).relation).toEqual([]);
+
+	const restored = await restoreContainerRecursively(goal.guid)(connection);
+
+	expect(restored.relation).toEqual(before.relation);
+	expect((await getContainerByGuid(program.guid)(connection)).relation).toEqual(before.relation);
+	expect(await relationHistory(connection, before.relation[0])).toEqual([
+		{ deleted: false, valid_currently: false },
+		{ deleted: false, valid_currently: true },
+		{ deleted: true, valid_currently: false }
+	]);
+});
+
+// A test runs in one transaction, where every row shares the same valid_from.
+// Moving the deleted rows of a container back in time simulates that they
+// were deleted in an earlier transaction.
+async function backdateDeletion(connection: Fixtures['connection'], guid: string) {
+	await connection.query(sql.typeAlias('void')`
+		UPDATE container_relation
+		SET valid_from = valid_from - interval '1 hour'
+		WHERE (subject = ${guid} OR object = ${guid})
+			AND deleted
+			AND valid_currently
+	`);
+	await connection.query(sql.typeAlias('void')`
+		UPDATE container
+		SET valid_from = valid_from - interval '1 hour'
+		WHERE guid = ${guid}
+			AND deleted
+			AND valid_currently
+	`);
+}
+
+test('restoring leaves a relation alone that was removed before the deletion', async ({
+	connection
+}: Fixtures) => {
+	const program = await createContainer(
+		initializeNewContainer({ title: 'Program', type: payloadTypes.enum.program }, [])
+	)(connection);
+	const goal = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [
+			{ object: program.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
+		])
+	)(connection);
+	const detached = await updateContainer(
+		modifiedContainer.parse({ ...(await getContainerByGuid(goal.guid)(connection)), relation: [] })
+	)(connection);
+	await backdateDeletion(connection, goal.guid);
+
+	await deleteContainerRecursively(detached)(connection);
+	const restored = await restoreContainerRecursively(goal.guid)(connection);
+
+	expect(restored.relation).toEqual([]);
+	expect((await getContainerByGuid(program.guid)(connection)).relation).toEqual([]);
+});
+
+test('restoring skips relations to containers that are still deleted until those come back', async ({
+	connection
+}: Fixtures) => {
+	const goal = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [])
+	)(connection);
+	const measure = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.measure), [
+			{ object: goal.guid, position: 0, predicate: predicates.enum['is-part-of'] }
+		])
+	)(connection);
+	const measureBefore = await getContainerByGuid(measure.guid)(connection);
+
+	await deleteContainerRecursively(await getContainerByGuid(goal.guid)(connection))(connection);
+
+	const restoredMeasure = await restoreContainerRecursively(measure.guid)(connection);
+	expect(restoredMeasure.relation).toEqual([]);
+
+	const restoredGoal = await restoreContainerRecursively(goal.guid)(connection);
+	expect(restoredGoal.relation).toEqual(measureBefore.relation);
+	expect((await getContainerByGuid(measure.guid)(connection)).relation).toEqual(
+		measureBefore.relation
+	);
+});
+
+test('restoring fails when there is no deleted container to restore', async ({
+	connection
+}: Fixtures) => {
+	const goal = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [])
+	)(connection);
+
+	await expect(restoreContainerRecursively(goal.guid)(connection)).rejects.toThrow(
+		ContainerRestoreError
+	);
+	await expect(restoreContainerRecursively(goal.guid)(connection)).rejects.toMatchObject({
+		kind: 'not_found'
+	});
+	await expect(restoreContainerRecursively(uuid())(connection)).rejects.toMatchObject({
+		kind: 'not_found'
+	});
+	expect(await revisionHistory(connection, goal.guid)).toEqual([
+		{ deleted: false, valid_currently: true }
+	]);
+});
+
+test('restoring an organization is refused because its Keycloak group is gone', async ({
+	connection
+}: Fixtures) => {
+	const guid = uuid();
+	for (const deleted of [false, true]) {
+		await connection.query(sql.typeAlias('void')`
+			INSERT INTO container (deleted, guid, managed_by, organization, payload, realm, valid_currently)
+			VALUES (
+				${deleted},
+				${guid},
+				${guid},
+				${guid},
+				${sql.jsonb({ name: 'Organization', type: payloadTypes.enum.organization })},
+				${realm},
+				${deleted}
+			)
+		`);
+	}
+
+	await expect(restoreContainerRecursively(guid)(connection)).rejects.toMatchObject({
+		kind: 'unsupported'
+	});
+	expect(await revisionHistory(connection, guid)).toEqual([
+		{ deleted: false, valid_currently: false },
+		{ deleted: true, valid_currently: true }
+	]);
+});
+
+test('the restored revision keeps the own matrix and the grants derived from the member roles', async ({
+	connection
+}: Fixtures) => {
+	const member = await createTestUser(connection);
+	const program = await createContainer({
+		...newManagedByContainer(payloadTypes.enum.program, { memberOf: member }),
+		own_matrix: true
+	})(connection);
+	const before = await getContainerByGuid(program.guid)(connection);
+	const grantsBefore = await computeUserGrants(connection, member, [program.guid]);
+	expect(grantsBefore.get(program.guid)?.scope_sourced).toBe(false);
+
+	await deleteContainerRecursively(before)(connection);
+	const restored = await restoreContainerRecursively(program.guid)(connection);
+
+	expect(restored.own_matrix).toBe(true);
+	expect(await computeUserGrants(connection, member, [program.guid])).toEqual(grantsBefore);
+});
+
+async function snapshot(connection: Fixtures['connection'], guids: string[]) {
+	return new Map(
+		await Promise.all(
+			guids.map(async (guid) => [guid, await getContainerByGuid(guid)(connection)] as const)
+		)
+	);
+}
+
+async function expectRestored(
+	connection: Fixtures['connection'],
+	before: Map<string, Container<AnyPayload>>
+) {
+	for (const [guid, original] of before) {
+		const restored = await getContainerByGuid(guid)(connection);
+		expect(restored).toEqual({
+			...original,
+			revision: restored.revision,
+			valid_from: restored.valid_from
+		});
+		expect(await revisionHistory(connection, guid)).toEqual([
+			{ deleted: false, valid_currently: false },
+			{ deleted: true, valid_currently: false },
+			{ deleted: false, valid_currently: true }
+		]);
+	}
+}
+
+test('restoring a program brings back the objects deleted along with it', async ({
+	connection
+}: Fixtures) => {
+	const program = await createContainer(
+		initializeNewContainer({ title: 'Program', type: payloadTypes.enum.program }, [])
+	)(connection);
+	const goal = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [
+			{ object: program.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
+		])
+	)(connection);
+	const measure = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.measure), [
+			{ object: goal.guid, position: 0, predicate: predicates.enum['is-part-of'] },
+			{ object: program.guid, position: 1, predicate: predicates.enum['is-part-of-program'] }
+		])
+	)(connection);
+	const before = await snapshot(connection, [program.guid, goal.guid, measure.guid]);
+
+	await deleteContainerRecursively(before.get(program.guid)!)(connection);
+	for (const guid of before.keys()) {
+		await expect(getContainerByGuid(guid)(connection)).rejects.toThrow();
+	}
+
+	await restoreContainerRecursively(program.guid)(connection);
+
+	await expectRestored(connection, before);
+});
+
+test('restoring a program leaves a goal deleted that was deleted on its own before', async ({
+	connection
+}: Fixtures) => {
+	const program = await createContainer(
+		initializeNewContainer({ title: 'Program', type: payloadTypes.enum.program }, [])
+	)(connection);
+	const earlierGoal = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [
+			{ object: program.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
+		])
+	)(connection);
+	const goal = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [
+			{ object: program.guid, position: 1, predicate: predicates.enum['is-part-of-program'] }
+		])
+	)(connection);
+
+	await deleteContainerRecursively(await getContainerByGuid(earlierGoal.guid)(connection))(
+		connection
+	);
+	await backdateDeletion(connection, earlierGoal.guid);
+	const before = await snapshot(connection, [program.guid, goal.guid]);
+
+	await deleteContainerRecursively(before.get(program.guid)!)(connection);
+	await restoreContainerRecursively(program.guid)(connection);
+
+	await expectRestored(connection, before);
+	await expect(getContainerByGuid(earlierGoal.guid)(connection)).rejects.toThrow();
+});
+
+test('restoring a measure brings back its sections and the templates available only in it', async ({
+	connection
+}: Fixtures) => {
+	const measure = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.measure), [])
+	)(connection);
+	const section = await createContainer(
+		initializeNewContainer(
+			{ body: 'Section body', title: 'Section', type: payloadTypes.enum.text },
+			[{ object: measure.guid, position: 0, predicate: predicates.enum['is-section-of'] }]
+		)
+	)(connection);
+	const template = await createContainer(
+		initializeNewContainer({ template: true, title: 'Template', type: payloadTypes.enum.report }, [
+			{ object: measure.guid, position: 0, predicate: predicates.enum['is-available-in'] }
+		])
+	)(connection);
+	const before = await snapshot(connection, [measure.guid, section.guid, template.guid]);
+
+	await deleteContainerRecursively(before.get(measure.guid)!)(connection);
+	for (const guid of before.keys()) {
+		await expect(getContainerByGuid(guid)(connection)).rejects.toThrow();
+	}
+
+	await restoreContainerRecursively(measure.guid)(connection);
+
+	await expectRestored(connection, before);
+});
+
+test('restoring an organizational unit brings back the containers it owned', async ({
+	connection
+}: Fixtures) => {
+	const organizationalUnit = await createContainer(
+		initializeNewContainer(
+			{ name: 'Unit', type: payloadTypes.enum.organizational_unit } as Partial<AnyPayload> &
+				Pick<AnyPayload, 'type'>,
+			[]
+		)
+	)(connection);
+	const measure = await createContainer(
+		newManagedByContainer(payloadTypes.enum.measure, {
+			organizationalUnit: organizationalUnit.guid
+		})
+	)(connection);
+	const before = await snapshot(connection, [organizationalUnit.guid, measure.guid]);
+
+	await deleteOrganizationalUnitContainer(
+		before.get(organizationalUnit.guid) as Container<OrganizationalUnitPayload>
+	)(connection);
+	await expect(getContainerByGuid(measure.guid)(connection)).rejects.toThrow();
+
+	await restoreContainerRecursively(organizationalUnit.guid)(connection);
+
+	await expectRestored(connection, before);
+});
+
+test('restoring a program reattaches the shared goal that survived its deletion', async ({
+	connection
+}: Fixtures) => {
+	const { childOfShared, firstProgram, sharedGoal } = await createProgramPair(connection);
+	const before = await snapshot(connection, [
+		firstProgram.guid,
+		sharedGoal.guid,
+		childOfShared.guid
+	]);
+
+	await deleteContainerRecursively(before.get(firstProgram.guid)!)(connection);
+	expect((await getContainerByGuid(sharedGoal.guid)(connection)).relation).not.toEqual(
+		before.get(sharedGoal.guid)!.relation
+	);
+
+	await restoreContainerRecursively(firstProgram.guid)(connection);
+
+	await expectRestored(connection, new Map([[firstProgram.guid, before.get(firstProgram.guid)!]]));
+	expect(await getContainerByGuid(sharedGoal.guid)(connection)).toEqual(
+		before.get(sharedGoal.guid)
+	);
+	expect(await getContainerByGuid(childOfShared.guid)(connection)).toEqual(
+		before.get(childOfShared.guid)
+	);
 });
 
 test('omitting the template filter returns a complete mixed program hierarchy', async ({

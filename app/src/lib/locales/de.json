@@ -198,6 +198,7 @@
 		"unprocessable_entity": "Die Anfrage konnte nicht verarbeitet werden.",
 		"precondition_failed": "Die Ressource wurde verändert.",
 		"precondition_required": "Bedingung benötigt; versuche es mit \"If-Match\".",
+		"restore_unsupported": "Organisationen können nicht wiederhergestellt werden.",
 		"program_template_required": "Objekte in einem Programm müssen aus einer in diesem Programm verfügbaren Vorlage erstellt werden.",
 		"scoped_template_required": "Objekte in einem Programm oder einer Maßnahme müssen aus einer im jeweiligen Arbeitsbereich verfügbaren Vorlage erstellt werden.",
 		"slug_not_available": "Dieser URL-Slug ist bereits vergeben.",

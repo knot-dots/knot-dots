@@ -1056,6 +1056,185 @@ export function deleteOrganizationalUnitContainer(container: Container<Organizat
 	};
 }
 
+// The relations through which deleting a container takes other containers
+// along: parts, sections and the templates available only in that scope.
+const deletionCascadePredicates = [
+	predicates.enum['is-part-of'],
+	predicates.enum['is-part-of-measure'],
+	predicates.enum['is-part-of-program'],
+	predicates.enum['is-part-of-category'],
+	predicates.enum['is-section-of'],
+	predicates.enum['is-available-in']
+];
+
+// Adds a revision that equals the last revision before the deletion, with
+// its members and the grants derived from their roles. Deleting copies the
+// container from the revision at hand and sets the deleting user as creator,
+// so the deleted revision itself is not a faithful copy. A deleted revision
+// without a previous one is left alone.
+async function restoreContainerRevision(
+	guid: string,
+	deletedRevision: number,
+	connection: DatabaseTransactionConnection
+) {
+	const previousRevision = await connection.maybeOneFirst(sql.typeAlias('revision')`
+		SELECT revision
+		FROM container
+		WHERE guid = ${guid}
+			AND NOT deleted
+			AND revision < ${deletedRevision}
+		ORDER BY revision DESC
+		LIMIT 1
+	`);
+	if (previousRevision === null) {
+		return;
+	}
+
+	await connection.query(sql.typeAlias('void')`
+		UPDATE container
+		SET valid_currently = false
+		WHERE guid = ${guid}
+	`);
+
+	const restoredRevision = await connection.oneFirst(sql.typeAlias('revision')`
+		INSERT INTO container (guid, managed_by, organization, organizational_unit, own_matrix, payload, realm)
+		SELECT guid, managed_by, organization, organizational_unit, own_matrix, payload, realm
+		FROM container
+		WHERE revision = ${previousRevision}
+		RETURNING revision
+	`);
+
+	const userResult = await connection.any(sql.typeAlias('userRelation')`
+		INSERT INTO container_user (object, predicate, subject)
+		SELECT ${restoredRevision}, predicate, subject
+		FROM container_user
+		WHERE object = ${previousRevision}
+		RETURNING predicate, subject
+	`);
+
+	await syncContainerGrants(guid, userResult)(connection);
+}
+
+export class ContainerRestoreError extends Error {
+	constructor(public readonly kind: 'not_found' | 'unsupported') {
+		super(`The container cannot be restored: ${kind}`);
+		this.name = 'ContainerRestoreError';
+	}
+}
+
+// Reverts the deletion of a container together with the containers and
+// relations deleted along with it, by adding revisions that equal the ones
+// before the deletion. Deleting writes all its rows in one transaction, so
+// those rows share the valid_from of the deleted revision. Organizations
+// cannot be restored: deleting one removes its Keycloak group, whose id is
+// the guid of the organization.
+export function restoreContainerRecursively(guid: string) {
+	return async (connection: DatabaseConnection) => {
+		const { affectedGuids, container } = await connection.transaction(async (txConnection) => {
+			const deletedContainer = await txConnection.maybeOne(
+				sql.type(z.object({ revision: z.number().int().positive(), type: z.string() }))`
+					SELECT revision, payload->>'type' AS type
+					FROM container
+					WHERE guid = ${guid}
+						AND deleted
+						AND valid_currently
+					FOR UPDATE
+				`
+			);
+			if (deletedContainer === null) {
+				throw new ContainerRestoreError('not_found');
+			}
+			if (deletedContainer.type === payloadTypes.enum.organization) {
+				throw new ContainerRestoreError('unsupported');
+			}
+
+			// The containers deleted along with the container: deleted in the same
+			// transaction and reached from it through the relations deleted then,
+			// or owned by it in the case of an organizational unit.
+			const deletedContainers = await txConnection.any(
+				sql.type(
+					z.object({
+						guid: z.string().uuid(),
+						revision: z.number().int().positive(),
+						type: z.string()
+					})
+				)`
+					WITH RECURSIVE deleted_along AS (
+						SELECT c.guid, c.revision, c.valid_from, c.payload->>'type' AS type
+						FROM container c
+						WHERE c.revision = ${deletedContainer.revision}
+						UNION
+						SELECT c.guid, c.revision, c.valid_from, c.payload->>'type' AS type
+						FROM deleted_along parent
+						JOIN LATERAL (
+							SELECT cr.subject AS guid
+							FROM container_relation cr
+							WHERE cr.object = parent.guid
+								AND cr.predicate = ANY(${sql.array(deletionCascadePredicates, 'text')})
+								AND cr.deleted
+								AND cr.valid_currently
+								AND cr.valid_from = parent.valid_from
+							UNION
+							SELECT c.guid
+							FROM container c
+							WHERE c.organizational_unit = parent.guid
+								AND c.deleted
+								AND c.valid_currently
+								AND c.valid_from = parent.valid_from
+						) candidate ON true
+						JOIN container c ON c.guid = candidate.guid
+							AND c.deleted
+							AND c.valid_currently
+							AND c.valid_from = parent.valid_from
+					)
+					SELECT guid, revision, type
+					FROM deleted_along
+				`
+			);
+
+			for (const { guid, revision } of deletedContainers) {
+				await restoreContainerRevision(guid, revision, txConnection);
+			}
+
+			// Relations to a container that is still deleted stay deleted.
+			const guids = deletedContainers.map(({ guid }) => guid);
+			const relations = await txConnection.any(sql.typeAlias('relation')`
+				SELECT cr.object, cr.position, cr.predicate, cr.subject
+				FROM container_relation cr
+				WHERE (cr.subject = ANY(${sql.array(guids, 'uuid')}) OR cr.object = ANY(${sql.array(guids, 'uuid')}))
+					AND cr.deleted
+					AND cr.valid_currently
+					AND cr.valid_from = (SELECT valid_from FROM container WHERE revision = ${deletedContainer.revision})
+					AND EXISTS (
+						SELECT 1
+						FROM container c
+						WHERE c.guid = cr.subject AND c.valid_currently AND NOT c.deleted
+					)
+					AND EXISTS (
+						SELECT 1
+						FROM container c
+						WHERE c.guid = cr.object AND c.valid_currently AND NOT c.deleted
+					)
+			`);
+			await updateManyContainerRelationsInTransaction(relations, txConnection);
+
+			return {
+				affectedGuids: [
+					...deletedContainers
+						.filter(({ type }) => shouldIndexType(type as PayloadType))
+						.map(({ guid }) => guid),
+					...affectedContainerGuids(relations)
+				],
+				container: await getContainerByGuid(guid)(txConnection)
+			};
+		});
+
+		await enqueueContainerUpserts(affectedGuids);
+
+		return container;
+	};
+}
+
 export function getContainerByGuid(guid: string) {
 	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>> => {
 		const containerResult = await connection.one(sql.typeAlias('anyContainer')`
