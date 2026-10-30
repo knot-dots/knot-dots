@@ -148,7 +148,7 @@
 							class:active={$combobox.active?.guid === suggestion.guid}
 							use:combobox.item={{ value: suggestion }}
 						>
-							<span class="badge badge--large badge--{teamColor(suggestion.guid)}">
+							<span class="badge badge--large badge--team badge--{teamColor(suggestion.guid)}">
 								{suggestion.label}
 							</span>
 						</li>

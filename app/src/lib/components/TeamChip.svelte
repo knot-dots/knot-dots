@@ -1,6 +1,7 @@
 <script module lang="ts">
-	// a stable color per team, so it looks the same wherever it turns up
-	const colors = ['indigo', 'purple', 'pink', 'teal', 'amber'];
+	// a stable color per team, so it looks the same wherever it turns up; the
+	// two colors of the design keep the role colors free
+	const colors = ['purple', 'pink'];
 
 	export function teamColor(guid: string) {
 		return colors[[...guid].reduce((sum, char) => sum + char.charCodeAt(0), 0) % colors.length];
@@ -9,7 +10,6 @@
 
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import UsersGroupIcon from '~icons/flowbite/users-group-outline';
 	import Dropdown from '$lib/components/Dropdown.svelte';
 	import { displayName, type TeamWithMembers, type User } from '$lib/models';
 
@@ -32,8 +32,11 @@
 
 <Dropdown label={$_('teams.show_members', { values: { name } })} strategy="fixed">
 	{#snippet button(popover)}
-		<button class="badge badge--large badge--{color} team-chip" type="button" use:popover.button>
-			<UsersGroupIcon />
+		<button
+			class="badge badge--large badge--team badge--{color} team-chip"
+			type="button"
+			use:popover.button
+		>
 			<span class="team-name">{name}</span>
 		</button>
 	{/snippet}
@@ -58,13 +61,13 @@
 </Dropdown>
 
 <style>
-	.team-chip {
-		align-items: center;
-		border: none;
+	/* the button keeps the badge colors against the global button states */
+	.team-chip,
+	.team-chip:hover,
+	.team-chip:active {
+		background: var(--badge-background-color);
+		border-color: var(--badge-border-color, var(--color-border-raised));
 		cursor: pointer;
-		display: inline-flex;
-		gap: 0.25rem;
-		max-width: 100%;
 	}
 
 	.team-name {

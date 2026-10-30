@@ -1652,6 +1652,14 @@ h4.details-heading {
 	--badge-color: var(--color-indigo-700);
 }
 
+/* a team as the matrices and the task assignment show it: a bordered badge
+   that truncates long names */
+.badge.badge--team {
+	--badge-border-width: 1px;
+
+	max-width: 10rem;
+}
+
 .badge > svg {
 	color: var(--badge-icon-color, currentColor);
 	height: var(--badge-icon-size, 1rem);
