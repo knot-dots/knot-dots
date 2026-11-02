@@ -9,6 +9,7 @@ import {
 	getAvailableInScopeGuids,
 	getPayloadSchema,
 	grantSetForRole,
+	isMemberOrTeamMemberOf,
 	memberRoleFromGrantSet,
 	memberRoleMatchingGrantSet,
 	type IndicatorPayload,
@@ -699,3 +700,39 @@ test.each([
 		expect(trendDirection(points)).toBe(direction);
 	}
 );
+
+test('isMemberOrTeamMemberOf accepts a row of the user or of one of their teams', () => {
+	const member = '7db24631-935d-4e35-a6d5-5db07f0f4d75';
+	const teamMember = '0a4b09c1-92a9-4fa3-8912-1e37c8f38fd5';
+	const grants = {
+		admin: false,
+		scope_sourced: false,
+		member: true,
+		organization_manager: false,
+		self: ['read'],
+		source: '52b28d20-2a11-4c1c-9b45-ffae9ac9f2a8',
+		sources: ['52b28d20-2a11-4c1c-9b45-ffae9ac9f2a8'],
+		subordinates: ['read']
+	};
+	const measure = testContainer.parse({
+		guid: '52b28d20-2a11-4c1c-9b45-ffae9ac9f2a8',
+		managed_by: organizationOne,
+		organization: organizationOne,
+		payload: { title: 'Scope', type: payloadTypes.enum.measure },
+		user: [{ predicate: predicates.enum['is-member-of'], subject: member }]
+	}) as Container<MeasurePayload>;
+
+	expect(isMemberOrTeamMemberOf({ guid: member }, measure)).toBe(true);
+	expect(isMemberOrTeamMemberOf({ guid: teamMember }, measure)).toBe(false);
+	// the request user's grants carry the team row on the container's own matrix
+	expect(
+		isMemberOrTeamMemberOf(
+			{ guid: teamMember },
+			{ ...measure, user_grant: { ...grants, own: ['read'] } }
+		)
+	).toBe(true);
+	// a dormant row grants nothing
+	expect(
+		isMemberOrTeamMemberOf({ guid: teamMember }, { ...measure, user_grant: { ...grants, own: [] } })
+	).toBe(false);
+});
