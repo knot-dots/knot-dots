@@ -788,6 +788,12 @@
 		"17": "17 - Partnerschaften zur Erreichung der Ziele"
 	},
 	"search": "Suchen",
+	"section_group": {
+		"existing_objects": "Vorhandene Objekte zeigen",
+		"geo": "Ortsbezogene Daten",
+		"media": "Bilder & Dateien",
+		"text_layout": "Text & Layout"
+	},
 	"select_all": "Alle auswählen",
 	"selection_counter": "{count} ausgewählt",
 	"show_links": "Links anzeigen",
