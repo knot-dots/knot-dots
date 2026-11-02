@@ -3,7 +3,7 @@
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { z } from 'zod';
-	import ArrowRight from '~icons/knotdots/arrow-right';
+	import ArrowRight from '~icons/flowbite/arrow-right-outline';
 	import Collection from '~icons/knotdots/collection';
 	import Search from '~icons/knotdots/search';
 	import { resolve } from '$app/paths';

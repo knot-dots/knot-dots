@@ -12,7 +12,7 @@
 	import { ability } from '$lib/stores';
 	import 'leaflet/dist/leaflet.css';
 	import { _ } from 'svelte-i18n';
-	import Info from '~icons/knotdots/exclamation-circle';
+	import Info from '~icons/flowbite/exclamation-circle-solid';
 
 	interface Props {
 		container: Container<MapPayload>;

@@ -3,7 +3,7 @@
 	import type { Snippet } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
-	import Ellipsis from '~icons/knotdots/ellipsis';
+	import Ellipsis from '~icons/flowbite/dots-horizontal-outline';
 	import { page } from '$app/state';
 	import autoSave from '$lib/client/autoSave';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';

@@ -4,32 +4,33 @@
 	import { createMenu } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
+	import BookOpen from '~icons/flowbite/book-open-outline';
 	import Cash from '~icons/flowbite/cash-outline';
 	import Code from '~icons/flowbite/file-code-solid';
+	import ExclamationCircle from '~icons/flowbite/exclamation-circle-solid';
 	import File from '~icons/flowbite/file-solid';
-	import Quote from '~icons/flowbite/quote-solid';
+	import Star from '~icons/flowbite/star-solid';
 	import BasicData from '~icons/knotdots/basic-data';
-	import BookOpen from '~icons/knotdots/book-open-outline';
 	import Chapter from '~icons/knotdots/chapter';
 	import ChartBar from '~icons/knotdots/chart-bar';
-	import ChartLine from '~icons/knotdots/chart-line';
 	import ChartMixed from '~icons/knotdots/chart-mixed';
 	import Clipboard from '~icons/knotdots/clipboard-simple';
 	import Close from '~icons/knotdots/close';
 	import ClipboardCheck from '~icons/knotdots/clipboard-check';
 	import Collection from '~icons/knotdots/collection';
-	import ExclamationCircle from '~icons/knotdots/exclamation-circle';
 	import Goal from '~icons/knotdots/goal';
 	import Grid from '~icons/knotdots/grid';
-	import Link from '~icons/knotdots/link';
 	import Map from '~icons/knotdots/map';
 	import Gavel from '~icons/knotdots/gavel';
 	import Image from '~icons/knotdots/placeholder-image';
+	import InlineHelp from '~icons/knotdots/inline-help';
 	import Plus from '~icons/knotdots/plus';
+	import Objective from '~icons/knotdots/objective';
 	import Program from '~icons/knotdots/program';
 	import Progress from '~icons/knotdots/progress';
-	import Star from '~icons/knotdots/star';
+	import Quote from '~icons/knotdots/quote';
 	import Summary from '~icons/knotdots/summary';
+	import Teaser from '~icons/knotdots/teaser';
 	import Text from '~icons/knotdots/text';
 	import TwoCol from '~icons/knotdots/two-column';
 	import Video from '~icons/knotdots/video';
@@ -286,7 +287,7 @@
 		{ group: 'text_layout', icon: Text, label: $_('text'), value: payloadTypes.enum.text },
 		{
 			group: 'text_layout',
-			icon: Text,
+			icon: InlineHelp,
 			label: $_('inline_help'),
 			textType: textType.enum.inline_help,
 			value: payloadTypes.enum.text
@@ -318,7 +319,7 @@
 			label: $_('col_content'),
 			value: payloadTypes.enum.col_content
 		},
-		{ group: 'text_layout', icon: Link, label: $_('teaser'), value: payloadTypes.enum.teaser },
+		{ group: 'text_layout', icon: Teaser, label: $_('teaser'), value: payloadTypes.enum.teaser },
 		{
 			group: 'text_layout',
 			icon: Star,
@@ -493,7 +494,7 @@
 			? [
 					{
 						group: 'impact_measurement' as const,
-						icon: ChartLine,
+						icon: Objective,
 						label: $_('objectives'),
 						value: payloadTypes.enum.objective_collection
 					}

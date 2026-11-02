@@ -6,7 +6,7 @@
 	import { createPopperActions } from 'svelte-popperjs';
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
 	import ChevronUp from '~icons/flowbite/chevron-up-outline';
-	import ColumnSolid from '~icons/flowbite/column-solid';
+	import Column from '~icons/flowbite/column-outline';
 	import Objects from '~icons/knotdots/objects';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -74,7 +74,7 @@
 		},
 		{
 			exists: true,
-			icon: ColumnSolid,
+			icon: Column,
 			label: $_('workspace.iooi'),
 			value: workspacesLeft.iooi[selectedItem[1]] ?? '/iooi/board'
 		}
