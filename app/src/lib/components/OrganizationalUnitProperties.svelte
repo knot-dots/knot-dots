@@ -1,14 +1,22 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import { page } from '$app/state';
+	import UsersGroupIcon from '~icons/flowbite/users-group-outline';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import AdministrativeAreaCombobox from '$lib/components/AdministrativeAreaCombobox.svelte';
 	import EditableCategories from '$lib/components/EditableCategories.svelte';
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
 	import EditableNumber from '$lib/components/EditableNumber.svelte';
+	import EditableSingleChoice from '$lib/components/EditableSingleChoice.svelte';
 	import EditableSlug from '$lib/components/EditableSlug.svelte';
 	import EditableSuperordinateOrganizationalUnit from '$lib/components/EditableSuperordinateOrganizationalUnit.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
-	import type { Container, OrganizationalUnitPayload } from '$lib/models';
+	import { createFeatureDecisions } from '$lib/features';
+	import {
+		type Container,
+		type OrganizationalUnitPayload,
+		organizationalUnitType
+	} from '$lib/models';
 	import { ability } from '$lib/stores';
 	import { workspaceModules, workspaces } from '$lib/workspaces';
 
@@ -35,6 +43,44 @@
 				}))
 		)
 	);
+
+	const features = $derived(createFeatureDecisions(page.data.features));
+
+	// The kind of the unit: a team leaves the sidebar and becomes a subject of
+	// other matrices, so turning a unit into one is confirmed first. The
+	// choice shows the pending kind while the confirmation is open.
+	const teamType = organizationalUnitType.enum['organizational_unit_type.team'];
+
+	const isAdministrativeArea = $derived(
+		container.payload.organizationalUnitType ===
+			organizationalUnitType.enum['organizational_unit_type.administrative_area']
+	);
+
+	const isTeam = $derived(container.payload.organizationalUnitType === teamType);
+
+	let convertPending = $state(false);
+
+	const typeOptions = $derived([
+		{ label: $_('organizational_unit'), value: 'organizational_unit' },
+		{ label: $_('team'), value: teamType }
+	]);
+
+	function selectType(value: string | undefined) {
+		if (value === teamType) {
+			convertPending = !isTeam;
+			return;
+		}
+		convertPending = false;
+		if (isTeam) {
+			container.payload.organizationalUnitType = undefined;
+		}
+	}
+
+	function convert(event: Event) {
+		convertPending = false;
+		container.payload.organizationalUnitType = teamType;
+		requestSubmit(event);
+	}
 
 	// In edit mode, an empty `visibleWorkspaces` historically meant "show all".
 	// Prefill with every selectable workspace so unchecking a box reliably hides
@@ -100,6 +146,50 @@
 </script>
 
 {#snippet general()}
+	{#if features.usePermissionMatrix() && !isAdministrativeArea}
+		<!-- picking the team kind only opens the confirmation, so the form is
+		     not saved before it is confirmed -->
+		<div
+			class="type-choice"
+			oninput={(event) => {
+				if ((event.target as HTMLInputElement).value === teamType && !isTeam) {
+					event.stopPropagation();
+				}
+			}}
+		>
+			<EditableSingleChoice
+				{editable}
+				label={$_('organizational_unit.type')}
+				options={typeOptions}
+				bind:value={() => (convertPending || isTeam ? teamType : 'organizational_unit'), selectType}
+			/>
+		</div>
+
+		{#if convertPending}
+			<div class="hint">
+				<span class="hint-icon"><UsersGroupIcon /></span>
+				<div class="hint-body">
+					<p class="hint-heading">{$_('teams.convert_heading')}</p>
+					<p class="hint-text">
+						{$_('teams.convert_message', { values: { name: container.payload.name } })}
+					</p>
+					<div class="hint-actions">
+						<button class="button-primary button-xs system-primary" type="button" onclick={convert}>
+							{$_('teams.convert_button')}
+						</button>
+						<button
+							class="button-alternate-outline button-xs"
+							type="button"
+							onclick={() => (convertPending = false)}
+						>
+							{$_('cancel')}
+						</button>
+					</div>
+				</div>
+			</div>
+		{/if}
+	{/if}
+
 	<div class="label" id={administrativeAreaLabelId}>{$_('administrative_area')}</div>
 	<AdministrativeAreaCombobox
 		{editable}
@@ -147,3 +237,75 @@
 		{@render categories()}
 	</div>
 </div>
+
+<style>
+	.type-choice {
+		display: contents;
+	}
+
+	/* the confirmation of the design: a framed note spanning both columns */
+	.hint {
+		background: var(--color-surface-default);
+		border: 1px solid var(--color-border-default);
+		border-radius: 8px;
+		display: flex;
+		gap: 0.75rem;
+		grid-column: 1 / -1;
+		padding: 1rem;
+	}
+
+	.hint-icon {
+		align-items: center;
+		background: var(--color-background-accent-subtle);
+		border-radius: 8px;
+		color: var(--color-text-accent-default);
+		display: inline-flex;
+		flex-shrink: 0;
+		height: 2rem;
+		justify-content: center;
+		width: 2rem;
+	}
+
+	.hint-icon :global(svg) {
+		height: 1rem;
+		width: 1rem;
+	}
+
+	.hint-body {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.hint-heading {
+		color: var(--color-text-strong);
+		font-size: 0.875rem;
+		font-weight: 600;
+		margin: 0;
+	}
+
+	.hint-text {
+		color: var(--color-text-subtle);
+		font-size: 0.75rem;
+		margin: 0;
+	}
+
+	.hint-actions {
+		display: flex;
+		gap: 0.5rem;
+		margin-top: 0.25rem;
+	}
+
+	.hint-actions > button {
+		border-radius: 8px;
+		font-size: 0.875rem;
+		min-height: 1.75rem;
+		padding-left: 0.75rem;
+		padding-right: 0.75rem;
+	}
+
+	.hint-actions > .button-alternate-outline {
+		background: var(--color-surface-default);
+		border-color: var(--color-border-subtle);
+	}
+</style>
