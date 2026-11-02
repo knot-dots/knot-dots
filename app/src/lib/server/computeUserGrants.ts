@@ -43,18 +43,20 @@ const row = z.object({
 /**
  * Computes the effective grants of one subject on the given containers: for
  * each container the matrices that govern it (its grant sources) and the
- * kinds the subject holds there. The matrices accumulate up the hierarchy,
- * nearest first: the container's own matrix while decoupled (own_matrix),
- * then every decoupled ancestor along every chain. Only an inheriting
- * container whose chains reach the top without any decoupled ancestor falls
- * back to its area: the organizational units above it that have decoupled
- * their matrices, nearest first, or the organization as the last resort — a
- * unit's matrix governs the contents of the units below it. A decoupled
- * ancestor thus replaces the area matrices, never the matrices below or above
- * it. The sources' rows apply side by side; rows on inheriting containers in
- * between lie dormant. Subjects holding every self kind on the organization
- * or on one of the container's units act as administrators of that scope and
- * keep every kind regardless of the sources.
+ * kinds the subject holds there. The matrices of programs and measures
+ * accumulate up the hierarchy, nearest first: the container's own matrix
+ * while decoupled (own_matrix), then every decoupled ancestor along every
+ * chain. Only an inheriting container whose chains reach the top without any
+ * decoupled ancestor falls back to its area, and the area is a single matrix:
+ * organizational units replace rather than accumulate — the nearest unit
+ * above with a matrix of its own governs the units and contents below it,
+ * cutting off the units further up and the organization; without one the
+ * organization governs. A decoupled ancestor thus replaces the area matrix,
+ * never the matrices below or above it. The sources' rows apply side by side;
+ * rows on inheriting containers in between lie dormant. Subjects holding every
+ * self kind on the organization or on one of the units above a container act
+ * as administrators of that scope and keep every kind regardless of the
+ * sources.
  */
 export async function computeUserGrants(
 	connection: DatabaseConnection,
@@ -71,17 +73,21 @@ export async function computeUserGrants(
 	// for decoupling) and remembers per path whether a decoupled ancestor
 	// has been passed (shielded), which decides the scope fallback.
 	const rows = await connection.any(sql.type(row)`
-		WITH RECURSIVE ancestry(root, guid, depth, path, is_cycle, decoupled, shielded) AS (
+		WITH RECURSIVE ancestry(root, guid, depth, path, is_cycle, decoupled, unit, shielded) AS (
 			SELECT g::uuid, g::uuid, 0, ARRAY[g::uuid], false,
 				EXISTS (
 					SELECT 1 FROM container c
 					WHERE c.guid = g::uuid AND c.valid_currently AND NOT c.deleted AND c.own_matrix
 				),
+				false,
 				false
 			FROM unnest(${sql.array(guids, 'uuid')}) AS g
 			UNION ALL
+			-- organizational units above do not shield: they belong to the area,
+			-- which the unit chain below resolves to a single matrix
 			SELECT a.root, parent.object, a.depth + 1, array_append(a.path, parent.object),
-				parent.object = ANY(a.path), d.decoupled, a.shielded OR d.decoupled
+				parent.object = ANY(a.path), d.decoupled, d.unit,
+				a.shielded OR (d.decoupled AND NOT d.unit)
 			FROM ancestry a
 			CROSS JOIN LATERAL unnest(ARRAY(
 				SELECT cr.object
@@ -92,10 +98,15 @@ export async function computeUserGrants(
 					AND NOT cr.deleted
 			)) AS parent(object)
 			CROSS JOIN LATERAL (
-				SELECT EXISTS (
-					SELECT 1 FROM container c
-					WHERE c.guid = parent.object AND c.valid_currently AND NOT c.deleted AND c.own_matrix
-				) AS decoupled
+				SELECT
+					coalesce((
+						SELECT c.own_matrix FROM container c
+						WHERE c.guid = parent.object AND c.valid_currently AND NOT c.deleted
+					), false) AS decoupled,
+					coalesce((
+						SELECT c.payload->>'type' = ${payloadTypes.enum.organizational_unit} FROM container c
+						WHERE c.guid = parent.object AND c.valid_currently AND NOT c.deleted
+					), false) AS unit
 			) d
 			WHERE NOT a.is_cycle
 		),
@@ -114,30 +125,39 @@ export async function computeUserGrants(
 				AND t.payload->>'organizationalUnitType' = ${organizationalUnitType.enum['organizational_unit_type.team']}
 			WHERE cu.subject = ${subject} AND cu.predicate = ${predicates.enum['is-member-of']}
 		),
+		-- unit_start is where a container's unit chain begins: its unit, or the
+		-- unit itself when the container is one (its chain then runs upwards
+		-- through the units it is part of)
 		base AS (
 			SELECT c.guid AS root, c.organization, c.organizational_unit,
-				c.own_matrix AS decoupled
+				c.own_matrix AS decoupled,
+				CASE
+					WHEN c.payload->>'type' = ${payloadTypes.enum.organizational_unit} THEN c.guid
+					ELSE c.organizational_unit
+				END AS unit_start
 			FROM container c
 			WHERE c.guid = ANY(${sql.array(guids, 'uuid')}) AND c.valid_currently AND NOT c.deleted
 		),
-		-- Every decoupled ancestor is a source: grouping deduplicates DAG
+		-- Every decoupled ancestor along the hierarchy chains is a source;
+		-- units are not (the area resolves them): grouping deduplicates DAG
 		-- multi-paths meeting at the same ancestor, min(depth) keeps the
 		-- nearest-first ordering stable.
 		decoupled_ancestors AS (
 			SELECT a.root, a.guid, min(a.depth) AS depth
 			FROM ancestry a
-			WHERE a.depth > 0 AND a.decoupled
+			WHERE a.depth > 0 AND a.decoupled AND NOT a.unit
 			GROUP BY a.root, a.guid
 		),
-		-- The organizational units above a container's unit, walked once per
-		-- distinct unit: those with a matrix of their own govern the contents
-		-- of the units below them.
+		-- The organizational units from a container's unit_start upwards, walked
+		-- once per distinct unit: the nearest one with a matrix of its own
+		-- governs the contents of the units below it, replacing the units
+		-- further up and the organization.
 		unit_chain(unit, guid, depth, path, is_cycle) AS (
 			SELECT u.unit, u.unit, 0, ARRAY[u.unit], false
 			FROM (
-				SELECT DISTINCT b.organizational_unit AS unit
+				SELECT DISTINCT b.unit_start AS unit
 				FROM base b
-				WHERE b.organizational_unit IS NOT NULL
+				WHERE b.unit_start IS NOT NULL
 			) u
 			UNION ALL
 			SELECT uc.unit, parent.object, uc.depth + 1, array_append(uc.path, parent.object),
@@ -160,9 +180,9 @@ export async function computeUserGrants(
 			GROUP BY uc.unit, uc.guid
 		),
 		-- A chain counts as open when it tops out (or cycles) without having
-		-- passed a decoupled ancestor — the root itself may be decoupled; such
-		-- chains bring the area in, once per root. The LATERAL probe keeps this
-		-- on per-row index lookups.
+		-- passed a decoupled ancestor — the root itself may be decoupled, and
+		-- units above never close a chain; such chains bring the area in, once
+		-- per root. The LATERAL probe keeps this on per-row index lookups.
 		open_chain AS (
 			SELECT DISTINCT a.root
 			FROM ancestry a
@@ -176,30 +196,36 @@ export async function computeUserGrants(
 						AND NOT cr.deleted
 				) AS no_parents
 			) t
-			WHERE NOT a.shielded AND (a.depth = 0 OR NOT a.decoupled)
+			WHERE NOT a.shielded AND (a.depth = 0 OR NOT a.decoupled OR a.unit)
 				AND (t.no_parents OR a.is_cycle)
 		),
-		-- The area an open chain brings in: the units above with a matrix of
-		-- their own, nearest first, else the organization. It governs an
-		-- inheriting container and lies dormant beside a decoupled one.
+		-- The area an open chain brings in: the nearest unit above with a
+		-- matrix of its own (never the container itself), else the
+		-- organization. It governs an inheriting container and lies dormant
+		-- beside a decoupled one.
 		area AS (
-			SELECT b.root, b.decoupled, du.guid, ${unitSourceOrd}::int + du.depth AS ord
-			FROM base b
-			JOIN open_chain oc ON oc.root = b.root
-			JOIN decoupled_units du ON du.unit = b.organizational_unit
+			SELECT nu.root, nu.decoupled, nu.guid, nu.ord
+			FROM (
+				SELECT DISTINCT ON (b.root) b.root, b.decoupled, du.guid,
+					${unitSourceOrd}::int + du.depth AS ord
+				FROM base b
+				JOIN open_chain oc ON oc.root = b.root
+				JOIN decoupled_units du ON du.unit = b.unit_start AND du.guid <> b.root
+				ORDER BY b.root, du.depth, du.guid
+			) nu
 			UNION ALL
 			SELECT b.root, b.decoupled, b.organization, 2147483647
 			FROM base b
 			JOIN open_chain oc ON oc.root = b.root
 			WHERE NOT EXISTS (
-				SELECT 1 FROM decoupled_units du WHERE du.unit = b.organizational_unit
+				SELECT 1 FROM decoupled_units du WHERE du.unit = b.unit_start AND du.guid <> b.root
 			)
 		),
 		-- A decoupled container is its own primary source (ord -1); the
 		-- decoupled ancestors of every chain apply side by side, nearest first,
 		-- and only an inheriting container with an open chain falls back to the
 		-- area, ordered last. A decoupled ancestor thus replaces the area
-		-- matrices for the contents it governs.
+		-- matrix for the contents it governs.
 		sources AS (
 			SELECT b.root, b.root AS source, -1 AS ord FROM base b WHERE b.decoupled
 			UNION ALL
@@ -221,7 +247,7 @@ export async function computeUserGrants(
 			UNION ALL
 			SELECT b.root, 'organizational_unit', uc.guid, NULL
 			FROM base b
-			JOIN unit_chain uc ON uc.unit = b.organizational_unit
+			JOIN unit_chain uc ON uc.unit = b.unit_start AND uc.guid <> b.root
 		) m
 		LEFT JOIN container_grant g ON g.object = m.object
 			AND g.subject IN (SELECT s.subject FROM subjects s)
@@ -258,14 +284,14 @@ export async function computeUserGrants(
 			.sort(([a, ordA], [b, ordB]) => ordA - ordB || a.localeCompare(b))
 			.map(([object]) => object);
 
-		// governed by nothing beyond the area (the units and the organization
-		// rank last); a decoupled container names itself as the source, which
+		// governed by nothing beyond the area (the unit or the organization
+		// ranks last); a decoupled container names itself as the source, which
 		// reads as false here
 		const scopeSourced = ordered.every(
 			(source) => (rankByObject.get(source) ?? 0) >= unitSourceOrd
 		);
 
-		// the nearest area a decoupled container would fall back to
+		// the area a decoupled container would fall back to
 		const dormant = forGuid
 			.filter((r) => r.place === 'dormant')
 			.sort((a, b) => (a.ord ?? 0) - (b.ord ?? 0))[0]?.object;

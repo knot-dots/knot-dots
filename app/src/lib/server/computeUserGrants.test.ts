@@ -1063,7 +1063,7 @@ test('a decoupled unit governs the contents of the units below it', async ({
 	});
 });
 
-test('the units above accumulate for the contents, nearest first', async ({
+test('the nearest unit above with a matrix governs the contents alone', async ({
 	connection
 }: Fixtures) => {
 	const organization = uuid();
@@ -1078,9 +1078,72 @@ test('the units above accumulate for the contents, nearest first', async ({
 
 	const grants = await computeUserGrants(connection, subject, [measure.guid]);
 
-	expect(grants.get(measure.guid)?.sources).toEqual([subunit.guid, unit.guid]);
-	expect(grants.get(measure.guid)?.subordinates).toEqual(['read', 'update']);
+	// the unit above is cut off: units replace, they do not accumulate
+	expect(grants.get(measure.guid)?.sources).toEqual([subunit.guid]);
+	expect(grants.get(measure.guid)?.subordinates).toEqual(['read']);
 	expect(grants.get(measure.guid)?.scope_sourced).toBe(true);
+});
+
+test('a decoupled unit below a decoupled unit is governed by its own matrix alone', async ({
+	connection
+}: Fixtures) => {
+	const organization = uuid();
+	const subject = await newTestUser(connection);
+	const unit = await newDecoupledUnit(connection, organization);
+	const subunit = await newUnitBelow(connection, organization, unit.guid, true);
+	await setContainerGrants(unit.guid, subject, { self: ['read'], subordinates: ['update'] })(
+		connection
+	);
+	await setContainerGrants(subunit.guid, subject, { self: ['read'], subordinates: ['read'] })(
+		connection
+	);
+
+	const grants = await computeUserGrants(connection, subject, [subunit.guid]);
+
+	expect(grants.get(subunit.guid)?.sources).toEqual([subunit.guid]);
+	expect(grants.get(subunit.guid)?.subordinates).toEqual(['read']);
+	// the unit above is the area the subunit falls back to once it inherits
+	expect(grants.get(subunit.guid)?.dormant).toBe(unit.guid);
+});
+
+test('an inheriting unit follows the nearest unit above with a matrix', async ({
+	connection
+}: Fixtures) => {
+	const organization = uuid();
+	const subject = await newTestUser(connection);
+	const unit = await newDecoupledUnit(connection, organization);
+	const middle = await newUnitBelow(connection, organization, unit.guid, false);
+	const subunit = await newUnitBelow(connection, organization, middle.guid, false);
+	await setContainerGrants(unit.guid, subject, { self: [], subordinates: ['update'] })(connection);
+	await setContainerGrants(organization, subject, { self: [], subordinates: ['delete'] })(
+		connection
+	);
+
+	const grants = await computeUserGrants(connection, subject, [subunit.guid]);
+
+	// the organization is cut off by the unit above
+	expect(grants.get(subunit.guid)?.sources).toEqual([unit.guid]);
+	expect(grants.get(subunit.guid)?.subordinates).toEqual(['update']);
+	expect(grants.get(subunit.guid)?.dormant).toBeUndefined();
+});
+
+test('an inheriting unit without a unit above with a matrix follows the organization', async ({
+	connection
+}: Fixtures) => {
+	const organization = uuid();
+	const subject = await newTestUser(connection);
+	const unit = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.organizational_unit)
+	)(connection);
+	const subunit = await newUnitBelow(connection, organization, unit.guid, false);
+	await setContainerGrants(organization, subject, { self: [], subordinates: ['delete'] })(
+		connection
+	);
+
+	const grants = await computeUserGrants(connection, subject, [subunit.guid]);
+
+	expect(grants.get(subunit.guid)?.sources).toEqual([organization]);
+	expect(grants.get(subunit.guid)?.subordinates).toEqual(['delete']);
 });
 
 test('administrators of a unit above administer the contents of the units below', async ({
