@@ -362,6 +362,14 @@
 		z-index: 1;
 	}
 
+	/* the matrix does not use the global row highlighting; the checkbox lives
+	   in its own component, so it must stay unscoped inside :has() */
+	tbody tr,
+	tbody tr:hover,
+	tbody tr:has(:global(input[type='checkbox']:checked)) {
+		background-color: white;
+	}
+
 	thead tr:first-child th {
 		top: 0;
 	}
