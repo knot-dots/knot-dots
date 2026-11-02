@@ -1,5 +1,5 @@
 <script lang="ts">
-	import prettierBytes from '@transloadit/prettier-bytes';
+	import { prettierBytes } from '@transloadit/prettier-bytes';
 	import Uppy from '@uppy/core';
 	import XHRUpload from '@uppy/xhr-upload';
 	import { UppyContextProvider } from '@uppy/svelte';

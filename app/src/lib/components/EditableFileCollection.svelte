@@ -1,5 +1,5 @@
 <script lang="ts">
-	import prettierBytes from '@transloadit/prettier-bytes';
+	import { prettierBytes } from '@transloadit/prettier-bytes';
 	import Uppy from '@uppy/core';
 	import German from '@uppy/locales/lib/de_DE';
 	import { UppyContextProvider } from '@uppy/svelte';

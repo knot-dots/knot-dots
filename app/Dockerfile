@@ -20,11 +20,14 @@ FROM node:24-slim AS pre-production
 WORKDIR /srv/knot-dots
 COPY package*.json ./
 COPY app/package.json ./app/
-RUN npm clean-install --production --silent --workspace app
+RUN npm clean-install --production --silent --workspace app && mkdir -p app/node_modules
 
 FROM gcr.io/distroless/nodejs24-debian12 AS production
 WORKDIR /srv/app
-COPY --from=pre-production /srv/knot-dots/node_modules ./node_modules
+# Keep the workspace layout: npm installs a package in app/node_modules when
+# the root already holds another version of it.
+COPY --from=pre-production /srv/knot-dots/node_modules /srv/node_modules
+COPY --from=pre-production /srv/knot-dots/app/node_modules ./node_modules
 COPY --from=builder /srv/knot-dots/app/build ./build
 EXPOSE 3000
 CMD ["build"]

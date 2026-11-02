@@ -25,6 +25,12 @@ export default defineConfig({
 			}
 		})
 	],
+	resolve: {
+		// Uppy renders with Preact. @auth/core pins an older Preact, which keeps
+		// npm from hoisting one copy for all Uppy packages, so @uppy/core ends
+		// up with its own. Bundle a single copy for all of Uppy.
+		dedupe: ['preact']
+	},
 	test: {
 		// The app container enables Roarr for the dev server, but in tests the
 		// logs of Slonik and the indexing queue drown out the results.
