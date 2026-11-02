@@ -5,7 +5,6 @@
 	import ChevronDownIcon from '~icons/flowbite/chevron-down-outline';
 	import ChevronRightIcon from '~icons/flowbite/chevron-right-outline';
 	import InfoIcon from '~icons/flowbite/info-circle-outline';
-	import EnvelopeIcon from '~icons/flowbite/envelope-outline';
 	import TrashBinIcon from '~icons/flowbite/trash-bin-outline';
 	import UserIcon from '~icons/flowbite/user-outline';
 	import RoleIcon from '~icons/knotdots/arrow-circle-down-outline';
@@ -134,8 +133,6 @@
 	let adminsExpanded = $state(true);
 	let ownExpandedOverride = $state<boolean | undefined>();
 
-	// whether the add row is searching for a subject
-	let adding = $state(false);
 	let sectionExpandedOverrides = new SvelteMap<string, boolean>();
 	const ownExpanded = $derived(ownExpandedOverride ?? !inherits);
 	const sectionExpanded = (section: (typeof inheritedSections)[number]) =>
@@ -512,62 +509,19 @@
 					</tr>
 				{/each}
 				{#if editable && !inherits}
-					{#if adding}
-						<!-- the row being added: the search in the name cell, the rest empty -->
-						<tr>
-							<td class="col-name">
+					<tr class="add-row">
+						<td colspan={columnCount + 1}>
+							<span class="add-controls">
 								<SubjectCombobox
 									excluded={ownRows.map(({ guid }) => guid)}
+									{oninvite}
 									onselect={addSubject}
 									organization={container.organization}
 									{teams}
-									bind:open={adding}
 								/>
-							</td>
-							<td class="col-role">
-								<BadgeDropdown
-									allowEmpty={false}
-									value={undefined}
-									options={roleOptions}
-									editable={false}
-									emptyLabel={$_('empty')}
-								/>
-							</td>
-							{#each columnGroups as group (group.target)}
-								{#each group.kinds as kind (kind)}
-									<td class="col-grant" class:col-group-start={kind === group.kinds[0]}>
-										<PermissionCheckbox
-											ariaLabel={`${$_(`permission.${kind}`)} (${$_(`permission_matrix.${group.label}`)})`}
-											checked={false}
-											disabled
-											state="editable"
-										/>
-									</td>
-								{/each}
-							{/each}
-							<td class="col-actions"></td>
-						</tr>
-					{:else}
-						<tr class="add-row">
-							<td colspan={columnCount + 1}>
-								<span class="add-controls">
-									<SubjectCombobox
-										excluded={ownRows.map(({ guid }) => guid)}
-										onselect={addSubject}
-										organization={container.organization}
-										{teams}
-										bind:open={adding}
-									/>
-									{#if oninvite}
-										<button class="button-alternate button-xs" type="button" onclick={oninvite}>
-											<EnvelopeIcon />
-											<span>{$_('invite.heading')}</span>
-										</button>
-									{/if}
-								</span>
-							</td>
-						</tr>
-					{/if}
+							</span>
+						</td>
+					</tr>
 				{/if}
 			{/if}
 
