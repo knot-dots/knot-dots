@@ -24,8 +24,12 @@ export const load = (async ({ locals, parent }) => {
 		error(404, unwrapFunctionStore(_)('error.not_found'));
 	}
 
+	// the addresses come along for those managing the team only; everyone
+	// else allowed to read the unit sees the names
+	const mayManage = ability.can('manage-users', container);
+
 	const [members, users] = await Promise.all([
-		locals.user.isAuthenticated ? getMembers(container.organization) : [],
+		mayManage ? getMembers(container.organization) : [],
 		locals.pool.connect(getAllRelatedUsers(container.guid, [predicates.enum['is-member-of']]))
 	]);
 
@@ -35,14 +39,14 @@ export const load = (async ({ locals, parent }) => {
 	)?.object;
 	const parentUnit = organizationalUnits.find(({ guid }) => guid === parentGuid);
 
-	const withEmail = (user: User) => ({
-		...user,
-		email: members.find(({ id }) => id === user.guid)?.username ?? user.guid
-	});
+	const withEmail = (user: User) =>
+		mayManage
+			? { ...user, email: members.find(({ id }) => id === user.guid)?.username ?? user.guid }
+			: user;
 
 	return {
 		container,
-		mayManage: ability.can('manage-users', container),
+		mayManage,
 		parent: parentUnit
 			? { guid: parentUnit.guid, name: parentUnit.payload.name }
 			: { guid: currentOrganization.guid, name: currentOrganization.payload.name },

@@ -210,8 +210,8 @@
 				<thead>
 					<tr>
 						<th class="col-name">{$_('user.display_name')}</th>
-						<th class="col-email">{$_('user.email')}</th>
 						{#if mayManage}
+							<th class="col-email">{$_('user.email')}</th>
 							<th class="col-actions"></th>
 						{/if}
 					</tr>
@@ -220,8 +220,8 @@
 					{#each users as member (member.guid)}
 						<tr>
 							<td class="col-name">{displayName(member)}</td>
-							<td class="col-email">{email(member)}</td>
 							{#if mayManage}
+								<td class="col-email">{email(member)}</td>
 								<td class="col-actions">
 									<button
 										aria-label={$_('user.remove')}
@@ -236,7 +236,7 @@
 						</tr>
 					{:else}
 						<tr class="empty-row">
-							<td colspan={mayManage ? 3 : 2}>{$_('teams.no_members')}</td>
+							<td colspan={mayManage ? 3 : 1}>{$_('teams.no_members')}</td>
 						</tr>
 					{/each}
 					{#if mayManage}

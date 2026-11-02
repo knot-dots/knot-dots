@@ -21,6 +21,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import PageLayout from '$lib/components/PageLayout.svelte';
 	import ObjectPermissionMatrix from '$lib/components/ObjectPermissionMatrix.svelte';
+	import TeamsTable from '$lib/components/TeamsTable.svelte';
 	import UserPermissionMatrix from '$lib/components/UserPermissionMatrix.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
@@ -61,12 +62,14 @@
 		showViewSwitch && page.url.searchParams.get('view') === 'permissions'
 	);
 
-	function viewUrl(view: 'users' | 'permissions') {
+	const teamsView = $derived(showViewSwitch && page.url.searchParams.get('view') === 'teams');
+
+	function viewUrl(view: 'users' | 'permissions' | 'teams') {
 		const url = new URL(page.url);
-		if (view === 'permissions') {
-			url.searchParams.set('view', 'permissions');
-		} else {
+		if (view === 'users') {
 			url.searchParams.delete('view');
+		} else {
+			url.searchParams.set('view', view);
 		}
 		return `${url.pathname}${url.search}`;
 	}
@@ -292,7 +295,7 @@
 				{#if showViewSwitch}
 					<nav class="segmented-button view-switch">
 						<a
-							aria-current={!permissionView ? 'page' : undefined}
+							aria-current={!permissionView && !teamsView ? 'page' : undefined}
 							class="button"
 							href={viewUrl('users')}
 						>
@@ -305,9 +308,12 @@
 						>
 							{$_('user_management.views.permissions')}
 						</a>
+						<a aria-current={teamsView ? 'page' : undefined} class="button" href={viewUrl('teams')}>
+							{$_('user_management.views.teams')}
+						</a>
 					</nav>
 				{/if}
-				{#if !permissionView && $ability.can('manage-users', data.container)}
+				{#if !permissionView && !teamsView && $ability.can('manage-users', data.container)}
 					<button
 						class="button button-xs button-primary system-primary"
 						type="button"
@@ -319,11 +325,23 @@
 				{/if}
 			{/snippet}
 
-			<Header search facets={permissionView ? new Map() : facets} sortOptions={[]} {commands} />
+			<Header
+				search
+				facets={permissionView || teamsView ? new Map() : facets}
+				sortOptions={[]}
+				{commands}
+			/>
 		{/snippet}
 
 		{#snippet main()}
-			{#if permissionView}
+			{#if teamsView}
+				<TeamsTable
+					container={data.container}
+					managedOrganizationalUnits={data.managedOrganizationalUnits}
+					teams={data.teams}
+				/>
+				<ContextTabs slug="user-management" />
+			{:else if permissionView}
 				{#if data.inheritedSections && data.admins}
 					<ObjectPermissionMatrix
 						admins={data.admins}

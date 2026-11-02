@@ -862,6 +862,7 @@
 	"tasks": "Tasks",
 	"team": "Team",
 	"teams": {
+		"and_more": "{names} and {count} more",
 		"belongs_to": "Belongs to",
 		"changes_apply_everywhere": "Changes apply to every object in which this team holds rights.",
 		"create": "Create team",
@@ -1001,6 +1002,7 @@
 	"user_management": {
 		"views": {
 			"permissions": "Permissions",
+			"teams": "Teams",
 			"users": "Users"
 		}
 	},
