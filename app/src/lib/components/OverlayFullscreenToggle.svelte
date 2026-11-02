@@ -63,6 +63,8 @@
 				return resolve('/[guid=uuid]/[contentGuid=uuid]/all/members', routeParams);
 			case overlayKey.enum['tasks']:
 				return resolve('/[guid=uuid]/[contentGuid=uuid]/tasks/status', routeParams);
+			case overlayKey.enum.team:
+				return resolve('/[guid=uuid]/team', { guid: $overlay.container.guid });
 			default:
 				return '';
 		}

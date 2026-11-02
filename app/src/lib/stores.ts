@@ -193,6 +193,13 @@ export type OverlayData =
 			relatedContainers: Container[];
 	  }
 	| {
+			key: 'team';
+			container: Container<OrganizationalUnitPayload>;
+			mayManage: boolean;
+			parent: { guid: string; name: string };
+			users: UserRecord[];
+	  }
+	| {
 			key: 'tasks';
 			container: Container<AnyPayload>;
 			containers: Container[];
@@ -245,7 +252,13 @@ if (browser) {
 
 		const hashParams = paramsFromFragment(values.url);
 
-		if (hashParams.toString() == previousHashState && !hashParams.has(overlayKey.enum.members)) {
+		// the members and team overlays reload after invalidateAll, so their
+		// rosters follow the edits made inside them
+		if (
+			hashParams.toString() == previousHashState &&
+			!hashParams.has(overlayKey.enum.members) &&
+			!hashParams.has(overlayKey.enum.team)
+		) {
 			return;
 		}
 
@@ -306,6 +319,22 @@ if (browser) {
 				inheritedSections: result.data.inheritedSections,
 				mayManageOrganizationUsers: result.data.mayManageOrganizationUsers,
 				teams: result.data.teams,
+				users: result.data.users
+			});
+		} else if (hashParams.has(overlayKey.enum.team)) {
+			const result = await preloadData(
+				resolve('/[guid=uuid]/team', {
+					guid: hashParams.get(overlayKey.enum.team) as string
+				})
+			);
+			if (result.type !== 'loaded' || result.status !== 200) {
+				return;
+			}
+			setOverlayIfLatest({
+				key: overlayKey.enum.team,
+				container: result.data.container,
+				mayManage: result.data.mayManage,
+				parent: result.data.parent,
 				users: result.data.users
 			});
 		} else if (hashParams.has(overlayKey.enum.relations)) {

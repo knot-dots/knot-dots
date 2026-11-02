@@ -863,13 +863,17 @@
 	"team": "Team",
 	"teams": {
 		"belongs_to": "Belongs to",
+		"changes_apply_everywhere": "Changes apply to every object in which this team holds rights.",
 		"create": "Create team",
 		"create_new": "Create a new team",
 		"manage": "Edit in the user management",
 		"members": "Members",
+		"members_count": "Members ({count})",
 		"name_placeholder": "Name of the team",
 		"no_members": "No members yet",
-		"show_members": "Show the members of {name}"
+		"search_person": "Search a person by name or email",
+		"show_members": "Show the members of {name}",
+		"to_team": "To the team"
 	},
 	"teaser": "Teaser",
 	"teaser_highlight": "Spotlight teaser",
