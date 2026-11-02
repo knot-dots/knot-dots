@@ -370,6 +370,17 @@
 		background-color: white;
 	}
 
+	/* nor the global cell highlighting, and the add row's buttons do not
+	   change their background either: the design shows no hover states */
+	td:hover {
+		background-color: transparent;
+	}
+
+	.add-controls :global(button:hover),
+	.add-controls :global(button:active) {
+		background: none;
+	}
+
 	thead tr:first-child th {
 		top: 0;
 	}
