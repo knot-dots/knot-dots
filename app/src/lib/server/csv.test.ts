@@ -5,7 +5,9 @@ import {
 	findTermLabel,
 	resolveCategoryTerms
 } from '$lib/categoryOptions';
+import { anyInitialPayload } from '$lib/models';
 import {
+	buildImportPayload,
 	resolveColumnHeader,
 	reverseTranslationMap,
 	reverseTranslationMapForPayloadType,
@@ -192,5 +194,63 @@ describe('reverseTranslationMapForPayloadType', () => {
 		['Ziel', 'goal']
 	])('maps the payload type label %j as shown in the UI to %j', (label, value) => {
 		expect(reverseTranslationMapForPayloadType.get(label)).toBe(value);
+	});
+});
+
+describe('buildImportPayload', () => {
+	it.each(['Aufgabe', 'Maßnahme', 'Programm', 'Regel', 'Wissen', 'Ziel'])(
+		'builds a valid payload of type %j from a record with only title and type',
+		(type) => {
+			const payload = buildImportPayload({ title: 'Title', type }, {});
+
+			expect(anyInitialPayload.safeParse(payload).error).toBeUndefined();
+		}
+	);
+
+	it('sets the editorial state only for types that have one', () => {
+		expect(buildImportPayload({ title: 'Title', type: 'Ziel' }, {})).toHaveProperty(
+			'editorialState',
+			'editorial_state.draft'
+		);
+		expect(buildImportPayload({ title: 'Title', type: 'Aufgabe' }, {})).not.toHaveProperty(
+			'editorialState'
+		);
+	});
+
+	it('maps the record to a valid measure payload', () => {
+		const payload = buildImportPayload(
+			{
+				description: 'Description',
+				endDate: '2025-12-31',
+				startDate: '2025-01-01',
+				status: 'In Betrieb',
+				summary: 'Summary',
+				title: 'Title',
+				type: 'Maßnahme'
+			},
+			{ 'cat-sdg-guid': ['term-sdg-1'] }
+		);
+
+		expect(payload).toEqual({
+			category: { 'cat-sdg-guid': ['term-sdg-1'] },
+			description: 'Description',
+			editorialState: 'editorial_state.draft',
+			endDate: '2025-12-31',
+			startDate: '2025-01-01',
+			status: 'status.in_operation',
+			summary: 'Summary',
+			title: 'Title',
+			type: 'measure'
+		});
+		expect(anyInitialPayload.safeParse(payload).error).toBeUndefined();
+	});
+
+	it('leaves rejecting fields the type does not have to the schema', () => {
+		const payload = buildImportPayload(
+			{ description: 'Description', title: 'Title', type: 'Programm' },
+			{}
+		);
+
+		expect(anyInitialPayload.safeParse(payload).success).toBe(false);
 	});
 });

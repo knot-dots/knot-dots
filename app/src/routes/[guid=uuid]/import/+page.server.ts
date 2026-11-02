@@ -12,7 +12,6 @@ import {
 	type Container,
 	containerOfType,
 	createNewContainerSchema,
-	editorialState,
 	isOrganizationalUnitContainer,
 	isOrganizationContainer,
 	type NewContainer,
@@ -22,11 +21,7 @@ import {
 	type ProgramPayload
 } from '$lib/models';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
-import {
-	detectDelimiter,
-	reverseTranslationMapForPayloadType,
-	reverseTranslationMapForStatus
-} from '$lib/server/csv';
+import { buildImportPayload, detectDelimiter } from '$lib/server/csv';
 import {
 	createContainer,
 	getAllRelatedUsers,
@@ -193,19 +188,7 @@ export const actions = {
 						managed_by: organizationalUnit?.guid ?? currentOrganizationGuid,
 						organization: currentOrganizationGuid,
 						organizational_unit: organizationalUnit?.guid ?? null,
-						payload: {
-							category: categoryValues,
-							description: fields.description,
-							...(fields.endDate ? { endDate: fields.endDate } : {}),
-							...(fields.status
-								? { status: reverseTranslationMapForStatus.get(fields.status) ?? fields.status }
-								: {}),
-							...(fields.startDate ? { startDate: fields.startDate } : {}),
-							...(fields.summary ? { summary: fields.summary } : {}),
-							editorialState: editorialState.enum['editorial_state.draft'],
-							title: fields.title,
-							type: reverseTranslationMapForPayloadType.get(fields.type) ?? fields.type
-						},
+						payload: buildImportPayload(fields, categoryValues),
 						realm: env.PUBLIC_KC_REALM,
 						relation: program
 							? [

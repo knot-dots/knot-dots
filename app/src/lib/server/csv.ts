@@ -1,6 +1,6 @@
 import de from '$lib/locales/de.json';
 import { type CategoryContext, findCategoryGuid } from '$lib/categoryOptions';
-import { payloadTypes, status } from '$lib/models';
+import { editorialState, getPayloadSchema, isPayloadType, payloadTypes, status } from '$lib/models';
 
 export const reverseTranslationMap = new Map<string, string>(
 	Object.entries(de)
@@ -21,6 +21,37 @@ export const reverseTranslationMapForStatus = new Map<string, string>(
 		s
 	])
 );
+
+/**
+ * Builds the payload of a container imported from one CSV record.
+ *
+ * The payload schemas are strict, so a key the type lacks is rejected even if
+ * its value is undefined. Hence optional fields are only set when the record
+ * has a value, and the editorial state only for types that have one.
+ */
+export function buildImportPayload(
+	fields: Record<string, string | undefined>,
+	category: Record<string, string[]>
+) {
+	const type = reverseTranslationMapForPayloadType.get(fields.type ?? '') ?? fields.type;
+	const shape = isPayloadType(type) ? getPayloadSchema(type).shape : {};
+
+	return {
+		category,
+		...(fields.description ? { description: fields.description } : {}),
+		...('editorialState' in shape
+			? { editorialState: editorialState.enum['editorial_state.draft'] }
+			: {}),
+		...(fields.endDate ? { endDate: fields.endDate } : {}),
+		...(fields.status
+			? { status: reverseTranslationMapForStatus.get(fields.status) ?? fields.status }
+			: {}),
+		...(fields.startDate ? { startDate: fields.startDate } : {}),
+		...(fields.summary ? { summary: fields.summary } : {}),
+		title: fields.title,
+		type
+	};
+}
 
 /**
  * Maps of alternative column header spellings to canonical keys.
