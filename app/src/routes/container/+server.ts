@@ -1,5 +1,4 @@
 import { error, json } from '@sveltejs/kit';
-import { UniqueIntegrityConstraintViolationError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import { filterVisible } from '$lib/authorization';
@@ -13,7 +12,10 @@ import {
 	taskCategories
 } from '$lib/models';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
-import { ContainerCreationError, createAuthorizedContainer } from '$lib/server/containerCreation';
+import {
+	containerCreationHttpError,
+	createAuthorizedContainer
+} from '$lib/server/containerCreation';
 import { getManyContainers, getManyOrganizationContainers } from '$lib/server/db';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { RequestHandler } from './$types';
@@ -132,26 +134,6 @@ export const POST = (async ({ locals, request }) => {
 
 		return json(result, { status: 201, headers: { location: `/container/${result.guid}` } });
 	} catch (caught: unknown) {
-		if (caught instanceof ContainerCreationError) {
-			if (caught.kind === 'invalid_container') error(422, caught.validationError!);
-			if (caught.kind === 'copy_invalid') {
-				error(422, { message: unwrapFunctionStore(_)('error.copy_invalid') });
-			}
-			if (caught.kind === 'scoped_template_required') {
-				error(422, { message: unwrapFunctionStore(_)('error.scoped_template_required') });
-			}
-			if (caught.kind === 'forbidden') {
-				error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
-			}
-			error(422, { message: unwrapFunctionStore(_)('error.bad_request') });
-		}
-		if (
-			caught instanceof UniqueIntegrityConstraintViolationError &&
-			(caught.constraint === 'container_payload_organization_slug_key' ||
-				caught.constraint === 'container_payload_organizational_unit_slug_key')
-		) {
-			error(409, { message: unwrapFunctionStore(_)('error.slug_not_available') });
-		}
-		throw caught;
+		containerCreationHttpError(caught);
 	}
 }) satisfies RequestHandler;

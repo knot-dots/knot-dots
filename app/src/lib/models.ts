@@ -4339,15 +4339,15 @@ function computeRelevanceScore(
 	return score;
 }
 
-export function sortIndicatorsByRelevanceForGoalOrMeasure(
+export function scoreIndicatorsByRelevanceForGoalOrMeasure(
 	indicators: Array<Container<BinaryIndicatorPayload | IndicatorPayload>>,
 	containersRelatedToIndicators: Container[],
 	container: Container<GoalPayload | MeasurePayload>
-): Array<Container<BinaryIndicatorPayload | IndicatorPayload>> {
+): Array<{ indicator: Container<BinaryIndicatorPayload | IndicatorPayload>; relevance: number }> {
 	return indicators
 		.map((i) => ({
 			indicator: i,
-			score: computeRelevanceScore(
+			relevance: computeRelevanceScore(
 				i,
 				[
 					...findConnected(i, containersRelatedToIndicators, [
@@ -4359,8 +4359,25 @@ export function sortIndicatorsByRelevanceForGoalOrMeasure(
 				container
 			)
 		}))
-		.toSorted((a, b) => b.score - a.score)
-		.map(({ indicator }) => indicator);
+		.toSorted((a, b) => b.relevance - a.relevance);
+}
+
+// Relevance scores can exceed 1, but are displayed capped at 1 with one
+// decimal. The color is derived from the displayed value, so that a displayed
+// 0.8 is never shown in a different color than another 0.8.
+export function relevanceLevel(score: number): {
+	value: number;
+	color: 'green' | 'orange' | 'gray';
+} {
+	const value = Math.round(Math.min(Math.max(score, 0), 1) * 10) / 10;
+
+	if (value >= 0.8) {
+		return { value, color: 'green' };
+	} else if (value >= 0.5) {
+		return { value, color: 'orange' };
+	} else {
+		return { value, color: 'gray' };
+	}
 }
 
 // Slope of the least-squares regression line through [year, value] points,

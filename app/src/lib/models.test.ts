@@ -23,7 +23,8 @@ import {
 	predicates,
 	type ProgramPayload,
 	type Relation,
-	sortIndicatorsByRelevanceForGoalOrMeasure,
+	relevanceLevel,
+	scoreIndicatorsByRelevanceForGoalOrMeasure,
 	trendDirection,
 	units,
 	userRelationsForMemberRole
@@ -147,15 +148,16 @@ test('indicator suggested for sub-measure', () => {
 	// 3. indicatorTwo due to the indicator having nothing in common with the measure (score: 0)
 	const expectedSuggestions = [indicatorOne, indicatorThree, indicatorTwo];
 
-	const actualSuggestions = sortIndicatorsByRelevanceForGoalOrMeasure(
+	const actualSuggestions = scoreIndicatorsByRelevanceForGoalOrMeasure(
 		[indicatorTwo, indicatorThree, indicatorOne],
 		[program, measure, effect],
 		subMeasure
 	);
 
-	expect(actualSuggestions.map(({ guid }) => guid)).toEqual(
+	expect(actualSuggestions.map(({ indicator }) => indicator.guid)).toEqual(
 		expectedSuggestions.map(({ guid }) => guid)
 	);
+	expect(actualSuggestions.map(({ relevance }) => relevance)).toEqual([2, 0.5, 0]);
 });
 
 test('indicator suggested for measure in program using indicator', () => {
@@ -181,15 +183,28 @@ test('indicator suggested for measure in program using indicator', () => {
 	// 3. indicatorTwo due to the indicator having nothing in common with the measure (score: 0)
 	const expectedSuggestions = [indicatorOne, indicatorThree, indicatorTwo];
 
-	const actualSuggestions = sortIndicatorsByRelevanceForGoalOrMeasure(
+	const actualSuggestions = scoreIndicatorsByRelevanceForGoalOrMeasure(
 		[indicatorTwo, indicatorThree, indicatorOne],
 		[program, measure, effect],
 		anotherMeasure
 	);
 
-	expect(actualSuggestions.map(({ guid }) => guid)).toEqual(
+	expect(actualSuggestions.map(({ indicator }) => indicator.guid)).toEqual(
 		expectedSuggestions.map(({ guid }) => guid)
 	);
+	expect(actualSuggestions.map(({ relevance }) => relevance)).toEqual([0.5, 0.4, 0]);
+});
+
+test.each([
+	[3, 1, 'green'],
+	[0.8, 0.8, 'green'],
+	[0.79, 0.8, 'green'],
+	[0.74, 0.7, 'orange'],
+	[0.5, 0.5, 'orange'],
+	[0.44, 0.4, 'gray'],
+	[0, 0, 'gray']
+])('relevance score %s is displayed as %s in %s', (score, value, color) => {
+	expect(relevanceLevel(score)).toEqual({ value, color });
 });
 
 test('memberRoleOf picks the highest role from the user relations', () => {

@@ -369,3 +369,75 @@ test('sysadmins may create containers without an existing parent', async () => {
 	expect(response.status).toBe(201);
 	expect(mocks.create).toHaveBeenCalled();
 });
+
+// —— the containers relations point to ————————————————————————————————————
+
+const relatedGuid = '00000000-0000-4000-8000-000000000005';
+
+function relatedGoal({ readable }: { readable: boolean }) {
+	return {
+		...organization(),
+		guid: relatedGuid,
+		payload: { title: 'Related', type: 'goal', visibility: 'members' },
+		...(readable
+			? {}
+			: {
+					user_grant: composeUserGrants({
+						scopeSourced: false,
+						governsItself: false,
+						organizationSelf: [],
+						organizationalUnitSelf: [],
+						sources: [{ guid: organizationGuid, self: [], subordinates: [] }]
+					})
+				})
+	};
+}
+
+test('a relation to a readable container is created', async () => {
+	mocks.byGuid = async (guid) =>
+		guid === relatedGuid ? relatedGoal({ readable: true }) : organization();
+
+	const response = await post(
+		newGoal(organizationGuid, [
+			{ object: relatedGuid, position: 0, predicate: predicates.enum['is-consistent-with'] }
+		])
+	);
+
+	expect(response.status).toBe(201);
+	expect(mocks.create).toHaveBeenCalled();
+});
+
+test.each(['object', 'subject'] as const)(
+	'a relation whose %s may not be read is refused like a missing one',
+	async (end) => {
+		mocks.byGuid = async (guid) =>
+			guid === relatedGuid ? relatedGoal({ readable: false }) : organization();
+
+		await expect(
+			post(
+				newGoal(organizationGuid, [
+					{ [end]: relatedGuid, position: 0, predicate: predicates.enum['is-consistent-with'] }
+				])
+			)
+		).rejects.toMatchObject({ status: 422 });
+		expect(mocks.create).not.toHaveBeenCalled();
+	}
+);
+
+test('a relation to a container that does not exist is refused', async () => {
+	mocks.byGuid = async (guid) => {
+		if (guid === relatedGuid) {
+			throw new NotFoundError('not found', { sql: 'SELECT 1', values: [] });
+		}
+		return organization();
+	};
+
+	await expect(
+		post(
+			newGoal(organizationGuid, [
+				{ object: relatedGuid, position: 0, predicate: predicates.enum['is-consistent-with'] }
+			])
+		)
+	).rejects.toMatchObject({ status: 422 });
+	expect(mocks.create).not.toHaveBeenCalled();
+});
