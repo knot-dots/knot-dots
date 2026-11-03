@@ -173,15 +173,15 @@
 			{:else if actualData.length > 0}
 				<NewIndicatorChart container={option} relatedContainers={actualData} />
 			{/if}
+		{/snippet}
+
+		{#snippet optionFooter(option)}
 			<p class="badges">
 				{#each option.payload.indicatorCategory as indicatorCategory (indicatorCategory)}
 					<span class="badge badge--indigo">{$_(indicatorCategory)}</span>
 				{/each}
+				<RelevanceBadge score={relevanceByGuid.get(option.guid) ?? 0} />
 			</p>
-		{/snippet}
-
-		{#snippet optionFooter(option)}
-			<RelevanceBadge score={relevanceByGuid.get(option.guid) ?? 0} />
 		{/snippet}
 	</SingleChoiceSelectableCardSet>
 
