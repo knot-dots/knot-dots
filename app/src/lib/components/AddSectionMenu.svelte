@@ -222,7 +222,9 @@
 			!hasSection(parentContainer, relatedContainers).some(isProgressContainer)
 	);
 
-	let mayAddChapter = $derived(isReportContainer(parentContainer));
+	let mayAddChapter = $derived(
+		isReportContainer(parentContainer) || isProgramContainer(parentContainer)
+	);
 
 	let mayAddGoal = $derived(
 		isProgramContainer(parentContainer) &&
