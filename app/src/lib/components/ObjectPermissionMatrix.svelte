@@ -620,23 +620,24 @@
 		z-index: 1;
 	}
 
-	/* the matrix does not use the global row highlighting; the checkbox lives
-	   in its own component, so it must stay unscoped inside :has() */
-	tbody tr,
-	tbody tr:hover,
+	/* checked boxes do not tint the row (the global rule would); the checkbox
+	   lives in its own component, so it must stay unscoped inside :has() */
 	tbody tr:has(:global(input[type='checkbox']:checked)) {
 		background-color: white;
 	}
 
-	/* nor the global cell highlighting, and the add row's buttons do not
-	   change their background either: the design shows no hover states */
-	td:hover {
-		background-color: transparent;
+	tbody tr:has(:global(input[type='checkbox']:checked)):hover {
+		background-color: var(--color-gray-050);
 	}
 
-	.add-controls :global(button:hover),
-	.add-controls :global(button:active) {
-		background: none;
+	/* the add row is an action bar, not a record: no row or cell highlighting */
+	tr.add-row,
+	tr.add-row:hover {
+		background-color: white;
+	}
+
+	tr.add-row td:hover {
+		background-color: transparent;
 	}
 
 	thead tr:first-child th {
