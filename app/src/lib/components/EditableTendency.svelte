@@ -15,7 +15,7 @@
 		editable?: boolean;
 	}
 
-	let { container, editable = false }: Props = $props();
+	let { container = $bindable(), editable = false }: Props = $props();
 
 	const isEffect = $derived(container.payload.type === payloadTypes.enum.effect);
 	const trendValueUpLabel = $derived(

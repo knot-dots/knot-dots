@@ -337,7 +337,7 @@
 							</h4>
 
 							{#if kind === effectKinds.enum.tendency}
-								<EditableTendency container={draft} editable />
+								<EditableTendency bind:container={draft} editable />
 							{:else if kind === effectKinds.enum.series}
 								<PlannedValuesEditor bind:value={plannedValues} />
 								{#if !isValidValue}
