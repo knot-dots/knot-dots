@@ -220,6 +220,35 @@ test.describe('Creating effects', () => {
 				.getByRole('figure')
 		).toBeVisible();
 	});
+
+	test("the browser's back button returns to the previous step and then closes the dialog", async ({
+		dotsBoard,
+		measureEffectCollection,
+		testIndicator,
+		testMeasure
+	}) => {
+		void measureEffectCollection;
+		const page = dotsBoard.page;
+		const measurePage = new MeasurePage(page);
+		await measurePage.goto(testMeasure);
+		const url = page.url();
+
+		const dialog = await measurePage.createEffect();
+		const suggestion = await findSuggestion(dialog, testIndicator.payload.title);
+		await suggestion.getByText(testIndicator.payload.title).click();
+		await expect(dialog.getByRole('textbox', { name: 'Description' })).toBeVisible();
+
+		await page.goBack();
+		await expect(
+			dialog.getByRole('heading', {
+				name: 'Choose an existing indicator to measure the effect or create a new one'
+			})
+		).toBeVisible();
+
+		await page.goBack();
+		await expect(dialog).toBeHidden();
+		expect(page.url()).toBe(url);
+	});
 });
 
 test.describe('Creating effects without permission to create indicators', () => {

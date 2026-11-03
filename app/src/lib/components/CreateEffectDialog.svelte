@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Attachment } from 'svelte/attachments';
 	import { _ } from 'svelte-i18n';
-	import { beforeNavigate } from '$app/navigation';
+	import { beforeNavigate, pushState } from '$app/navigation';
 	import { page } from '$app/state';
 	import { filterCategoryContext } from '$lib/categoryOptions';
 	import createEffect, { CreateEffectError } from '$lib/client/createEffect';
@@ -42,8 +42,6 @@
 
 	let dialog: HTMLDialogElement;
 
-	let step = $state<1 | 2>(1);
-
 	let selection = $state.raw<
 		| {
 				actualData: Container<ActualDataPayload>[];
@@ -53,6 +51,10 @@
 		  }
 		| { kind: 'new' }
 	>();
+
+	// The step is kept in the history. Without a selection, which is lost when
+	// the dialog is reopened by going forward again, only the first step remains.
+	let step = $derived(page.state.createEffect?.step === 2 && selection ? 2 : 1);
 
 	let description = $state('');
 
@@ -144,21 +146,33 @@
 		element.showModal();
 	};
 
-	beforeNavigate(() => {
-		dialog?.close();
+	// Leaving the page closes the dialog, but keeps its steps in the history.
+	beforeNavigate(({ from, to }) => {
+		if (from?.url.href !== to?.url.href) {
+			dialogContext.close();
+		}
 	});
+
+	// Closing the dialog also removes its steps from the history.
+	function onclose() {
+		const steps = page.state.createEffect?.step ?? 0;
+		dialogContext.close();
+		if (steps > 0) {
+			history.go(-steps);
+		}
+	}
 
 	function select(
 		indicator: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>,
 		{ actualData, relevance }: { actualData: Container<ActualDataPayload>[]; relevance: number }
 	) {
 		selection = { actualData, kind: 'existing', indicator, relevance };
-		step = 2;
+		pushState('', { createEffect: { step: 2 } });
 	}
 
 	function createNew() {
 		selection = { kind: 'new' };
-		step = 2;
+		pushState('', { createEffect: { step: 2 } });
 	}
 
 	async function submit() {
@@ -218,7 +232,7 @@
 			event.preventDefault();
 		}
 	}}
-	onclose={() => dialogContext.close()}
+	{onclose}
 	oninput={(event) => event.stopPropagation()}
 >
 	<form
@@ -231,7 +245,12 @@
 			<h2 class="truncated" id="create-effect-dialog-title">{heading}</h2>
 
 			{#if step === 2}
-				<button class="button-xs" disabled={submitting} onclick={() => (step = 1)} type="button">
+				<button
+					class="button-xs"
+					disabled={submitting}
+					onclick={() => history.back()}
+					type="button"
+				>
 					{$_('back')}
 				</button>
 			{/if}

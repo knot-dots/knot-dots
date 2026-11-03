@@ -60,7 +60,7 @@
 	<CreateContainerDialog bind:dialog />
 {/if}
 <CreateObjectiveDialog bind:dialog={createObjectiveDialog} />
-{#if createEffectDialog.request}
+{#if createEffectDialog.request && page.state.createEffect}
 	<CreateEffectDialog />
 {/if}
 

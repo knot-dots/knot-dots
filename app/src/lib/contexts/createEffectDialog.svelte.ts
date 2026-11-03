@@ -1,4 +1,5 @@
 import { createContext } from 'svelte';
+import { pushState } from '$app/navigation';
 import type { CreatedEffect } from '$lib/effectCreation';
 import type { Container, GoalPayload, IooiType, MeasurePayload } from '$lib/models';
 
@@ -25,6 +26,9 @@ export function createCreateEffectDialogContext(): CreateEffectDialogContext {
 		},
 		open(value) {
 			request = value;
+			// Each step of the dialog is an entry in the history, so that the
+			// browser's back button returns to the previous step.
+			pushState('', { createEffect: { step: 1 } });
 		},
 		close() {
 			request = undefined;
