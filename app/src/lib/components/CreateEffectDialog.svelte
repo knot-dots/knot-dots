@@ -261,7 +261,6 @@
 				includeBinaryIndicators={createFeatureDecisions(page.data.features).useBinaryIndicators()}
 				onCreateNew={mayCreateIndicator ? createNew : undefined}
 				onSelect={select}
-				purpose="effect"
 				{target}
 			/>
 		{:else if selection}

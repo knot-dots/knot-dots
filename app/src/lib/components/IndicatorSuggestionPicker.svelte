@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { resource } from 'runed';
 	import { _ } from 'svelte-i18n';
-	import InfoCircle from '~icons/flowbite/info-circle-solid';
 	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
 	import { filterCategoryContext } from '$lib/categoryOptions';
@@ -30,19 +29,11 @@
 			container: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>,
 			suggestion: { actualData: Container<ActualDataPayload>[]; relevance: number }
 		) => void;
-		purpose: 'effect' | 'objective';
 		target: Container<GoalPayload | MeasurePayload>;
 		value?: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>;
 	}
 
-	let {
-		includeBinaryIndicators = true,
-		onCreateNew,
-		onSelect,
-		purpose,
-		target,
-		value
-	}: Props = $props();
+	let { includeBinaryIndicators = true, onCreateNew, onSelect, target, value }: Props = $props();
 
 	const categoryContext = $derived(
 		filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.indicator])
@@ -155,14 +146,12 @@
 
 <SearchToolbar bind:filter bind:terms {categoryContext} {facets}>
 	{#snippet extraPrimaryContent()}
-		<span class="prompt">
-			<InfoCircle />
-			{#if purpose === 'effect'}
-				{$_('create_effect_dialog.prompt_effect')}
-			{:else}
-				{$_('create_effect_dialog.prompt_objective')}
-			{/if}
-		</span>
+		{#if onCreateNew}
+			<button class="create-new-button" onclick={onCreateNew} type="button">
+				<Plus />
+				{$_('create_effect_dialog.create_with_new_indicator')}
+			</button>
+		{/if}
 	{/snippet}
 </SearchToolbar>
 
@@ -197,23 +186,17 @@
 </div>
 
 <style>
-	.prompt {
-		align-items: center;
-		background-color: var(--color-yellow-050);
-		border: solid 1px var(--color-yellow-200);
-		border-radius: 8px;
-		color: var(--color-yellow-900);
-		display: flex;
-		font-size: 0.875rem;
-		gap: 0.375rem;
-		line-height: 1.25;
-		padding: 0.375rem 1rem 0.375rem 0.5rem;
+	.create-new-button {
+		--button-border-color: transparent;
+		--button-hover-border-color: transparent;
+		--padding-x: 0.5rem;
+
+		color: var(--color-primary-700);
 	}
 
-	.prompt > :global(svg) {
-		color: var(--color-yellow-500);
-		height: 1.5rem;
-		width: 1.5rem;
+	.create-new-button > :global(svg) {
+		height: 1rem;
+		width: 1rem;
 	}
 
 	.create-new {

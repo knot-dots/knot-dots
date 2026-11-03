@@ -128,12 +128,7 @@
 			</nav>
 
 			{#if page.state.createObjective.step === 1 && target}
-				<IndicatorSuggestionPicker
-					onSelect={handleSelect}
-					purpose="objective"
-					{target}
-					value={selected}
-				/>
+				<IndicatorSuggestionPicker onSelect={handleSelect} {target} value={selected} />
 			{:else if page.state.createObjective.step === 2 && selected}
 				<IndicatorPreview container={selected} />
 			{:else if page.state.createObjective.step === 3 && newObjective}

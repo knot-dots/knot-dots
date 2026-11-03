@@ -119,6 +119,23 @@ test.describe('Creating effects', () => {
 		await expect(chosen).toContainText(/Relevance\s*\d\.\d/);
 	});
 
+	test('the toolbar also offers to create an effect with a new indicator', async ({
+		dotsBoard,
+		measureEffectCollection,
+		testMeasure
+	}) => {
+		void measureEffectCollection;
+		const measurePage = new MeasurePage(dotsBoard.page);
+		await measurePage.goto(testMeasure);
+
+		const dialog = await measurePage.createEffect();
+		await dialog.getByRole('button', { name: 'Create effect with new indicator' }).click();
+		await expect(
+			dialog.getByRole('heading', { name: 'Create a new effect', exact: true })
+		).toBeVisible();
+		await expect(dialog.getByRole('textbox', { name: 'Description' })).toBeVisible();
+	});
+
 	[
 		{
 			kind: 'Tendency',
@@ -223,5 +240,8 @@ test.describe('Creating effects without permission to create indicators', () => 
 		const dialog = await measurePage.createEffect();
 		await expect(await findSuggestion(dialog, testIndicator.payload.title)).toBeVisible();
 		await expect(dialog.getByRole('button', { name: 'Create new effect' })).toHaveCount(0);
+		await expect(
+			dialog.getByRole('button', { name: 'Create effect with new indicator' })
+		).toHaveCount(0);
 	});
 });
