@@ -395,7 +395,7 @@
 
 		<ViewSelect />
 
-		{#if createFeatureDecisions(page.data.features).useBulkActions() && $applicationState.containerDetailView.editable}
+		{#if $applicationState.containerDetailView.editable}
 			<BulkActions />
 		{/if}
 	</div>

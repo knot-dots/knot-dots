@@ -13,7 +13,6 @@
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import PropertiesBar from '$lib/components/PropertiesBar.svelte';
 	import PropertiesPanel from '$lib/components/PropertiesPanel.svelte';
-	import { getBulkActionContext } from '$lib/contexts/bulkAction';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
@@ -47,13 +46,10 @@
 
 	const handleSubmit = $derived(autoSave(container, 2000));
 	const detailViewHelpSlug = $derived(helpSlugForDetailView(container.payload.type));
-
-	const useBulkActions =
-		createFeatureDecisions(page.data.features).useBulkActions() && getBulkActionContext();
 </script>
 
 <div class="content-details">
-	<article style:--details-padding-x={useBulkActions ? '6rem' : undefined} class="details">
+	<article class="details">
 		<div class="details-scroll-wrapper">
 			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
 				{#if isContainerWithCover(container)}

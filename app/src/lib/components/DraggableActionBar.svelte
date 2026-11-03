@@ -5,8 +5,6 @@
 	import DragHandle from '~icons/knotdots/draghandle';
 	import { getBulkActionContext } from '$lib/contexts/bulkAction';
 	import type { AnyPayload, Container } from '$lib/models';
-	import { createFeatureDecisions } from '$lib/features';
-	import { page } from '$app/state';
 
 	type Props = {
 		actions?: Snippet;
@@ -17,16 +15,10 @@
 	let { actions, container, draggable = true }: Props = $props();
 
 	const bulkActionContext = getBulkActionContext();
-
-	const useBulkActions =
-		createFeatureDecisions(page.data.features).useBulkActions() && bulkActionContext;
 </script>
 
-<div
-	class="actions is-visible-on-hover"
-	style:--actions-left={useBulkActions ? '-4.75rem' : undefined}
->
-	{#if useBulkActions}
+<div class="actions is-visible-on-hover">
+	{#if bulkActionContext}
 		<label class="bulk-action">
 			<input
 				{@attach bulkActionContext.registerTarget}
@@ -64,7 +56,7 @@
 		box-shadow: var(--shadow-sm);
 		display: flex;
 		gap: 0.25rem;
-		left: var(--actions-left, -3.125rem);
+		left: var(--actions-left, -4.75rem);
 		padding: 0.25rem;
 		position: absolute;
 		top: var(--actions-top, 1.25rem);

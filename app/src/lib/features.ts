@@ -6,7 +6,6 @@ export const featureFlags = new Map([
 	[
 		'beta',
 		[
-			'BulkActions',
 			'ComputedProgress',
 			'ImportFromCsv',
 			'IOOI',
@@ -52,9 +51,6 @@ export function createFeatureDecisions(features: string[]) {
 		},
 		useSubMeasures() {
 			return features.includes('SubMeasures');
-		},
-		useBulkActions() {
-			return features.includes('BulkActions');
 		},
 		useAdoptions() {
 			return features.includes('Adoptions');
