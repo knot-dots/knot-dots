@@ -7,7 +7,6 @@
 	import EnvelopeIcon from '~icons/flowbite/envelope-outline';
 	import PlusIcon from '~icons/flowbite/plus-outline';
 	import SearchIcon from '~icons/flowbite/search-outline';
-	import { teamColor } from '$lib/components/TeamChip.svelte';
 	import { keycloakUser, type KeycloakUser, type TeamWithMembers } from '$lib/models';
 
 	// what a permission matrix can add as a row: one of the organization's
@@ -165,7 +164,7 @@
 					<li class="option" class:active use:combobox.item={{ value: suggestion }}>
 						<label>
 							<input checked={active} tabindex="-1" type="radio" value={suggestion.guid} />
-							<span class="badge badge--large badge--team badge--{teamColor(suggestion.guid)}">
+							<span class="badge badge--large badge--team badge--purple">
 								<span class="truncated">{suggestion.label}</span>
 							</span>
 						</label>

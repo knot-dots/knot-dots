@@ -1,13 +1,3 @@
-<script module lang="ts">
-	// a stable color per team, so it looks the same wherever it turns up; the
-	// two colors of the design keep the role colors free
-	const colors = ['purple', 'pink'];
-
-	export function teamColor(guid: string) {
-		return colors[[...guid].reduce((sum, char) => sum + char.charCodeAt(0), 0) % colors.length];
-	}
-</script>
-
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import fetchMembers from '$lib/client/fetchMembers';
@@ -22,7 +12,6 @@
 
 	let { manageHref, team }: Props = $props();
 
-	const color = $derived(teamColor(team.container.guid));
 	const name = $derived(team.container.payload.name);
 
 	let fetchedMembers: User[] | undefined = $state();
@@ -50,7 +39,7 @@
 <Dropdown label={$_('teams.show_members', { values: { name } })} strategy="fixed">
 	{#snippet button(popover)}
 		<button
-			class="badge badge--large badge--team badge--{color} team-chip"
+			class="badge badge--large badge--team badge--purple team-chip"
 			type="button"
 			use:popover.button
 			onclick={loadMembers}
