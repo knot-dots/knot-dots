@@ -1,15 +1,11 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
-	import Badges from '$lib/components/Badges.svelte';
-	import BinaryIndicatorProperties from '$lib/components/BinaryIndicatorProperties.svelte';
 	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
-	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
 	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
 	import PropertiesBar from '$lib/components/PropertiesBar.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type BinaryIndicatorPayload,
 		type Container,
@@ -50,21 +46,9 @@
 		</div>
 
 		<div class="details-meta">
-			{#if createFeatureDecisions(page.data.features).useNewPropertyPanel()}
-				<PropertiesBar {container} {relatedContainers} revisions={[]} />
-			{:else}
-				<Badges {container} />
-			{/if}
+			<PropertiesBar {container} {relatedContainers} revisions={[]} />
 		</div>
 	</header>
-
-	{#if !createFeatureDecisions(page.data.features).useNewPropertyPanel()}
-		{#if isBinaryIndicatorContainer(container)}
-			<BinaryIndicatorProperties {container} {relatedContainers} revisions={[]} />
-		{:else}
-			<IndicatorProperties {container} {relatedContainers} revisions={[]} />
-		{/if}
-	{/if}
 
 	<EditableFormattedText label={$_('description')} value={container.payload.description} />
 

@@ -2303,7 +2303,6 @@ h4.details-heading {
 	.is-visible-on-hover,
 	.print-button,
 	aside:has(> button),
-	.details-section:has(#properties-label),
 	.details-section--inline-help {
 		display: none !important;
 	}

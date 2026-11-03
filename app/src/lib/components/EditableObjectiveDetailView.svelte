@@ -20,7 +20,6 @@
 	import EditableTendency from '$lib/components/EditableTendency.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
-	import ObjectiveProperties from '$lib/components/ObjectiveProperties.svelte';
 	import ObjectiveOrEffectReviewBanner from '$lib/components/ObjectiveOrEffectReviewBanner.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
@@ -38,19 +37,12 @@
 
 	interface Props {
 		container: Container<ObjectivePayload>;
-		hideProperties?: boolean;
 		layout: Snippet<[Snippet, Snippet]>;
 		revisions: Container<AnyPayload>[];
 		sections: Container[];
 	}
 
-	let {
-		container = $bindable(),
-		hideProperties = false,
-		layout,
-		revisions,
-		sections
-	}: Props = $props();
+	let { container = $bindable(), layout, revisions, sections }: Props = $props();
 
 	let guid = $derived(container.guid);
 
@@ -280,18 +272,6 @@
 				<RelationButton {container} />
 				<CreateTemplateButton {container} />
 			</footer>
-		{/snippet}
-
-		{#snippet properties()}
-			{#if !hideProperties}
-				<ObjectiveProperties
-					bind:container
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container)}
-					{relatedContainers}
-					{revisions}
-				/>
-			{/if}
 		{/snippet}
 	</EditableContainerDetailView>
 {/snippet}

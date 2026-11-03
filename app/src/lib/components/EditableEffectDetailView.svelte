@@ -18,7 +18,6 @@
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableTendency from '$lib/components/EditableTendency.svelte';
 	import EffectChart from '$lib/components/EffectChart.svelte';
-	import EffectProperties from '$lib/components/EffectProperties.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import ObjectiveOrEffectReviewBanner from '$lib/components/ObjectiveOrEffectReviewBanner.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
@@ -36,19 +35,12 @@
 
 	interface Props {
 		container: Container<EffectPayload>;
-		hideProperties?: boolean;
 		layout: Snippet<[Snippet, Snippet]>;
 		revisions: Container<AnyPayload>[];
 		sections: Container[];
 	}
 
-	let {
-		container = $bindable(),
-		hideProperties = false,
-		layout,
-		revisions,
-		sections
-	}: Props = $props();
+	let { container = $bindable(), layout, revisions, sections }: Props = $props();
 
 	let guid = $derived(container.guid);
 
@@ -298,18 +290,6 @@
 			<footer class="footer-action-bar">
 				<RelationButton {container} />
 			</footer>
-		{/snippet}
-
-		{#snippet properties()}
-			{#if !hideProperties}
-				<EffectProperties
-					bind:container
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container)}
-					{relatedContainers}
-					{revisions}
-				/>
-			{/if}
 		{/snippet}
 	</EditableContainerDetailView>
 {/snippet}

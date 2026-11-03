@@ -3,14 +3,12 @@
 	import { page } from '$app/state';
 	import Overlay from '~icons/knotdots/overlay';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
-	import Badges from '$lib/components/Badges.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import Editor from '$lib/components/Editor.svelte';
 	import PropertiesBar from '$lib/components/PropertiesBar.svelte';
 	import Subsection from '$lib/components/Subsection.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
 		type Container,
@@ -90,16 +88,12 @@
 	{/if}
 </header>
 
-{#if createFeatureDecisions(page.data.features).useNewPropertyPanel()}
-	<PropertiesBar
-		bind:container
-		editable={editable && $ability.can('update', container)}
-		{relatedContainers}
-		revisions={[]}
-	/>
-{:else}
-	<Badges bind:container editable={editable && $ability.can('update', container)} />
-{/if}
+<PropertiesBar
+	bind:container
+	editable={editable && $ability.can('update', container)}
+	{relatedContainers}
+	revisions={[]}
+/>
 
 {#if isSimpleMeasureContainer(container)}
 	<EditableProgress

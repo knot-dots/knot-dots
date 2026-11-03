@@ -3,7 +3,6 @@
 	import type { Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
-	import CategoryProperties from '$lib/components/CategoryProperties.svelte';
 	import CategoryTerms from '$lib/components/CategoryTerms.svelte';
 	import CreateAnotherButton from '$lib/components/CreateAnotherButton.svelte';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
@@ -80,16 +79,6 @@
 				<CreateAnotherButton {container} {relatedContainers} />
 				<CreateCopyButton {container} />
 			</footer>
-		{/snippet}
-
-		{#snippet properties()}
-			<CategoryProperties
-				bind:container
-				editable={$applicationState.containerDetailView.editable &&
-					$ability.can('update', container)}
-				{relatedContainers}
-				{revisions}
-			/>
 		{/snippet}
 	</EditableContainerDetailView>
 {/snippet}

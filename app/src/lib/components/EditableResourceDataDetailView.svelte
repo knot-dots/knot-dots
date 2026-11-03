@@ -18,7 +18,6 @@
 	} from '$lib/components/EditableTable.svelte';
 	import EditableTable from '$lib/components/EditableTable.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import ResourceDataProperties from '$lib/components/ResourceDataProperties.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
@@ -380,16 +379,6 @@
 			</div>
 
 			<Sections bind:container {relatedContainers} />
-		{/snippet}
-
-		{#snippet properties()}
-			<ResourceDataProperties
-				{container}
-				editable={$applicationState.containerDetailView.editable &&
-					$ability.can('update', container)}
-				{relatedContainers}
-				{revisions}
-			/>
 		{/snippet}
 	</EditableContainerDetailView>
 {/snippet}

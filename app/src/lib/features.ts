@@ -3,10 +3,7 @@
 // and deliberately absent from these user-facing rings.
 export const featureFlags = new Map([
 	['alpha', ['OpenAI', 'Adoptions', 'Templating', 'MCP'] as const],
-	[
-		'beta',
-		['ImportFromCsv', 'IOOI', 'Mistral', 'NewPropertyPanel', 'ResourceV2', 'UrlSlug'] as const
-	]
+	['beta', ['ImportFromCsv', 'IOOI', 'Mistral', 'ResourceV2', 'UrlSlug'] as const]
 ]);
 
 export function createFeatureDecisions(features: string[]) {
@@ -46,9 +43,6 @@ export function createFeatureDecisions(features: string[]) {
 		},
 		useMultipleProgramAssignment() {
 			return features.includes('MultipleProgramAssignment');
-		},
-		useNewPropertyPanel() {
-			return features.includes('NewPropertyPanel');
 		},
 		usePermissionMatrix() {
 			return features.includes('PermissionMatrix');

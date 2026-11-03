@@ -4,7 +4,6 @@
 	import { page } from '$app/state';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
-	import Badges from '$lib/components/Badges.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
 	import CoverUpload from '$lib/components/CoverUpload.svelte';
@@ -13,7 +12,6 @@
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import PropertiesBar from '$lib/components/PropertiesBar.svelte';
 	import PropertiesPanel from '$lib/components/PropertiesPanel.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
 		type Container,
@@ -30,19 +28,11 @@
 		container: Container;
 		data?: Snippet;
 		footer?: Snippet;
-		properties?: Snippet;
 		relatedContainers: Array<Container<AnyPayload>>;
 		revisions: Array<Container<AnyPayload>>;
 	}
 
-	let {
-		container = $bindable(),
-		data,
-		footer,
-		properties,
-		relatedContainers,
-		revisions
-	}: Props = $props();
+	let { container = $bindable(), data, footer, relatedContainers, revisions }: Props = $props();
 
 	const handleSubmit = $derived(autoSave(container, 2000));
 	const detailViewHelpSlug = $derived(helpSlugForDetailView(container.payload.type));
@@ -120,22 +110,14 @@
 						{/if}
 					</div>
 
-					{#if createFeatureDecisions(page.data.features).useNewPropertyPanel()}
-						<PropertiesBar
-							bind:container
-							editable={$applicationState.containerDetailView.editable &&
-								$ability.can('update', container)}
-							{relatedContainers}
-							{revisions}
-							showPropertiesTrigger
-						/>
-					{:else}
-						<Badges
-							bind:container
-							editable={$applicationState.containerDetailView.editable &&
-								$ability.can('update', container)}
-						/>
-					{/if}
+					<PropertiesBar
+						bind:container
+						editable={$applicationState.containerDetailView.editable &&
+							$ability.can('update', container)}
+						{relatedContainers}
+						{revisions}
+						showPropertiesTrigger
+					/>
 
 					{#if isSimpleMeasureContainer(container)}
 						<EditableProgress
@@ -146,25 +128,19 @@
 					{/if}
 				</header>
 
-				{#if !createFeatureDecisions(page.data.features).useNewPropertyPanel()}
-					{@render properties?.()}
-				{/if}
-
 				{@render data?.()}
 			</form>
 		</div>
 
-		{#if createFeatureDecisions(page.data.features).useNewPropertyPanel()}
-			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-				<PropertiesPanel
-					bind:container
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container)}
-					{relatedContainers}
-					{revisions}
-				/>
-			</form>
-		{/if}
+		<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
+			<PropertiesPanel
+				bind:container
+				editable={$applicationState.containerDetailView.editable &&
+					$ability.can('update', container)}
+				{relatedContainers}
+				{revisions}
+			/>
+		</form>
 	</article>
 
 	{#if detailViewHelpSlug}
