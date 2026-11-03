@@ -834,10 +834,12 @@
 		gap: 0.5rem;
 	}
 
+	/* as high as the search field, so the rows below stay put when it opens */
 	.add-controls {
 		align-items: center;
 		display: flex;
 		gap: 0.5rem;
+		min-height: 2.25rem;
 	}
 
 	.user-name {
