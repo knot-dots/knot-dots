@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { _ } from 'svelte-i18n';
 	import { type DndEvent, dragHandleZone } from 'svelte-dnd-action';
@@ -209,6 +210,18 @@
 				}))
 			];
 			await handleSort(sections);
+
+			await tick();
+
+			const sectionElement = document.getElementById(`section-${result.data.guid}`);
+			if (sectionElement) {
+				sectionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+				const titleElement = sectionElement.querySelector<HTMLElement>(
+					'[contenteditable="plaintext-only"], input:not([type="hidden"]), textarea, [contenteditable="true"]'
+				);
+				titleElement?.focus();
+			}
 		};
 	}
 
