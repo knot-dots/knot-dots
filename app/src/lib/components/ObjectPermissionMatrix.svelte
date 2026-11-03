@@ -745,22 +745,42 @@
 		color: var(--color-icon-strong);
 	}
 
+	/* the scroll container measures the visible width for the group heads */
+	.table-wrapper {
+		container-type: inline-size;
+	}
+
+	/* A group head spans the visible width only and sticks to the left edge
+	   while scrolling sideways, so its title truncates instead of being
+	   covered by the controls on the right. The offset (measured from the
+	   wrapper's content edge) and the width leave the cell paddings free.
+	   The title gives way first, down to a readable rest; only then the
+	   control on the right truncates as well. */
 	.section-header {
 		align-items: center;
 		display: flex;
 		gap: 0.5rem;
 		justify-content: space-between;
+		left: 0.5rem;
+		position: sticky;
+		width: calc(100cqw - 1rem);
 	}
 
 	.section-start {
 		align-items: center;
 		display: inline-flex;
+		flex-grow: 1;
+		flex-shrink: 100;
 		gap: 0.375rem;
+		/* room for the shortest title plus the badge */
+		min-width: 14rem;
 	}
 
 	.section-badge {
 		--badge-background-color: var(--color-background-accent-subtle);
 		--badge-color: var(--color-text-accent-default);
+
+		flex-shrink: 0;
 	}
 
 	.section-toggle {
@@ -771,33 +791,49 @@
 		display: inline-flex;
 		font-weight: 500;
 		gap: 0.375rem;
+		min-width: 6rem;
 		padding: 0;
+		text-align: left;
+	}
+
+	.section-title {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.section-toggle :global(svg) {
 		color: var(--color-icon-accent-default);
+		flex-shrink: 0;
 		height: 1rem;
 		width: 1rem;
 	}
 
 	.admins-link {
-		background-color: var(--color-surface-container-raised);
 		color: var(--color-text-link);
-		padding-left: 0.5rem;
-		position: sticky;
-		right: 0.5rem;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.inherit-toggle {
 		align-items: center;
-		background-color: var(--color-surface-accent-container);
 		color: var(--color-text-accent-strong);
 		display: inline-flex;
 		font-weight: 500;
 		gap: 0.5rem;
-		padding-left: 0.5rem;
-		position: sticky;
-		right: 0.5rem;
+		min-width: 0;
+	}
+
+	.inherit-toggle > span {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.inherit-toggle .toggle {
+		flex-shrink: 0;
 	}
 
 	.inherit-toggle .toggle {
