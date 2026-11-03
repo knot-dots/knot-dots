@@ -11,6 +11,7 @@ import {
 	indicatorCategories,
 	type IndicatorPayload,
 	indicatorTypes,
+	isActualDataContainer,
 	isGoalContainer,
 	isMeasureContainer,
 	payloadTypes,
@@ -29,6 +30,7 @@ import type { RequestHandler } from './$types';
 
 export const GET = (async ({ locals, params, url }) => {
 	const expectedParams = z.object({
+		actualDataOrganizationalUnit: z.array(z.uuid()).default([]),
 		indicatorCategory: z.array(indicatorCategories).default([]),
 		indicatorType: z.array(indicatorTypes).default([]),
 		limit: z
@@ -37,6 +39,9 @@ export const GET = (async ({ locals, params, url }) => {
 		offset: z.array(z.coerce.number().int().nonnegative()).default([0]),
 		organization: z.array(z.uuid()).default([]),
 		organizationalUnit: z.array(z.uuid()).default([]),
+		payloadType: z
+			.array(z.enum([payloadTypes.enum.indicator, payloadTypes.enum.binary_indicator]))
+			.default([]),
 		terms: z.array(z.string()).default([])
 	});
 
@@ -68,7 +73,7 @@ export const GET = (async ({ locals, params, url }) => {
 
 	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 
-	const suggestion = await locals.pool.connect(async (connection) => {
+	const { actualData, suggestion } = await locals.pool.connect(async (connection) => {
 		const [container, indicatorContainers] = await Promise.all([
 			getContainerByGuid(params.guid)(connection).catch((e: unknown) => {
 				if (e instanceof NotFoundError) {
@@ -84,7 +89,10 @@ export const GET = (async ({ locals, params, url }) => {
 					indicatorTypes: parseResult.data.indicatorType,
 					template: false,
 					terms: parseResult.data.terms[0],
-					type: [payloadTypes.enum.indicator, payloadTypes.enum.binary_indicator]
+					type:
+						parseResult.data.payloadType.length > 0
+							? parseResult.data.payloadType
+							: [payloadTypes.enum.indicator, payloadTypes.enum.binary_indicator]
 				},
 				'alpha'
 			)(connection) as Promise<Array<Container<BinaryIndicatorPayload | IndicatorPayload>>>
@@ -103,20 +111,25 @@ export const GET = (async ({ locals, params, url }) => {
 				organizations: parseResult.data.organization,
 				organizationalUnits: parseResult.data.organizationalUnit
 			},
+			// The actual data shown on the cards is scoped separately, so that the
+			// relevance still takes the whole organization into account.
 			{
 				organizations: parseResult.data.organization,
 				organizationalUnits:
-					parseResult.data.organizationalUnit.length > 0
-						? parseResult.data.organizationalUnit
+					parseResult.data.actualDataOrganizationalUnit.length > 0
+						? parseResult.data.actualDataOrganizationalUnit
 						: null
 			}
 		)(connection);
 
-		return scoreIndicatorsByRelevanceForGoalOrMeasure(
-			filterVisible(indicatorContainers, locals.user),
-			containersRelatedToIndicators,
-			container
-		);
+		return {
+			actualData: containersRelatedToIndicators.filter(isActualDataContainer),
+			suggestion: scoreIndicatorsByRelevanceForGoalOrMeasure(
+				filterVisible(indicatorContainers, locals.user),
+				containersRelatedToIndicators,
+				container
+			)
+		};
 	});
 
 	// Facets count all suggestions, not only those of the requested page.
@@ -135,6 +148,9 @@ export const GET = (async ({ locals, params, url }) => {
 	const offset = parseResult.data.offset[0];
 	const hasMore = offset + limit < suggestion.length;
 
+	// The actual data of an indicator is shown in a chart on its card.
+	const visibleActualData = filterVisible(actualData, locals.user);
+
 	return json({
 		facets: Object.fromEntries(
 			Array.from(facets, ([key, values]) => [key, Object.fromEntries(values)])
@@ -146,6 +162,9 @@ export const GET = (async ({ locals, params, url }) => {
 			offset,
 			total: suggestion.length
 		},
-		suggestions: suggestion.slice(offset, offset + limit)
+		suggestions: suggestion.slice(offset, offset + limit).map((s) => ({
+			...s,
+			actualData: visibleActualData.filter(({ payload }) => payload.indicator === s.indicator.guid)
+		}))
 	});
 }) satisfies RequestHandler;

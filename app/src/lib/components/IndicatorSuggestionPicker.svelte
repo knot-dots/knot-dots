@@ -1,32 +1,39 @@
 <script lang="ts">
 	import { resource } from 'runed';
 	import { _ } from 'svelte-i18n';
-	import InfoCircle from '~icons/flowbite/info-circle-solid';
+	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
 	import { filterCategoryContext } from '$lib/categoryOptions';
 	import fetchSuggestedContainers from '$lib/client/fetchSuggestedContainers';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
-	import RelevanceBadge from '$lib/components/RelevanceBadge.svelte';
 	import SearchToolbar from '$lib/components/SearchToolbar.svelte';
 	import SingleChoiceSelectableCardSet from '$lib/components/SingleChoiceSelectableCardSet.svelte';
+	import SuggestedIndicatorBody from '$lib/components/SuggestedIndicatorBody.svelte';
+	import SuggestedIndicatorFooter from '$lib/components/SuggestedIndicatorFooter.svelte';
 	import {
+		type ActualDataPayload,
 		type BinaryIndicatorPayload,
 		type Container,
 		type GoalPayload,
 		type IndicatorPayload,
-		isEffectContainer,
 		type MeasurePayload,
 		payloadTypes
 	} from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 
 	interface Props {
-		onSelect: (container: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>) => void;
+		includeBinaryIndicators?: boolean;
+		onCreateNew?: () => void;
+		// Also receives what the card of the chosen indicator showed.
+		onSelect: (
+			container: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>,
+			suggestion: { actualData: Container<ActualDataPayload>[]; relevance: number }
+		) => void;
 		target: Container<GoalPayload | MeasurePayload>;
 		value?: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>;
 	}
 
-	let { onSelect, target, value }: Props = $props();
+	let { includeBinaryIndicators = true, onCreateNew, onSelect, target, value }: Props = $props();
 
 	const categoryContext = $derived(
 		filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.indicator])
@@ -55,7 +62,12 @@
 		async (_, __, { signal }) => {
 			const query = {
 				...$state.snapshot(filter),
+				// The cards show the actual data of the current organizational unit.
+				actualDataOrganizationalUnit: page.data.currentOrganizationalUnit
+					? [page.data.currentOrganizationalUnit.guid]
+					: [],
 				organization: [page.data.currentOrganization.guid],
+				payloadType: includeBinaryIndicators ? [] : [payloadTypes.enum.indicator],
 				terms
 			};
 			return { ...(await fetchPage(query, 0, { signal })), query };
@@ -96,6 +108,17 @@
 		new Map(suggestions.map(({ indicator, relevance }) => [indicator.guid, relevance]))
 	);
 
+	let actualDataByGuid = $derived(
+		new Map(suggestions.map(({ actualData, indicator }) => [indicator.guid, actualData]))
+	);
+
+	function select(indicator: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>) {
+		onSelect(indicator, {
+			actualData: actualDataByGuid.get(indicator.guid) ?? [],
+			relevance: relevanceByGuid.get(indicator.guid) ?? 0
+		});
+	}
+
 	let facets = $derived(searchResource.current?.facets ?? new Map<string, Map<string, number>>());
 
 	let nextOffset = $derived(pages.at(-1)?.page.nextOffset ?? null);
@@ -123,46 +146,80 @@
 
 <SearchToolbar bind:filter bind:terms {categoryContext} {facets}>
 	{#snippet extraPrimaryContent()}
-		<span class="prompt">
-			<InfoCircle />
-			{#if isEffectContainer(target)}
-				{$_('create_effect_dialog.prompt_effect')}
-			{:else}
-				{$_('create_effect_dialog.prompt_objective')}
-			{/if}
-		</span>
+		{#if onCreateNew}
+			<button class="create-new-button" onclick={onCreateNew} type="button">
+				<Plus />
+				{$_('create_effect_dialog.create_with_new_indicator')}
+			</button>
+		{/if}
 	{/snippet}
 </SearchToolbar>
 
 <div class="search-result">
-	{#if searchResource.current}
-		<SingleChoiceSelectableCardSet {onSelect} {options} {value}>
-			{#snippet optionFooter(option)}
-				<RelevanceBadge score={relevanceByGuid.get(option.guid) ?? 0} />
-			{/snippet}
-		</SingleChoiceSelectableCardSet>
+	<SingleChoiceSelectableCardSet onSelect={select} {options} {value}>
+		{#snippet leading()}
+			{#if onCreateNew}
+				<button class="create-new" onclick={onCreateNew} type="button">
+					<span>{$_('create_effect_dialog.create_new')}</span>
+					<Plus />
+				</button>
+			{/if}
+		{/snippet}
 
-		<LazyLoadSentinel hasMore={nextOffset !== null} loading={loadingMore} onLoadMore={loadMore} />
-	{/if}
+		<!-- Cards show the actual data of an indicator instead of its summary. -->
+		{#snippet optionBody(option)}
+			<SuggestedIndicatorBody
+				actualData={actualDataByGuid.get(option.guid) ?? []}
+				container={option}
+			/>
+		{/snippet}
+
+		{#snippet optionFooter(option)}
+			<SuggestedIndicatorFooter
+				container={option}
+				relevance={relevanceByGuid.get(option.guid) ?? 0}
+			/>
+		{/snippet}
+	</SingleChoiceSelectableCardSet>
+
+	<LazyLoadSentinel hasMore={nextOffset !== null} loading={loadingMore} onLoadMore={loadMore} />
 </div>
 
 <style>
-	.prompt {
-		align-items: center;
-		background-color: var(--color-yellow-050);
-		border: solid 1px var(--color-yellow-200);
-		border-radius: 8px;
-		color: var(--color-yellow-900);
-		display: flex;
-		font-size: 0.875rem;
-		gap: 0.375rem;
-		line-height: 1.25;
-		padding: 0.375rem 1rem 0.375rem 0.5rem;
+	.create-new-button {
+		--button-border-color: transparent;
+		--button-hover-border-color: transparent;
+		--padding-x: 0.5rem;
+
+		color: var(--color-primary-700);
 	}
 
-	.prompt > :global(svg) {
-		color: var(--color-yellow-500);
+	.create-new-button > :global(svg) {
+		height: 1rem;
+		width: 1rem;
+	}
+
+	.create-new {
+		align-items: flex-start;
+		background-color: var(--color-primary-050);
+		border: 1px solid var(--color-primary-200);
+		border-radius: var(--card-border-radius);
+		color: var(--color-primary-700);
+		display: flex;
+		flex-direction: column;
+		font-weight: 600;
+		min-height: 10rem;
+		padding: 1rem;
+	}
+
+	.create-new:hover {
+		background-color: var(--color-primary-100);
+	}
+
+	.create-new > :global(svg) {
+		align-self: center;
 		height: 1.5rem;
+		margin-block: auto;
 		width: 1.5rem;
 	}
 

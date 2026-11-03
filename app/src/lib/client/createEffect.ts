@@ -1,46 +1,99 @@
+import { z } from 'zod';
+import { env } from '$env/dynamic/public';
 import {
-	type BinaryIndicatorPayload,
+	type CreateEffectRequest,
+	type CreatedEffect,
+	newEffectContainers
+} from '$lib/effectCreation';
+import {
+	binaryIndicatorPayload,
 	type Container,
-	containerOfType,
-	type IndicatorPayload,
-	type InitialEffectPayload,
-	type IooiType,
-	type NewContainer,
-	payloadTypes,
-	predicates
+	createContainerSchema,
+	effectPayload,
+	type GoalPayload,
+	indicatorPayload,
+	type MeasurePayload,
+	newContainer
 } from '$lib/models';
-import saveContainer from '$lib/client/saveContainer';
+import { lastCreatedContainers } from '$lib/stores';
+
+const effectContainer = createContainerSchema(effectPayload);
+
+// The batch is answered with the created containers in the order they were sent.
+const createdWithNewIndicator = z
+	.tuple([
+		z.union([
+			createContainerSchema(indicatorPayload),
+			createContainerSchema(binaryIndicatorPayload)
+		]),
+		effectContainer
+	])
+	.transform(([indicator, effect]) => ({ effect, indicator }));
+
+const createdForExistingIndicator = z.tuple([effectContainer]);
+
+export class CreateEffectError extends Error {
+	constructor(
+		public readonly status: number,
+		message: string
+	) {
+		super(message);
+		this.name = 'CreateEffectError';
+	}
+}
 
 export default async function createEffect(
-	target: Container,
-	indicator: Container<BinaryIndicatorPayload | IndicatorPayload>,
-	iooiType?: IooiType
-) {
-	const newEffect = {
-		// items join the collection's manager; relations follow separately
-		...containerOfType(payloadTypes.enum.effect, target),
-		managed_by: target.managed_by,
-		relation: []
-	} as NewContainer<InitialEffectPayload>;
-	const response = await saveContainer({
-		...newEffect,
-		payload: {
-			...newEffect.payload,
-			title: indicator.payload.title,
-			...(iooiType ? { iooiType } : {})
-		},
-		relation: [
-			{
-				object: indicator.guid,
-				position: 0,
-				predicate: predicates.enum['is-measured-by']
-			},
-			{
-				object: target.guid,
-				position: 0,
-				predicate: predicates.enum['is-part-of']
-			}
-		]
+	target: Container<GoalPayload | MeasurePayload>,
+	request: CreateEffectRequest
+): Promise<CreatedEffect> {
+	const containers = newEffectContainers(target, request).map((container) =>
+		// Drops the grants of a container built with containerOfType.
+		newContainer.parse({ ...container, realm: env.PUBLIC_KC_REALM })
+	);
+
+	const response = await fetch('/container/bulk-action/create', {
+		method: 'POST',
+		body: JSON.stringify(containers),
+		credentials: 'include',
+		headers: { 'Content-Type': 'application/json' }
 	});
-	return await response.json();
+
+	if (!response.ok) {
+		const { message } = await response.json().catch(() => ({ message: undefined }));
+		throw new CreateEffectError(response.status, message ?? response.statusText);
+	}
+
+	const body = await response.json();
+	let created: CreatedEffect;
+	if (request.indicator.kind === 'new') {
+		created = createdWithNewIndicator.parse(body);
+	} else {
+		const [effect] = createdForExistingIndicator.parse(body);
+		const indicator = request.indicator.container;
+		// The indicator was loaded before the effect existed, but cards find the
+		// indicator of an effect through the relations of both.
+		created = {
+			effect,
+			indicator: {
+				...indicator,
+				relation: [
+					...indicator.relation,
+					...effect.relation.filter(({ object }) => object === indicator.guid)
+				]
+			}
+		};
+	}
+
+	lastCreatedContainers.update(
+		(map) =>
+			new Map([
+				...map,
+				[created.effect.guid, created.effect],
+				...(request.indicator.kind === 'new'
+					? [[created.indicator.guid, created.indicator] as const]
+					: [])
+			])
+	);
+
+	return created;
 }

@@ -35,6 +35,8 @@
 	import transformFileURL from '$lib/transformFileURL';
 
 	interface Props {
+		// Replaces the content shown for the container.
+		body?: Snippet;
 		checked?: boolean;
 		container: Container<AnyPayload>;
 		footer?: Snippet;
@@ -45,6 +47,7 @@
 	}
 
 	let {
+		body,
 		checked = false,
 		container,
 		footer,
@@ -169,7 +172,9 @@
 	</header>
 
 	<div class="body">
-		{#if isIndicatorContainer(container)}
+		{#if body}
+			{@render body()}
+		{:else if isIndicatorContainer(container)}
 			<Summary {container} />
 			<p class="badges">
 				{#each container.payload.indicatorCategory as indicatorCategory (indicatorCategory)}

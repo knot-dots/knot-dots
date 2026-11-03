@@ -7,10 +7,8 @@
 	import { pushState } from '$app/navigation';
 	import { page } from '$app/state';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
-	import createEffect from '$lib/client/createEffect';
 	import createObjective from '$lib/client/createObjective';
 	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
-	import EditableEffectDetailView from '$lib/components/EditableEffectDetailView.svelte';
 	import EditableObjectiveDetailView from '$lib/components/EditableObjectiveDetailView.svelte';
 	import IndicatorSuggestionPicker from '$lib/components/IndicatorSuggestionPicker.svelte';
 	import IndicatorPreview from '$lib/components/IndicatorPreview.svelte';
@@ -18,16 +16,13 @@
 	import {
 		type BinaryIndicatorPayload,
 		type Container,
-		type EffectPayload,
 		type IndicatorPayload,
 		isActualDataContainer,
 		isBinaryIndicatorContainer,
-		isEffectContainer,
 		isIndicatorContainer,
-		isObjectiveContainer,
 		type ObjectivePayload
 	} from '$lib/models';
-	import { addEffectState, addObjectiveState } from '$lib/stores';
+	import { addObjectiveState } from '$lib/stores';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -35,7 +30,7 @@
 
 	let { dialog = $bindable() }: Props = $props();
 
-	let target = $derived($addEffectState.target ?? $addObjectiveState.target);
+	let target = $derived($addObjectiveState.target);
 
 	let selected = $state<Container<BinaryIndicatorPayload> | Container<IndicatorPayload>>();
 
@@ -59,28 +54,19 @@
 
 	function handleSelect(value: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>) {
 		selected = value;
-		pushState('', { createObjectiveOrEffect: { step: 2 } });
+		pushState('', { createObjective: { step: 2 } });
 	}
 
-	let newObjectiveOrEffect = $state<Container<EffectPayload | ObjectivePayload>>();
+	let newObjective = $state<Container<ObjectivePayload>>();
 
 	async function handleConfirm() {
-		if (selected) {
-			if ($addEffectState.target) {
-				newObjectiveOrEffect = await createEffect(
-					$addEffectState.target,
-					selected,
-					$addEffectState.iooiType
-				);
-				pushState(page.url, { createObjectiveOrEffect: { step: 3 } });
-			} else if ($addObjectiveState.target) {
-				newObjectiveOrEffect = await createObjective(
-					$addObjectiveState.target,
-					selected,
-					$addObjectiveState.iooiType
-				);
-				pushState(page.url, { createObjectiveOrEffect: { step: 3 } });
-			}
+		if (selected && $addObjectiveState.target) {
+			newObjective = await createObjective(
+				$addObjectiveState.target,
+				selected,
+				$addObjectiveState.iooiType
+			);
+			pushState(page.url, { createObjective: { step: 3 } });
 		}
 	}
 
@@ -90,32 +76,27 @@
 
 	function onclose() {
 		pushState(page.url, {});
-		newObjectiveOrEffect = undefined;
+		newObjective = undefined;
 		selected = undefined;
-		$addEffectState = {};
 		$addObjectiveState = {};
 	}
 </script>
 
-{#if page.state.createObjectiveOrEffect}
+{#if page.state.createObjective}
 	<dialog {@attach initDialog} bind:this={dialog} {onclose} oninput={(e) => e.stopPropagation()}>
 		<form method="dialog">
 			<nav>
 				<ol class="step-navigation">
-					<li class:active={page.state.createObjectiveOrEffect.step === 1}>
+					<li class:active={page.state.createObjective.step === 1}>
 						{$_('create_effect_dialog.step.select_indicator')}
 						<ChevronDoubleRight />
 					</li>
-					<li class:active={page.state.createObjectiveOrEffect.step === 2}>
+					<li class:active={page.state.createObjective.step === 2}>
 						{$_('create_effect_dialog.step.confirm_selection')}
 						<ChevronDoubleRight />
 					</li>
-					<li class:active={page.state.createObjectiveOrEffect.step === 3}>
-						{#if newObjectiveOrEffect && isEffectContainer(newObjectiveOrEffect)}
-							{$_('create_effect_dialog.step.define_effect')}
-						{:else}
-							{$_('create_effect_dialog.step.define_objective')}
-						{/if}
+					<li class:active={page.state.createObjective.step === 3}>
+						{$_('create_effect_dialog.step.define_objective')}
 					</li>
 				</ol>
 
@@ -127,7 +108,7 @@
 					{$_('cancel')}
 				</button>
 
-				{#if page.state.createObjectiveOrEffect.step === 2}
+				{#if page.state.createObjective.step === 2}
 					<button
 						class="button-primary button-xs system-primary"
 						onclick={() => handleConfirm()}
@@ -135,7 +116,7 @@
 					>
 						{$_('create_effect_dialog.button.confirm')}
 					</button>
-				{:else if page.state.createObjectiveOrEffect.step === 3}
+				{:else if page.state.createObjective.step === 3}
 					<button
 						class="button-primary button-xs system-primary"
 						onclick={() => dialog.close()}
@@ -146,11 +127,11 @@
 				{/if}
 			</nav>
 
-			{#if page.state.createObjectiveOrEffect.step === 1 && target}
+			{#if page.state.createObjective.step === 1 && target}
 				<IndicatorSuggestionPicker onSelect={handleSelect} {target} value={selected} />
-			{:else if page.state.createObjectiveOrEffect.step === 2 && selected}
+			{:else if page.state.createObjective.step === 2 && selected}
 				<IndicatorPreview container={selected} />
-			{:else if page.state.createObjectiveOrEffect.step === 3 && newObjectiveOrEffect}
+			{:else if page.state.createObjective.step === 3 && newObjective}
 				<div class="step-3-layout">
 					{#if selected && actualDataResource.current}
 						<div class="step-3-layout-left">
@@ -170,31 +151,17 @@
 					{/if}
 
 					<div class="step-3-layout-right">
-						{#if isEffectContainer(newObjectiveOrEffect)}
-							<EditableEffectDetailView
-								bind:container={newObjectiveOrEffect}
-								hideProperties
-								revisions={[newObjectiveOrEffect]}
-								sections={[]}
-							>
-								<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-								{#snippet layout(header: Snippet, main: Snippet)}
-									{@render main()}
-								{/snippet}
-							</EditableEffectDetailView>
-						{:else if isObjectiveContainer(newObjectiveOrEffect)}
-							<EditableObjectiveDetailView
-								bind:container={newObjectiveOrEffect}
-								hideProperties
-								revisions={[newObjectiveOrEffect]}
-								sections={[]}
-							>
-								<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-								{#snippet layout(header: Snippet, main: Snippet)}
-									{@render main()}
-								{/snippet}
-							</EditableObjectiveDetailView>
-						{/if}
+						<EditableObjectiveDetailView
+							bind:container={newObjective}
+							hideProperties
+							revisions={[newObjective]}
+							sections={[]}
+						>
+							<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
+							{#snippet layout(header: Snippet, main: Snippet)}
+								{@render main()}
+							{/snippet}
+						</EditableObjectiveDetailView>
 					</div>
 				</div>
 			{/if}
