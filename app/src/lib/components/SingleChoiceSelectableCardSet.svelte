@@ -9,13 +9,22 @@
 	interface Props {
 		leading?: Snippet;
 		onSelect?: (value: T) => void;
+		optionBody?: Snippet<[T]>;
 		optionFooter?: Snippet<[T]>;
 		options: T[];
 		legend?: string;
 		value?: T;
 	}
 
-	let { leading, onSelect, optionFooter, options, legend = '', value }: Props = $props();
+	let {
+		leading,
+		onSelect,
+		optionBody,
+		optionFooter,
+		options,
+		legend = '',
+		value
+	}: Props = $props();
 
 	function onchange(event: Event & { currentTarget: HTMLInputElement }) {
 		onSelect?.(options.find((option) => option.guid === event.currentTarget.value)!);
@@ -28,10 +37,14 @@
 	{@render leading?.()}
 
 	{#each options as option (option.guid)}
+		{#snippet body()}
+			{@render optionBody?.(option)}
+		{/snippet}
 		{#snippet footer()}
 			{@render optionFooter?.(option)}
 		{/snippet}
 		<SelectableCard
+			body={optionBody ? body : undefined}
 			checked={value?.guid === option.guid}
 			container={option}
 			footer={optionFooter ? footer : undefined}

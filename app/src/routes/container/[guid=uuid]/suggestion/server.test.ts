@@ -2,10 +2,11 @@ import { NotFoundError } from 'slonik';
 import { beforeEach, expect, test, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
 	containers: new Map<string, unknown>(),
-	indicators: [] as unknown[]
+	indicators: [] as unknown[],
+	related: [] as unknown[]
 }));
 vi.mock('$lib/server/db', () => ({
-	getAllContainersRelatedToIndicators: () => async () => [],
+	getAllContainersRelatedToIndicators: () => async () => mocks.related,
 	getContainerByGuid: (guid: string) => async () => {
 		if (!mocks.containers.has(guid)) {
 			throw new NotFoundError('not found', { sql: 'SELECT 1', values: [] });
@@ -55,6 +56,15 @@ function stored(guid: string, payload: Record<string, unknown>) {
 	};
 }
 
+// Grants no access to the user, unlike those of stored().
+const noGrants = composeUserGrants({
+	scopeSourced: false,
+	governsItself: false,
+	organizationSelf: [],
+	organizationalUnitSelf: [],
+	sources: [{ guid: organizationGuid, self: [], subordinates: [] }]
+});
+
 function indicator(index: number, indicatorCategory: string) {
 	return stored(`00000000-0000-4000-8000-00000000010${index}`, {
 		indicatorCategory: [indicatorCategory],
@@ -73,6 +83,7 @@ beforeEach(() => {
 		indicator(2, 'indicator_category.custom'),
 		indicator(3, 'indicator_category.sdg')
 	];
+	mocks.related = [];
 });
 
 function get(query: string) {
@@ -118,13 +129,7 @@ test('facets count all suggestions, not only those of the page', async () => {
 test('suggestions for a target the user may not read are not found', async () => {
 	mocks.containers.set(measureGuid, {
 		...stored(measureGuid, { title: 'Measure', type: 'measure' }),
-		user_grant: composeUserGrants({
-			scopeSourced: false,
-			governsItself: false,
-			organizationSelf: [],
-			organizationalUnitSelf: [],
-			sources: [{ guid: organizationGuid, self: [], subordinates: [] }]
-		})
+		user_grant: noGrants
 	});
 
 	await expect(get('')).rejects.toMatchObject({ status: 404 });
@@ -134,4 +139,30 @@ test('suggestions for a target that does not exist are not found', async () => {
 	mocks.containers.clear();
 
 	await expect(get('')).rejects.toMatchObject({ status: 404 });
+});
+
+test('suggestions carry the actual data of their indicator the user may read', async () => {
+	const [first, second, third] = mocks.indicators as Array<{ guid: string }>;
+	const actualData = (index: number, indicatorGuid: string) =>
+		stored(`00000000-0000-4000-8000-00000000020${index}`, {
+			indicator: indicatorGuid,
+			title: `Actual data ${index}`,
+			type: 'actual_data',
+			values: [[2024, index]]
+		});
+	mocks.related = [
+		actualData(1, first.guid),
+		{ ...actualData(2, first.guid), user_grant: noGrants },
+		actualData(3, second.guid)
+	];
+
+	const { suggestions } = await (await get('')).json();
+	const actualDataOf = (guid: string) =>
+		suggestions
+			.find(({ indicator }: { indicator: { guid: string } }) => indicator.guid === guid)
+			.actualData.map(({ guid }: { guid: string }) => guid);
+
+	expect(actualDataOf(first.guid)).toEqual(['00000000-0000-4000-8000-000000000201']);
+	expect(actualDataOf(second.guid)).toEqual(['00000000-0000-4000-8000-000000000203']);
+	expect(actualDataOf(third.guid)).toEqual([]);
 });

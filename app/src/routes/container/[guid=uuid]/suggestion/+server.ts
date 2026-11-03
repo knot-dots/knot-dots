@@ -11,6 +11,7 @@ import {
 	indicatorCategories,
 	type IndicatorPayload,
 	indicatorTypes,
+	isActualDataContainer,
 	isGoalContainer,
 	isMeasureContainer,
 	payloadTypes,
@@ -71,7 +72,7 @@ export const GET = (async ({ locals, params, url }) => {
 
 	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 
-	const suggestion = await locals.pool.connect(async (connection) => {
+	const { actualData, suggestion } = await locals.pool.connect(async (connection) => {
 		const [container, indicatorContainers] = await Promise.all([
 			getContainerByGuid(params.guid)(connection).catch((e: unknown) => {
 				if (e instanceof NotFoundError) {
@@ -118,11 +119,14 @@ export const GET = (async ({ locals, params, url }) => {
 			}
 		)(connection);
 
-		return scoreIndicatorsByRelevanceForGoalOrMeasure(
-			filterVisible(indicatorContainers, locals.user),
-			containersRelatedToIndicators,
-			container
-		);
+		return {
+			actualData: containersRelatedToIndicators.filter(isActualDataContainer),
+			suggestion: scoreIndicatorsByRelevanceForGoalOrMeasure(
+				filterVisible(indicatorContainers, locals.user),
+				containersRelatedToIndicators,
+				container
+			)
+		};
 	});
 
 	// Facets count all suggestions, not only those of the requested page.
@@ -141,6 +145,9 @@ export const GET = (async ({ locals, params, url }) => {
 	const offset = parseResult.data.offset[0];
 	const hasMore = offset + limit < suggestion.length;
 
+	// The actual data of an indicator is shown in a chart on its card.
+	const visibleActualData = filterVisible(actualData, locals.user);
+
 	return json({
 		facets: Object.fromEntries(
 			Array.from(facets, ([key, values]) => [key, Object.fromEntries(values)])
@@ -152,6 +159,9 @@ export const GET = (async ({ locals, params, url }) => {
 			offset,
 			total: suggestion.length
 		},
-		suggestions: suggestion.slice(offset, offset + limit)
+		suggestions: suggestion.slice(offset, offset + limit).map((s) => ({
+			...s,
+			actualData: visibleActualData.filter(({ payload }) => payload.indicator === s.indicator.guid)
+		}))
 	});
 }) satisfies RequestHandler;

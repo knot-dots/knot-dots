@@ -6,7 +6,9 @@
 	import { page } from '$app/state';
 	import { filterCategoryContext } from '$lib/categoryOptions';
 	import fetchSuggestedContainers from '$lib/client/fetchSuggestedContainers';
+	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
+	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
 	import RelevanceBadge from '$lib/components/RelevanceBadge.svelte';
 	import SearchToolbar from '$lib/components/SearchToolbar.svelte';
 	import SingleChoiceSelectableCardSet from '$lib/components/SingleChoiceSelectableCardSet.svelte';
@@ -15,6 +17,7 @@
 		type Container,
 		type GoalPayload,
 		type IndicatorPayload,
+		isBinaryIndicatorContainer,
 		type MeasurePayload,
 		payloadTypes
 	} from '$lib/models';
@@ -107,6 +110,10 @@
 		new Map(suggestions.map(({ indicator, relevance }) => [indicator.guid, relevance]))
 	);
 
+	let actualDataByGuid = $derived(
+		new Map(suggestions.map(({ actualData, indicator }) => [indicator.guid, actualData]))
+	);
+
 	let facets = $derived(searchResource.current?.facets ?? new Map<string, Map<string, number>>());
 
 	let nextOffset = $derived(pages.at(-1)?.page.nextOffset ?? null);
@@ -156,6 +163,23 @@
 			{/if}
 		{/snippet}
 
+		<!-- Cards show the actual data of an indicator instead of its summary. -->
+		{#snippet optionBody(option)}
+			{@const actualData = actualDataByGuid.get(option.guid) ?? []}
+			{#if isBinaryIndicatorContainer(option)}
+				{#if actualData[0]}
+					<BooleanValueToggle checked={actualData[0].payload.booleanValue} disabled />
+				{/if}
+			{:else if actualData.length > 0}
+				<NewIndicatorChart container={option} relatedContainers={actualData} />
+			{/if}
+			<p class="badges">
+				{#each option.payload.indicatorCategory as indicatorCategory (indicatorCategory)}
+					<span class="badge badge--indigo">{$_(indicatorCategory)}</span>
+				{/each}
+			</p>
+		{/snippet}
+
 		{#snippet optionFooter(option)}
 			<RelevanceBadge score={relevanceByGuid.get(option.guid) ?? 0} />
 		{/snippet}
@@ -182,6 +206,12 @@
 		color: var(--color-yellow-500);
 		height: 1.5rem;
 		width: 1.5rem;
+	}
+
+	.badges {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
 	}
 
 	.create-new {

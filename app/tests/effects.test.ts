@@ -93,6 +93,21 @@ test.describe('Creating effects', () => {
 		await expect(measurePage.effects.getByTitle(testIndicator.payload.title)).toBeVisible();
 	});
 
+	test('a suggested indicator shows its actual data', async ({
+		dotsBoard,
+		measureEffectCollection,
+		testIndicatorActualData,
+		testMeasure
+	}) => {
+		void measureEffectCollection;
+		const measurePage = new MeasurePage(dotsBoard.page);
+		await measurePage.goto(testMeasure);
+
+		const dialog = await measurePage.createEffect();
+		const suggestion = await findSuggestion(dialog, testIndicatorActualData.payload.title);
+		await expect(suggestion.getByRole('figure')).toBeVisible();
+	});
+
 	[
 		{
 			kind: 'Tendency',

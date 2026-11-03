@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import { page } from '$app/state';
-import { binaryIndicatorPayload, createContainerSchema, indicatorPayload } from '$lib/models';
+import {
+	actualDataPayload,
+	binaryIndicatorPayload,
+	createContainerSchema,
+	indicatorPayload
+} from '$lib/models';
 
 const responseSchema = z.object({
 	facets: z
@@ -20,6 +25,7 @@ const responseSchema = z.object({
 	}),
 	suggestions: z.array(
 		z.object({
+			actualData: z.array(createContainerSchema(actualDataPayload)),
 			indicator: z.union([
 				createContainerSchema(indicatorPayload),
 				createContainerSchema(binaryIndicatorPayload)
