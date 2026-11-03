@@ -793,7 +793,9 @@
 		flex: 1 1 auto;
 		font-weight: 500;
 		gap: 0.375rem;
-		min-width: 6rem;
+		/* the chevron and a couple of characters: the title always gives way
+		   first, the control on the right only after it */
+		min-width: 3rem;
 		padding: 0;
 		text-align: left;
 	}
