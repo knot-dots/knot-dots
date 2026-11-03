@@ -15,6 +15,7 @@
 		editable?: boolean;
 		handleSort: (sections: Container[]) => Promise<void>;
 		sections: Container[];
+		sortable?: boolean;
 	}
 
 	interface TableOfContentsNode {
@@ -24,7 +25,13 @@
 		children: TableOfContentsNode[];
 	}
 
-	let { container, editable: editableOverride, handleSort, sections }: Props = $props();
+	let {
+		container,
+		editable: editableOverride,
+		handleSort,
+		sections,
+		sortable = true
+	}: Props = $props();
 
 	let editable = $derived(editableOverride ?? $applicationState.containerDetailView.editable);
 
@@ -113,6 +120,7 @@
 		onconsider={handleConsider(parentNode)}
 		onfinalize={handleFinalize}
 		use:dragHandleZone={{
+			dragDisabled: !sortable,
 			flipDurationMs: 100,
 			items: nodes,
 			dropTargetStyle: {}
@@ -121,7 +129,7 @@
 		{#each nodes as node (node.guid)}
 			<li animate:flip={{ duration: 100 }}>
 				<div class="table-of-contents-entry">
-					{#if editable && $ability.can('update', container)}
+					{#if sortable && editable && $ability.can('update', container)}
 						<span class="drag-handle" use:dragHandle>
 							<DragHandle />
 						</span>

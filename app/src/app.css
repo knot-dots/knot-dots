@@ -1916,21 +1916,7 @@ h4.details-heading {
 
 .dropdown-button > svg {
 	flex-shrink: 0;
-	height: var(--dropdown-button-icon-size, 1.25rem);
 	max-width: none;
-	width: var(--dropdown-button-icon-size, 1.25rem);
-}
-
-.dropdown-button > svg:first-child {
-	color: var(--dropdown-button-icon-default-color, var(--color-icon-accent-subtle));
-}
-
-.dropdown-button[aria-expanded='true'] > svg:first-child {
-	color: var(--dropdown-button-icon-expanded-color, inherit);
-}
-
-.dropdown-button[disabled] > svg:first-child {
-	color: var(--dropdown-button-icon-disabled-color, inherit);
 }
 
 .dropdown-button > svg:last-child {
@@ -1946,6 +1932,20 @@ h4.details-heading {
 
 .dropdown-button[disabled] > svg:last-child {
 	color: var(--dropdown-button-chevron-disabled-color, inherit);
+}
+
+.dropdown-button > svg:first-child {
+	color: var(--dropdown-button-icon-default-color, var(--color-icon-accent-subtle));
+	height: var(--dropdown-button-icon-size, 1.25rem);
+	width: var(--dropdown-button-icon-size, 1.25rem);
+}
+
+.dropdown-button[aria-expanded='true'] > svg:first-child {
+	color: var(--dropdown-button-icon-expanded-color, inherit);
+}
+
+.dropdown-button[disabled] > svg:first-child {
+	color: var(--dropdown-button-icon-disabled-color, inherit);
 }
 
 .dropdown-button.dropdown-button--select {

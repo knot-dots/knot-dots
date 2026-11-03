@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { _ } from 'svelte-i18n';
 	import { type DndEvent, dragHandleZone } from 'svelte-dnd-action';
@@ -15,7 +16,12 @@
 		isContainer,
 		isContainerWithColor,
 		isContainerWithTitle,
+		isGoalContainer,
+		isKnowledgeContainer,
+		isMeasureContainer,
 		isRelationCollectionContainer,
+		isRuleContainer,
+		isSimpleMeasureContainer,
 		isTaskCollectionContainer,
 		isTextContainer,
 		type NewContainer,
@@ -30,13 +36,15 @@
 		editable?: boolean;
 		preview?: boolean;
 		relatedContainers: Container<AnyPayload>[];
+		sortable?: boolean;
 	}
 
 	let {
 		container = $bindable(),
 		editable: editableOverride,
 		preview = false,
-		relatedContainers
+		relatedContainers,
+		sortable = true
 	}: Props = $props();
 
 	let editable = $derived(editableOverride ?? $applicationState.containerDetailView.editable);
@@ -120,6 +128,22 @@
 				}
 			];
 
+			if (
+				[
+					isGoalContainer,
+					isKnowledgeContainer,
+					isMeasureContainer,
+					isRuleContainer,
+					isSimpleMeasureContainer
+				].some((typePredicate) => typePredicate(newContainer))
+			) {
+				newContainer.relation.push({
+					object: container.guid,
+					position: 0,
+					predicate: predicates.enum['is-part-of-program']
+				});
+			}
+
 			// Handle resource data collections with resourceDataType
 			if (
 				payloadType === payloadTypes.enum.resource_data_collection &&
@@ -186,6 +210,18 @@
 				}))
 			];
 			await handleSort(sections);
+
+			await tick();
+
+			const sectionElement = document.getElementById(`section-${result.data.guid}`);
+			if (sectionElement) {
+				sectionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+				const titleElement = sectionElement.querySelector<HTMLElement>(
+					'[contenteditable="plaintext-only"], input:not([type="hidden"]), textarea, [contenteditable="true"]'
+				);
+				titleElement?.focus();
+			}
 		};
 	}
 
@@ -228,7 +264,7 @@
 {/if}
 
 {#if !preview}
-	<TableOfContents {container} {editable} {handleSort} {sections} />
+	<TableOfContents {container} {editable} {handleSort} {sections} {sortable} />
 {/if}
 
 <ul
@@ -254,6 +290,7 @@
 				handleAddSection={createAddSectionHandler(i + 1)}
 				heading={heading(i)}
 				{preview}
+				{sortable}
 			/>
 		</li>
 	{/each}

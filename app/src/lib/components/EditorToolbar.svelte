@@ -9,8 +9,8 @@
 	} from '@milkdown/preset-commonmark';
 	import { _ } from 'svelte-i18n';
 	import ListBullet from '~icons/heroicons/list-bullet-20-solid';
+	import Quote from '~icons/knotdots/quote';
 	import tooltip from '$lib/attachments/tooltip';
-	import Quote from '~icons/flowbite/quote-solid';
 
 	interface Props {
 		ctx: Ctx;

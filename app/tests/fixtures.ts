@@ -417,6 +417,11 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 						position: 0,
 						predicate: predicates.enum['is-part-of-program'],
 						object: testProgram.guid
+					},
+					{
+						position: 0,
+						predicate: predicates.enum['is-section-of'],
+						object: testProgram.guid
 					}
 				]
 			},
@@ -1018,6 +1023,11 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 					{
 						position: 0,
 						predicate: predicates.enum['is-part-of-program'],
+						object: testProgram.guid
+					},
+					{
+						position: 0,
+						predicate: predicates.enum['is-section-of'],
 						object: testProgram.guid
 					}
 				]

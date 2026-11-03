@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { _, date } from 'svelte-i18n';
-	import CalendarDays from '~icons/heroicons/calendar-days-16-solid';
-	import ExclamationCircle from '~icons/heroicons/exclamation-circle-16-solid';
+	import CalendarMonth from '~icons/flowbite/calendar-month-solid';
+	import ExclamationCircle from '~icons/flowbite/exclamation-circle-solid';
 	import Card from '$lib/components/Card.svelte';
 	import { type Container, type TaskPayload } from '$lib/models';
 	import { statusColors, statusIcons } from '$lib/theme/models';
@@ -62,7 +62,7 @@
 				{/if}
 
 				<time class="badge badge--yellow" datetime={container.payload.fulfillmentDate}>
-					<CalendarDays />
+					<CalendarMonth />
 					{$date(new Date(container.payload.fulfillmentDate), {
 						year: 'numeric',
 						month: '2-digit',

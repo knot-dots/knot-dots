@@ -4,8 +4,8 @@
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
 	import ArrowLeft from '~icons/flowbite/arrow-left-outline';
+	import Ellipsis from '~icons/flowbite/dots-horizontal-outline';
 	import Close from '~icons/knotdots/close';
-	import Ellipsis from '~icons/knotdots/ellipsis';
 
 	interface Props {
 		children: Snippet<[string, (title: string) => void, () => void]>;
@@ -84,6 +84,8 @@
 <style>
 	.dropdown {
 		--dropdown-button-default-background: transparent;
+		--dropdown-button-icon-size: 1.25rem;
+		--dropdown-button-padding: 0.375rem;
 		--dropdown-panel-background: var(--color-surface-container);
 		--dropdown-panel-border-color: var(--color-border-raised);
 		--dropdown-panel-border-radius: 16px;

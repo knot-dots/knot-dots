@@ -539,6 +539,7 @@
 	"objectives": "Gewünschte Entwicklung",
 	"off": "aus",
 	"on": "an",
+	"open_in_overlay": "{type} öffnen",
 	"operational_goal": "Operatives Ziel",
 	"organization": "Organisation",
 	"organization.properties.title": "Einstellungen",
@@ -791,6 +792,12 @@
 		"17": "17 - Partnerschaften zur Erreichung der Ziele"
 	},
 	"search": "Suchen",
+	"section_group": {
+		"existing_objects": "Vorhandene Objekte zeigen",
+		"geo": "Ortsbezogene Daten",
+		"media": "Bilder & Dateien",
+		"text_layout": "Text & Layout"
+	},
 	"select_all": "Alle auswählen",
 	"selection_counter": "{count} ausgewählt",
 	"show_links": "Links anzeigen",

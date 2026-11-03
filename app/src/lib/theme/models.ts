@@ -7,13 +7,15 @@ import BookOpen from '~icons/flowbite/book-open-outline';
 import Cash from '~icons/flowbite/cash-outline';
 import Clock from '~icons/flowbite/clock-outline';
 import Code from '~icons/flowbite/file-code-solid';
+import ExclamationCircle from '~icons/flowbite/exclamation-circle-solid';
 import File from '~icons/flowbite/file-solid';
 import Flag from '~icons/flowbite/flag-outline';
 import Lightbulb from '~icons/flowbite/lightbulb-solid';
+import Link from '~icons/flowbite/link-outline';
 import Newspaper from '~icons/flowbite/newspaper-outline';
 import Pen from '~icons/flowbite/pen-solid';
 import QuestionCircle from '~icons/flowbite/question-circle-outline';
-import Quote from '~icons/flowbite/quote-solid';
+import Star from '~icons/flowbite/star-solid';
 import Tag from '~icons/flowbite/tag-outline';
 import ThumbsDown from '~icons/flowbite/thumbs-down-solid';
 import ArrowTrendingUp from '~icons/heroicons/arrow-trending-up-solid';
@@ -31,23 +33,21 @@ import ClipboardCheck from '~icons/knotdots/clipboard-check';
 import ClipboardSimple from '~icons/knotdots/clipboard-simple';
 import Cog from '~icons/knotdots/cog';
 import Collection from '~icons/knotdots/collection';
-import ExclamationCircle from '~icons/knotdots/exclamation-circle';
 import Goal from '~icons/knotdots/goal';
 import Grid from '~icons/knotdots/grid';
 import Image from '~icons/knotdots/placeholder-image';
 import LandingPage from '~icons/knotdots/landing-page';
-import Link from '~icons/knotdots/link';
 import MapIcon from '~icons/knotdots/map';
-import Objectives from '~icons/knotdots/objectives';
+import Objective from '~icons/knotdots/objective';
 import Organization from '~icons/knotdots/organization';
 import OrganizationalUnit from '~icons/knotdots/organizational-unit';
 import Plus from '~icons/knotdots/plus';
 import Program from '~icons/knotdots/program';
 import Progress from '~icons/knotdots/progress';
+import Quote from '~icons/knotdots/quote';
 import Relation from '~icons/knotdots/relation';
 import ResourcesV2 from '~icons/knotdots/resources_v2';
 import RuleDatabase from '~icons/knotdots/rule-database';
-import Star from '~icons/knotdots/star';
 import Summary from '~icons/knotdots/summary';
 import TargetCheckConflictingTargets from '~icons/knotdots/target-check-conflicting-targets';
 import TargetCheckInsufficientData from '~icons/knotdots/target-check-insufficient-data';
@@ -94,8 +94,8 @@ export const payloadTypeIcons = new Map<PayloadType, Component<SVGAttributes<SVG
 	[payloadTypes.enum.map, MapIcon],
 	[payloadTypes.enum.measure, ClipboardSimple],
 	[payloadTypes.enum.measure_collection, ClipboardSimple],
-	[payloadTypes.enum.objective, Objectives],
-	[payloadTypes.enum.objective_collection, Objectives],
+	[payloadTypes.enum.objective, Objective],
+	[payloadTypes.enum.objective_collection, Objective],
 	[payloadTypes.enum.organization, Organization],
 	[payloadTypes.enum.organizational_unit, OrganizationalUnit],
 	[payloadTypes.enum.page, LandingPage],

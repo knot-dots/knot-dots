@@ -3,8 +3,8 @@
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import Editor from '$lib/components/Editor.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import ArrowRight from '~icons/knotdots/arrow-right';
-	import ExclamationCircle from '~icons/knotdots/exclamation-circle';
+	import ArrowRight from '~icons/flowbite/arrow-right-outline';
+	import ExclamationCircle from '~icons/flowbite/exclamation-circle-solid';
 	import {
 		type AnyPayload,
 		type ColContentPayload,

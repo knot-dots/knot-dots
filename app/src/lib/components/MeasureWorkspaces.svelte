@@ -6,7 +6,7 @@
 	import { createPopperActions } from 'svelte-popperjs';
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
 	import ChevronUp from '~icons/flowbite/chevron-up-outline';
-	import ColumnSolid from '~icons/flowbite/column-solid';
+	import Column from '~icons/flowbite/column-outline';
 	import ClipboardCheck from '~icons/knotdots/clipboard-check';
 	import Compass from '~icons/knotdots/compass';
 	import LandingPage from '~icons/knotdots/landing-page';
@@ -110,7 +110,7 @@
 			? [
 					{
 						exists: true,
-						icon: ColumnSolid,
+						icon: Column,
 						label: $_('workspace.iooi'),
 						value: workspacesLeft.iooi[selectedItem[1]] ?? '/iooi/board'
 					}
@@ -155,7 +155,7 @@
 
 		{
 			exists: selectedItem[0] in workspacesRight.status,
-			icon: ColumnSolid,
+			icon: Column,
 			label: $_('workspace.view.status'),
 			value: workspacesRight.status[selectedItem[0]] ?? '/tasks/status'
 		},

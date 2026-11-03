@@ -1,30 +1,36 @@
 <script lang="ts">
+	import type { Component } from 'svelte';
+	import type { SvelteHTMLElements } from 'svelte/elements';
 	import { createMenu } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
+	import BookOpen from '~icons/flowbite/book-open-outline';
 	import Cash from '~icons/flowbite/cash-outline';
 	import Code from '~icons/flowbite/file-code-solid';
+	import ExclamationCircle from '~icons/flowbite/exclamation-circle-solid';
 	import File from '~icons/flowbite/file-solid';
-	import Quote from '~icons/flowbite/quote-solid';
+	import Star from '~icons/flowbite/star-solid';
 	import BasicData from '~icons/knotdots/basic-data';
 	import Chapter from '~icons/knotdots/chapter';
 	import ChartBar from '~icons/knotdots/chart-bar';
-	import ChartLine from '~icons/knotdots/chart-line';
 	import ChartMixed from '~icons/knotdots/chart-mixed';
 	import Clipboard from '~icons/knotdots/clipboard-simple';
+	import Close from '~icons/knotdots/close';
 	import ClipboardCheck from '~icons/knotdots/clipboard-check';
 	import Collection from '~icons/knotdots/collection';
-	import ExclamationCircle from '~icons/knotdots/exclamation-circle';
 	import Goal from '~icons/knotdots/goal';
 	import Grid from '~icons/knotdots/grid';
-	import Link from '~icons/knotdots/link';
 	import Map from '~icons/knotdots/map';
+	import Gavel from '~icons/knotdots/gavel';
 	import Image from '~icons/knotdots/placeholder-image';
+	import InlineHelp from '~icons/knotdots/inline-help';
 	import Plus from '~icons/knotdots/plus';
+	import Objective from '~icons/knotdots/objective';
 	import Program from '~icons/knotdots/program';
 	import Progress from '~icons/knotdots/progress';
-	import Star from '~icons/knotdots/star';
+	import Quote from '~icons/knotdots/quote';
 	import Summary from '~icons/knotdots/summary';
+	import Teaser from '~icons/knotdots/teaser';
 	import Text from '~icons/knotdots/text';
 	import TwoCol from '~icons/knotdots/two-column';
 	import Video from '~icons/knotdots/video';
@@ -34,6 +40,7 @@
 	import {
 		type AnyPayload,
 		type Container,
+		type PayloadType,
 		isAdministrativeAreaBasicDataContainer,
 		isContainerWithProgress,
 		isContainerWithSummary,
@@ -54,6 +61,7 @@
 		isPageContainer,
 		isPostContainer,
 		isProgramCollectionContainer,
+		isProgramContainer,
 		isProgressContainer,
 		isReportContainer,
 		isResourceCollectionContainer,
@@ -69,6 +77,7 @@
 	} from '$lib/models';
 	import { hasSection } from '$lib/relations';
 	import { mayCreateContainer } from '$lib/stores';
+	import { type WorkspaceModuleKey, workspaceModules } from '$lib/workspaces';
 
 	interface Props {
 		compact?: boolean;
@@ -213,7 +222,34 @@
 			!hasSection(parentContainer, relatedContainers).some(isProgressContainer)
 	);
 
-	let mayAddChapter = $derived(isReportContainer(parentContainer));
+	let mayAddChapter = $derived(
+		isReportContainer(parentContainer) || isProgramContainer(parentContainer)
+	);
+
+	let mayAddGoal = $derived(
+		isProgramContainer(parentContainer) &&
+			parentContainer.payload.chapterType.includes(payloadTypes.enum.goal)
+	);
+
+	let mayAddKnowledge = $derived(
+		isProgramContainer(parentContainer) &&
+			parentContainer.payload.chapterType.includes(payloadTypes.enum.knowledge)
+	);
+
+	let mayAddMeasure = $derived(
+		isProgramContainer(parentContainer) &&
+			parentContainer.payload.chapterType.includes(payloadTypes.enum.measure)
+	);
+
+	let mayAddRule = $derived(
+		isProgramContainer(parentContainer) &&
+			parentContainer.payload.chapterType.includes(payloadTypes.enum.rule)
+	);
+
+	let mayAddSimpleMeasure = $derived(
+		isProgramContainer(parentContainer) &&
+			parentContainer.payload.chapterType.includes(payloadTypes.enum.simple_measure)
+	);
 
 	let mayAddIgniteVideo = $derived(
 		isHelpContainer(parentContainer) ||
@@ -226,208 +262,351 @@
 			!hasSection(parentContainer, relatedContainers).some(isSummaryContainer)
 	);
 
-	let options = $derived(
-		[
-			{ icon: Text, label: $_('text'), value: payloadTypes.enum.text },
-			{
-				icon: Text,
-				label: $_('inline_help'),
-				textType: textType.enum.inline_help,
-				value: payloadTypes.enum.text
-			},
-			{ icon: Code, label: $_('html'), value: payloadTypes.enum.html },
-			...(mayAddSummary
-				? [{ icon: Summary, label: $_('summary'), value: payloadTypes.enum.summary }]
-				: []),
-			{
-				icon: Grid,
-				label: $_('custom_collection.settings.embed_objects'),
-				value: payloadTypes.enum.custom_collection
-			},
-			...(mayAddChapter
-				? [
-						{
-							icon: Chapter,
-							label: $_('chapter'),
-							value: payloadTypes.enum.chapter
+	type SectionGroupKey = 'text_layout' | 'media' | 'geo' | 'existing_objects' | WorkspaceModuleKey;
+
+	interface SectionOption {
+		group: SectionGroupKey;
+		icon: Component<SvelteHTMLElements['svg']>;
+		label: string;
+		resourceDataType?: (typeof resourceDataTypes.options)[number];
+		textType?: (typeof textType.options)[number];
+		value: PayloadType;
+	}
+
+	let sectionGroups = $derived<{ colorClass?: string; key: SectionGroupKey; label: string }[]>([
+		...workspaceModules.map(({ colorClass, key }) => ({
+			colorClass,
+			key,
+			label: $_(`workspace.module.${key}`)
+		})),
+		{ key: 'text_layout', label: $_('section_group.text_layout') },
+		{ key: 'media', label: $_('section_group.media') },
+		{ key: 'geo', label: $_('section_group.geo') },
+		{ key: 'existing_objects', label: $_('section_group.existing_objects') }
+	]);
+
+	let options: SectionOption[] = $derived([
+		{ group: 'text_layout', icon: Text, label: $_('text'), value: payloadTypes.enum.text },
+		{
+			group: 'text_layout',
+			icon: InlineHelp,
+			label: $_('inline_help'),
+			textType: textType.enum.inline_help,
+			value: payloadTypes.enum.text
+		},
+		{ group: 'text_layout', icon: Code, label: $_('html'), value: payloadTypes.enum.html },
+		...(mayAddSummary
+			? [
+					{
+						group: 'text_layout' as const,
+						icon: Summary,
+						label: $_('summary'),
+						value: payloadTypes.enum.summary
+					}
+				]
+			: []),
+		...(mayAddChapter
+			? [
+					{
+						group: 'text_layout' as const,
+						icon: Chapter,
+						label: $_('chapter'),
+						value: payloadTypes.enum.chapter
+					}
+				]
+			: []),
+		{
+			group: 'text_layout',
+			icon: TwoCol,
+			label: $_('col_content'),
+			value: payloadTypes.enum.col_content
+		},
+		{ group: 'text_layout', icon: Teaser, label: $_('teaser'), value: payloadTypes.enum.teaser },
+		{
+			group: 'text_layout',
+			icon: Star,
+			label: $_('teaser_highlight'),
+			value: payloadTypes.enum.teaser_highlight
+		},
+		{
+			group: 'text_layout',
+			icon: ExclamationCircle,
+			label: $_('info_box'),
+			value: payloadTypes.enum.info_box
+		},
+		{ group: 'text_layout', icon: Quote, label: $_('quote'), value: payloadTypes.enum.quote },
+		{ group: 'media', icon: Image, label: $_('image'), value: payloadTypes.enum.image },
+		...(mayAddFileCollection
+			? [
+					{
+						group: 'media' as const,
+						icon: File,
+						label: $_('files'),
+						value: payloadTypes.enum.file_collection
+					}
+				]
+			: []),
+		...(mayAddIgniteVideo
+			? [
+					{
+						group: 'media' as const,
+						icon: Video,
+						label: $_('ignite_video'),
+						value: payloadTypes.enum.ignite_video
+					}
+				]
+			: []),
+		...(mayAddAdministrativeAreaBasicData
+			? [
+					{
+						group: 'geo' as const,
+						icon: BasicData,
+						label: $_('administrative_area.basic_data'),
+						value: payloadTypes.enum.administrative_area_basic_data
+					}
+				]
+			: []),
+		...(mayAddDemographicData
+			? [
+					{
+						group: 'geo' as const,
+						icon: BasicData,
+						label: $_('demographic_data'),
+						value: payloadTypes.enum.demographic_data
+					}
+				]
+			: []),
+		...(mayAddMap
+			? [
+					{
+						group: 'geo' as const,
+						icon: Map,
+						label: $_('administrative_area.boundary'),
+						value: payloadTypes.enum.map
+					}
+				]
+			: []),
+		{
+			group: 'existing_objects',
+			icon: Grid,
+			label: $_('custom_collection.settings.embed_objects'),
+			value: payloadTypes.enum.custom_collection
+		},
+		...(mayAddTeaserCollection
+			? [
+					{
+						group: 'existing_objects' as const,
+						icon: Collection,
+						label: $_('teasers'),
+						value: payloadTypes.enum.teaser_collection
+					}
+				]
+			: []),
+		...(mayAddProgramCollection
+			? [
+					{
+						group: 'goal_setting' as const,
+						icon: Program,
+						label: $_('programs'),
+						value: payloadTypes.enum.program_collection
+					}
+				]
+			: []),
+		...(mayAddGoal
+			? [
+					{
+						group: 'goal_setting' as const,
+						icon: Goal,
+						label: $_('goal'),
+						value: payloadTypes.enum.goal
+					}
+				]
+			: []),
+		...(mayAddGoalCollection
+			? [
+					{
+						group: 'goal_setting' as const,
+						icon: Goal,
+						label: $_('goals'),
+						value: payloadTypes.enum.goal_collection
+					}
+				]
+			: []),
+		...(mayAddMeasure
+			? [
+					{
+						group: 'implementation_planning' as const,
+						icon: Clipboard,
+						label: $_('measure'),
+						value: payloadTypes.enum.measure
+					}
+				]
+			: []),
+		...(mayAddSimpleMeasure
+			? [
+					{
+						group: 'implementation_planning' as const,
+						icon: Clipboard,
+						label: $_('simple_measure'),
+						value: payloadTypes.enum.simple_measure
+					}
+				]
+			: []),
+		...(mayAddMeasureCollection
+			? [
+					{
+						group: 'implementation_planning' as const,
+						icon: Clipboard,
+						label: $_('measures'),
+						value: payloadTypes.enum.measure_collection
+					}
+				]
+			: []),
+		...(mayAddTaskCollection
+			? [
+					{
+						group: 'implementation_planning' as const,
+						icon: ClipboardCheck,
+						label: $_('tasks'),
+						value: payloadTypes.enum.task_collection
+					}
+				]
+			: []),
+		...(mayAddProgress
+			? [
+					{
+						group: 'implementation_planning' as const,
+						icon: Progress,
+						label: $_('progress'),
+						value: payloadTypes.enum.progress
+					}
+				]
+			: []),
+		...(mayAddIndicatorCollection
+			? [
+					{
+						group: 'impact_measurement' as const,
+						icon: ChartMixed,
+						label: $_('indicators'),
+						value: payloadTypes.enum.indicator_collection
+					}
+				]
+			: []),
+		...(mayAddObjectiveCollection
+			? [
+					{
+						group: 'impact_measurement' as const,
+						icon: Objective,
+						label: $_('objectives'),
+						value: payloadTypes.enum.objective_collection
+					}
+				]
+			: []),
+		...(mayAddEffectCollection
+			? [
+					{
+						group: 'impact_measurement' as const,
+						icon: ChartBar,
+						label: $_('effect'),
+						value: payloadTypes.enum.effect_collection
+					}
+				]
+			: []),
+		...(mayAddResourceCollection
+			? [
+					{
+						group: 'resource_planning' as const,
+						icon: Cash,
+						label: $_('resources'),
+						value: payloadTypes.enum.resource_collection
+					}
+				]
+			: []),
+		...(mayAddActualResourceAllocationCollection
+			? [
+					{
+						group: 'resource_planning' as const,
+						icon: Cash,
+						label: $_('resource_data_type.actual_resource_allocation'),
+						resourceDataType:
+							resourceDataTypes.enum['resource_data_type.actual_resource_allocation'],
+						value: payloadTypes.enum.resource_data_collection
+					}
+				]
+			: []),
+		...(mayAddPlannedResourceAllocationCollection
+			? [
+					{
+						group: 'resource_planning' as const,
+						icon: Cash,
+						label: $_('resource_data_type.planned_resource_allocation'),
+						resourceDataType:
+							resourceDataTypes.enum['resource_data_type.planned_resource_allocation'],
+						value: payloadTypes.enum.resource_data_collection
+					}
+				]
+			: []),
+		...(mayAddBudgetCollection
+			? [
+					{
+						group: 'resource_planning' as const,
+						icon: Cash,
+						label: $_('resource_data_type.budget'),
+						resourceDataType: resourceDataTypes.enum['resource_data_type.budget'],
+						value: payloadTypes.enum.resource_data_collection
+					}
+				]
+			: []),
+		...(mayAddKnowledge
+			? [
+					{
+						group: 'knowledge_transfer' as const,
+						icon: BookOpen,
+						label: $_('knowledge'),
+						value: payloadTypes.enum.knowledge
+					}
+				]
+			: []),
+		...(mayAddRule
+			? [
+					{
+						group: 'rules' as const,
+						icon: Gavel,
+						label: $_('rule'),
+						value: payloadTypes.enum.rule
+					}
+				]
+			: [])
+	]);
+
+	let visibleGroups = $derived.by(() => {
+		return sectionGroups
+			.map((group) => ({
+				...group,
+				options: options
+					.filter(({ value }) => $mayCreateContainer(value, parentContainer))
+					.filter((option) => option.group === group.key)
+					.toSorted((a, b) => a.label.localeCompare(b.label))
+					.map((option) => ({
+						...option,
+						item: {
+							resourceDataType: option.resourceDataType,
+							textType: option.textType,
+							title: option.label,
+							type: option.value
 						}
-					]
-				: []),
-			...(mayAddFileCollection
-				? [
-						{
-							icon: File,
-							label: $_('files'),
-							value: payloadTypes.enum.file_collection
-						}
-					]
-				: []),
-			...(mayAddTaskCollection
-				? [
-						{
-							icon: ClipboardCheck,
-							label: $_('tasks'),
-							value: payloadTypes.enum.task_collection
-						}
-					]
-				: []),
-			...(mayAddEffectCollection
-				? [
-						{
-							icon: ChartBar,
-							label: $_('effect'),
-							value: payloadTypes.enum.effect_collection
-						}
-					]
-				: []),
-			...(mayAddObjectiveCollection
-				? [
-						{
-							icon: ChartLine,
-							label: $_('objectives'),
-							value: payloadTypes.enum.objective_collection
-						}
-					]
-				: []),
-			...(mayAddGoalCollection
-				? [
-						{
-							icon: Goal,
-							label: $_('goals'),
-							value: payloadTypes.enum.goal_collection
-						}
-					]
-				: []),
-			...(mayAddResourceCollection
-				? [
-						{
-							icon: Cash,
-							label: $_('resources'),
-							value: payloadTypes.enum.resource_collection
-						}
-					]
-				: []),
-			...(mayAddActualResourceAllocationCollection
-				? [
-						{
-							icon: Cash,
-							label: $_('resource_data_type.actual_resource_allocation'),
-							value: payloadTypes.enum.resource_data_collection,
-							resourceDataType: 'resource_data_type.actual_resource_allocation'
-						}
-					]
-				: []),
-			...(mayAddPlannedResourceAllocationCollection
-				? [
-						{
-							icon: Cash,
-							label: $_('resource_data_type.planned_resource_allocation'),
-							value: payloadTypes.enum.resource_data_collection,
-							resourceDataType: 'resource_data_type.planned_resource_allocation'
-						}
-					]
-				: []),
-			...(mayAddBudgetCollection
-				? [
-						{
-							icon: Cash,
-							label: $_('resource_data_type.budget'),
-							value: payloadTypes.enum.resource_data_collection,
-							resourceDataType: 'resource_data_type.budget'
-						}
-					]
-				: []),
-			...(mayAddIndicatorCollection
-				? [
-						{
-							icon: ChartMixed,
-							label: $_('indicators'),
-							value: payloadTypes.enum.indicator_collection
-						}
-					]
-				: []),
-			...(mayAddMeasureCollection
-				? [
-						{
-							icon: Clipboard,
-							label: $_('measures'),
-							value: payloadTypes.enum.measure_collection
-						}
-					]
-				: []),
-			...(mayAddProgramCollection
-				? [
-						{
-							icon: Program,
-							label: $_('programs'),
-							value: payloadTypes.enum.program_collection
-						}
-					]
-				: []),
-			...(mayAddProgress
-				? [
-						{
-							icon: Progress,
-							label: $_('progress'),
-							value: payloadTypes.enum.progress
-						}
-					]
-				: []),
-			...(mayAddAdministrativeAreaBasicData
-				? [
-						{
-							icon: BasicData,
-							label: $_('administrative_area.basic_data'),
-							value: payloadTypes.enum.administrative_area_basic_data
-						}
-					]
-				: []),
-			...(mayAddDemographicData
-				? [
-						{
-							icon: BasicData,
-							label: $_('demographic_data'),
-							value: payloadTypes.enum.demographic_data
-						}
-					]
-				: []),
-			...(mayAddMap
-				? [{ icon: Map, label: $_('administrative_area.boundary'), value: payloadTypes.enum.map }]
-				: []),
-			{ icon: Image, label: $_('image'), value: payloadTypes.enum.image },
-			...(mayAddIgniteVideo
-				? [
-						{
-							icon: Video,
-							label: $_('ignite_video'),
-							value: payloadTypes.enum.ignite_video
-						}
-					]
-				: []),
-			...(mayAddTeaserCollection
-				? [
-						{
-							icon: Collection,
-							label: $_('teasers'),
-							value: payloadTypes.enum.teaser_collection
-						}
-					]
-				: []),
-			{ icon: TwoCol, label: $_('col_content'), value: payloadTypes.enum.col_content },
-			{ icon: Link, label: $_('teaser'), value: payloadTypes.enum.teaser },
-			{ icon: Star, label: $_('teaser_highlight'), value: payloadTypes.enum.teaser_highlight },
-			{ icon: ExclamationCircle, label: $_('info_box'), value: payloadTypes.enum.info_box },
-			{ icon: Quote, label: $_('quote'), value: payloadTypes.enum.quote }
-		].toSorted((a, b) => a.label.localeCompare(b.label))
-	);
+					}))
+			}))
+			.filter(({ options }) => options.length > 0);
+	});
 </script>
 
 <div class="dropdown" class:dropdown--compact={compact} use:popperRef>
 	<button
+		{@attach tooltip($_('add_section'))}
 		class="dropdown-button"
 		onchange={handleAddSection}
 		type="button"
-		{@attach tooltip($_('add_section'))}
 		use:menu.button
 	>
 		<Plus />
@@ -436,29 +615,40 @@
 
 	{#if $menu.expanded}
 		<div class="dropdown-panel" use:menu.items use:popperContent={extraOpts}>
-			<p class="dropdown-panel-title">{$_('add_section')}</p>
-			<ul class="menu">
-				{#each options as option (`${option.value}-${option.resourceDataType ?? 'none'}-${option.textType ?? 'none'}`)}
-					{#if $mayCreateContainer(option.value, parentContainer)}
-						<li class="menu-item">
-							<button
-								use:menu.item={{
-									value: {
-										resourceDataType: option.resourceDataType,
-										textType: option.textType,
-										title: option.label,
-										type: option.value
-									}
-								}}
-								type="button"
-							>
-								<option.icon />
-								{option.label}
-							</button>
-						</li>
-					{/if}
+			<div class="dropdown-panel-header">
+				<p class="dropdown-panel-title">
+					<span>{$_('add_section')}</span>
+					<button class="action-button" onclick={() => menu.close()} type="button">
+						<Close />
+						<span class="is-visually-hidden">{$_('close')}</span>
+					</button>
+				</p>
+			</div>
+
+			<div class="groups">
+				{#each visibleGroups as group (group.key)}
+					<div class={['group', group.colorClass]}>
+						{const id = crypto.randomUUID()}
+						<p class="group-title" {id}>{group.label}</p>
+						<ul class="menu" aria-labelledby={id} role="group">
+							{#each group.options as option (`${option.value}-${option.resourceDataType ?? 'none'}-${option.textType ?? 'none'}`)}
+								<li role="none">
+									<button
+										class={['menu-item', { 'menu-item--active': $menu.active === option.item }]}
+										type="button"
+										use:menu.item={{ value: option.item }}
+									>
+										<option.icon />
+										{option.label}
+									</button>
+								</li>
+							{/each}
+						</ul>
+					</div>
+				{:else}
+					<p class="no-results">{$_('filter.no_results')}</p>
 				{/each}
-			</ul>
+			</div>
 		</div>
 	{/if}
 </div>
@@ -467,6 +657,12 @@
 	.dropdown {
 		--dropdown-button-border-radius: 16px;
 		--dropdown-button-padding: 1rem;
+		--dropdown-panel-background: var(--color-surface-container);
+		--dropdown-panel-border-color: var(--color-border-raised);
+		--dropdown-panel-border-radius: 16px;
+		--dropdown-panel-gap: 0.25rem;
+		--dropdown-panel-max-height: 22.5rem;
+		--dropdown-panel-width: 13.75rem;
 
 		color: var(--color-gray-700);
 		width: fit-content;
@@ -477,22 +673,63 @@
 		--dropdown-button-padding: 0.25rem;
 	}
 
-	.dropdown-panel {
-		border-radius: 16px;
-	}
-
 	.dropdown-panel-title {
+		align-items: center;
+		color: var(--color-text-default);
+		display: flex;
 		font-size: 0.75rem;
 		font-weight: 600;
-		padding: 0.5rem 0.75rem;
-		white-space: nowrap;
+		justify-content: space-between;
+		padding: 0 0 0 0.5rem;
 	}
 
-	.menu-item > button {
-		color: var(--color-gray-700);
+	.groups {
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow-y: auto;
 	}
 
-	.menu-item > button > :global(svg) {
-		color: var(--color-gray-500);
+	.group-title {
+		color: var(--color-text-accent-subtle);
+		font-size: 0.75rem;
+		font-weight: 500;
+		padding: 0.75rem 0.5rem 0.25rem;
+	}
+
+	.menu {
+		gap: 0;
+	}
+
+	.menu-item {
+		align-items: center;
+		border: none;
+		border-radius: 8px;
+		color: var(--color-text-default);
+		cursor: default;
+		display: flex;
+		font-size: 0.875rem;
+		font-weight: 500;
+		gap: 0.5rem;
+		min-height: 2.5rem;
+		padding: 0.5rem;
+		text-align: left;
+		width: 100%;
+	}
+
+	.menu-item.menu-item--active {
+		background-color: var(--color-background-accent-hover);
+	}
+
+	.menu-item :global(svg) {
+		color: var(--color-icon-accent-default);
+		flex-shrink: 0;
+		height: 1rem;
+		width: 1rem;
+	}
+
+	.no-results {
+		color: var(--color-text-subtle);
+		font-size: 0.875rem;
+		padding: 0.5rem;
 	}
 </style>

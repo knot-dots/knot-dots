@@ -539,6 +539,7 @@
 	"objectives": "Objectives",
 	"off": "off",
 	"on": "on",
+	"open_in_overlay": "Open {type}",
 	"operational_goal": "Operational goal",
 	"organization": "Organization",
 	"organization.properties.title": "Settings",
@@ -791,6 +792,12 @@
 		"17": "Partnerships for the goals"
 	},
 	"search": "Search",
+	"section_group": {
+		"existing_objects": "Show existing objects",
+		"geo": "Location-based data",
+		"media": "Images & files",
+		"text_layout": "Text & layout"
+	},
 	"select_all": "Select all",
 	"selection_counter": "{count} selected",
 	"show_links": "Show links",
