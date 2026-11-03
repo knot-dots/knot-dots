@@ -11,7 +11,6 @@ export const featureFlags = new Map([
 			'Mistral',
 			'NewPropertyPanel',
 			'ResourceV2',
-			'SubMeasures',
 			'Timeline',
 			'TrafficLight',
 			'UrlSlug'
@@ -47,9 +46,6 @@ export function createFeatureDecisions(features: string[]) {
 		},
 		useUrlSlug() {
 			return features.includes('UrlSlug');
-		},
-		useSubMeasures() {
-			return features.includes('SubMeasures');
 		},
 		useAdoptions() {
 			return features.includes('Adoptions');

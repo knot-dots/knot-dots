@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/state';
 	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
 	import EditableDuration from '$lib/components/EditableDuration.svelte';
 	import EditableEditorialState from '$lib/components/EditableEditorialState.svelte';
@@ -14,7 +13,6 @@
 	import EditableCategories from '$lib/components/EditableCategories.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
 		type Container,
@@ -32,15 +30,13 @@
 	}
 
 	let { container = $bindable(), editable = false, relatedContainers, revisions }: Props = $props();
-
-	const featureDecisions = createFeatureDecisions(page.data.features ?? []);
 </script>
 
 <PropertyGrid>
 	{#snippet top()}
 		<EditableMeasureType {editable} bind:value={container.payload.measureType} />
 
-		{#if isMeasureContainer(container) && featureDecisions.useSubMeasures()}
+		{#if isMeasureContainer(container)}
 			<EditableMeasureHierarchyLevel {editable} bind:value={container.payload.hierarchyLevel} />
 		{/if}
 

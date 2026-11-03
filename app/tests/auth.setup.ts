@@ -86,7 +86,6 @@ persons.forEach((person) => {
 		await page.getByRole('dialog').getByLabel('ImportFromCsv').check();
 		await page.getByRole('dialog').getByLabel('IOOI').check();
 		await page.getByRole('dialog').getByLabel('ResourceV2').check();
-		await page.getByRole('dialog').getByLabel('SubMeasures').check();
 		await page.getByRole('dialog').getByLabel('NewPropertyPanel').check();
 		await page.getByRole('dialog').getByLabel('Adoptions').check();
 		await page.getByRole('dialog').getByLabel('Templating').check();
