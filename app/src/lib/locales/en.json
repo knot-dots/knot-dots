@@ -887,7 +887,6 @@
 	"Templating": "Templating",
 	"term": "Term",
 	"text": "Supplementary text",
-	"Timeline": "Timeline",
 	"timeline.actions": "Timeline controls",
 	"timeline.empty": "None of the selected objects has a date.",
 	"timeline.go_to_end": "Go to the end",

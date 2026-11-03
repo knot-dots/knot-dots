@@ -11,7 +11,6 @@ export const featureFlags = new Map([
 			'Mistral',
 			'NewPropertyPanel',
 			'ResourceV2',
-			'Timeline',
 			'TrafficLight',
 			'UrlSlug'
 		] as const
@@ -70,9 +69,6 @@ export function createFeatureDecisions(features: string[]) {
 		},
 		useMcpTokenMenu() {
 			return features.includes('MCP');
-		},
-		useTimeline() {
-			return features.includes('Timeline');
 		},
 		// The flag keeps its former name, as users have stored it in their settings
 		useIndicatorReview() {

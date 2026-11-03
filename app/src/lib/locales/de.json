@@ -887,7 +887,6 @@
 	"Templating": "Vorlagen",
 	"term": "Begriff",
 	"text": "Ergänzungstext",
-	"Timeline": "Zeitleiste",
 	"timeline.actions": "Zeitleiste steuern",
 	"timeline.empty": "Keines der ausgewählten Objekte hat ein Datum.",
 	"timeline.go_to_end": "Zum Ende",
