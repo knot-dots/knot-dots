@@ -37,7 +37,7 @@ export default class MeasurePage {
 	}
 	async createEffect() {
 		await this.addEffectButton.click();
-		const dialog = this.page.getByRole('dialog', { name: 'Add effect' });
+		const dialog = this.page.getByRole('dialog');
 		await expect(dialog).toBeVisible();
 		return dialog;
 	}

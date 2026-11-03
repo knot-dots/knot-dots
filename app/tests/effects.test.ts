@@ -59,7 +59,9 @@ test.describe('Creating effects', () => {
 		await expect(suggestion).toContainText(/Relevance\s*\d\.\d/);
 		await suggestion.getByText(testIndicator.payload.title).click();
 
-		await expect(dialog.getByRole('navigation')).toContainText('Define effect');
+		await expect(
+			dialog.getByRole('heading', { name: 'Create a new effect with an existing indicator' })
+		).toBeVisible();
 		await expect(dialog.getByRole('button', { name: 'Confirm', exact: true })).toBeDisabled();
 
 		await dialog.getByRole('textbox', { name: 'Description' }).fill('More people cycle.');
@@ -158,6 +160,9 @@ test.describe('Creating effects', () => {
 
 			const dialog = await measurePage.createEffect();
 			await dialog.getByRole('button', { name: 'Create new effect' }).click();
+			await expect(
+				dialog.getByRole('heading', { name: 'Create a new effect', exact: true })
+			).toBeVisible();
 
 			await dialog.getByRole('textbox', { name: 'Description' }).fill('Something changes.');
 			await dialog.getByRole('button', { name: 'Type of effect' }).click();

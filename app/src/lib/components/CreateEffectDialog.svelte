@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Attachment } from 'svelte/attachments';
 	import { _ } from 'svelte-i18n';
-	import ChevronDoubleRight from '~icons/flowbite/chevron-double-right-outline';
 	import { beforeNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import { filterCategoryContext } from '$lib/categoryOptions';
@@ -124,6 +123,14 @@
 				: unit
 	);
 
+	let heading = $derived(
+		step === 1
+			? $_('create_effect_dialog.title.select_indicator')
+			: selection?.kind === 'existing'
+				? $_('create_effect_dialog.title.existing_indicator')
+				: $_('create_effect_dialog.title.new_indicator')
+	);
+
 	let isValidValue = $derived(value !== undefined && effectValue.safeParse(value).success);
 
 	let canSubmit = $derived(
@@ -220,19 +227,8 @@
 			submit();
 		}}
 	>
-		<nav>
-			<h2 class="is-visually-hidden" id="create-effect-dialog-title">
-				{$_('create_effect_dialog.title')}
-			</h2>
-			<ol class="step-navigation">
-				<li class:active={step === 1}>
-					{$_('create_effect_dialog.step.select_indicator')}
-					<ChevronDoubleRight />
-				</li>
-				<li class:active={step === 2}>
-					{$_('create_effect_dialog.step.define_effect')}
-				</li>
-			</ol>
+		<header>
+			<h2 class="truncated" id="create-effect-dialog-title">{heading}</h2>
 
 			{#if step === 2}
 				<button class="button-xs" disabled={submitting} onclick={() => (step = 1)} type="button">
@@ -258,7 +254,7 @@
 					{$_('create_effect_dialog.button.confirm')}
 				</button>
 			{/if}
-		</nav>
+		</header>
 
 		{#if step === 1}
 			<IndicatorSuggestionPicker
@@ -394,61 +390,19 @@
 		height: 100%;
 	}
 
-	nav {
+	header {
 		align-items: center;
 		display: flex;
 		gap: 0.5rem;
 		margin-bottom: 1rem;
 	}
 
-	.step-navigation {
-		counter-reset: steps;
-		display: flex;
-		font-size: 0.875rem;
-		margin-right: auto;
-	}
-
-	.step-navigation > li {
-		align-items: center;
-		color: var(--color-gray-700);
-		display: flex;
-	}
-
-	.step-navigation > li:before {
-		border: solid 1px var(--color-gray-700);
-		border-radius: calc(infinity * 1px);
-		content: counter(steps);
-		counter-increment: steps;
-		display: inline-block;
-		flex-shrink: 0;
-		font-size: 0.75rem;
-		height: 1.25rem;
-		margin: 0 0.375rem;
-		text-align: center;
-		width: 1.25rem;
-	}
-
-	.step-navigation > li.active:before {
-		background-color: var(--color-gray-900);
-		border-color: var(--color-gray-900);
-		color: var(--color-white);
-	}
-
-	.step-navigation > li.active ~ li {
-		color: var(--color-gray-400);
-	}
-
-	.step-navigation > li.active ~ li:before {
-		border-color: var(--color-gray-400);
-		color: var(--color-gray-400);
-	}
-
-	.step-navigation > li > :global(svg) {
-		color: var(--color-gray-400);
-		display: inline-block;
-		height: 1.5rem;
-		margin-left: 0.375rem;
-		width: 1.5rem;
+	h2 {
+		color: var(--color-gray-900);
+		flex: 1 1 auto;
+		font-size: 1.125rem;
+		font-weight: 600;
+		min-width: 0;
 	}
 
 	.step-2 {

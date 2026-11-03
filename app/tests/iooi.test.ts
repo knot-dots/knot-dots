@@ -311,12 +311,20 @@ test.describe('Measure IOOI Board', () => {
 			await column.addItemButton.click();
 
 			// Verify the dialog for creating effects opens
-			const dialog = dotsBoard.page.getByRole('dialog', { name: 'Add effect' });
-			await expect(dialog.getByRole('navigation')).toContainText('Select indicator');
+			const dialog = dotsBoard.page.getByRole('dialog');
+			await expect(
+				dialog.getByRole('heading', {
+					name: 'Choose an existing indicator to measure the effect or create a new one'
+				})
+			).toBeVisible();
 
-			// Select an indicator and define the effect
-			await dialog.getByText(testIndicator.payload.title).click();
-			await expect(dialog.getByRole('navigation')).toContainText('Define effect');
+			// Select an indicator and define the effect; other indicators may fill
+			// the first page of suggestions.
+			await dialog.getByRole('searchbox', { name: 'Search' }).fill(testIndicator.payload.title);
+			await dialog.getByRole('article').getByText(testIndicator.payload.title).click();
+			await expect(
+				dialog.getByRole('heading', { name: 'Create a new effect with an existing indicator' })
+			).toBeVisible();
 			await dialog.getByRole('textbox', { name: 'Description' }).fill(`Effect in ${iooiType}`);
 			await dialog.getByRole('button', { name: 'Type of effect' }).click();
 			await dialog.getByRole('radio', { name: 'Tendency', exact: true }).click();
