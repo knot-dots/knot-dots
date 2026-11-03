@@ -264,15 +264,17 @@
 		outline: none;
 	}
 
-	/* the standard combobox panel of the design */
+	/* the standard combobox panel of the design: as wide as its entries, at
+	   most as wide as the search field */
 	.dropdown-panel {
 		--dropdown-panel-border-color: var(--color-border-accent-subtle);
 		--dropdown-panel-border-radius: 12px;
 		--dropdown-panel-gap: 0;
 		--dropdown-panel-max-height: 30rem;
+		--dropdown-panel-max-width: 24.0625rem;
 		--dropdown-panel-padding: 0.25rem;
 
-		width: 24.0625rem;
+		min-width: 13.625rem;
 	}
 
 	.listbox {
