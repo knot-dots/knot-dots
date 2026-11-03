@@ -1,17 +1,11 @@
 import type { MongoAbility } from '@casl/ability';
 import { AbilityBuilder, createMongoAbility } from '@casl/ability';
-import type { AnyPayload, Container, PayloadType } from '$lib/models';
-import {
-	type AnyInitialPayload,
-	type NewContainer,
-	payloadTypes,
-	predicates,
-	visibility
-} from '$lib/models';
+import type { AnyPayload, Container, PayloadType, UserGrants } from '$lib/models';
+import { payloadTypes, predicates, visibility } from '$lib/models';
 import type { User } from '$lib/stores';
 
 type Actions = 'create' | 'read' | 'update' | 'delete' | 'manage-users';
-type Subjects = Container<AnyPayload> | NewContainer<AnyInitialPayload> | PayloadType;
+type Subjects = { payload: { type: PayloadType }; user_grant?: UserGrants } | PayloadType;
 
 export const specialTypes: PayloadType[] = [
 	payloadTypes.enum.category,
