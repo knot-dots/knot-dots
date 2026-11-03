@@ -360,16 +360,32 @@
 </dialog>
 
 <style>
+	/* Sized like PickerDialog, whose catalog the first step resembles. */
 	dialog {
 		background-color: var(--color-gray-025);
-		border: solid 1px var(--color-gray-200);
-		border-radius: 8px;
+		border: solid 1px var(--color-white);
+		border-radius: 24px;
 		box-shadow: var(--shadow-2xl);
 		color: var(--color-gray-500);
 		container-type: inline-size;
-		height: calc(100vh - 3rem);
-		padding: 1.5rem;
-		width: min(calc(100vw - 10rem), var(--details-max-width) + 20rem);
+		height: calc(100vh - 1rem);
+		/* clip instead of hidden: focusing the visually hidden radio button of a
+		   card near the bottom edge must not scroll the dialog box itself */
+		overflow: clip;
+		padding: 0.75rem;
+		width: calc(100vw - 1rem);
+	}
+
+	dialog::backdrop {
+		backdrop-filter: blur(12px) brightness(0.75);
+	}
+
+	@media (min-width: 48rem) {
+		dialog {
+			height: calc(100vh - 3rem);
+			padding: 1.5rem;
+			width: calc(100vw - 10rem);
+		}
 	}
 
 	form {
