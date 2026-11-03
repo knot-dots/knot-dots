@@ -93,7 +93,7 @@ test.describe('Creating effects', () => {
 		await expect(measurePage.effects.getByTitle(testIndicator.payload.title)).toBeVisible();
 	});
 
-	test('a suggested indicator shows its actual data', async ({
+	test('a suggested indicator shows its actual data, also once chosen', async ({
 		dotsBoard,
 		measureEffectCollection,
 		testIndicatorActualData,
@@ -106,6 +106,15 @@ test.describe('Creating effects', () => {
 		const dialog = await measurePage.createEffect();
 		const suggestion = await findSuggestion(dialog, testIndicatorActualData.payload.title);
 		await expect(suggestion.getByRole('figure')).toBeVisible();
+
+		// The chosen indicator is shown next to the definition of the effect.
+		await suggestion.getByText(testIndicatorActualData.payload.title).click();
+		await expect(dialog.getByRole('textbox', { name: 'Description' })).toBeVisible();
+		const chosen = dialog
+			.getByRole('article')
+			.filter({ hasText: testIndicatorActualData.payload.title });
+		await expect(chosen.getByRole('figure')).toBeVisible();
+		await expect(chosen).toContainText(/Relevance\s*\d\.\d/);
 	});
 
 	[

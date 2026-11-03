@@ -13,6 +13,7 @@
 	import IndicatorUnitDropdown from '$lib/components/IndicatorUnitDropdown.svelte';
 	import PlannedValuesEditor from '$lib/components/PlannedValuesEditor.svelte';
 	import SingleChoiceDropdown from '$lib/components/SingleChoiceDropdown.svelte';
+	import SuggestedIndicatorCard from '$lib/components/SuggestedIndicatorCard.svelte';
 	import { getCreateEffectDialogContext } from '$lib/contexts/createEffectDialog.svelte';
 	import {
 		type CreatedEffect,
@@ -25,6 +26,7 @@
 	} from '$lib/effectCreation';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
+		type ActualDataPayload,
 		type BinaryIndicatorPayload,
 		type Container,
 		type IndicatorPayload,
@@ -45,8 +47,10 @@
 
 	let selection = $state.raw<
 		| {
+				actualData: Container<ActualDataPayload>[];
 				kind: 'existing';
 				indicator: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>;
+				relevance: number;
 		  }
 		| { kind: 'new' }
 	>();
@@ -137,8 +141,11 @@
 		dialog?.close();
 	});
 
-	function select(indicator: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>) {
-		selection = { kind: 'existing', indicator };
+	function select(
+		indicator: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>,
+		{ actualData, relevance }: { actualData: Container<ActualDataPayload>[]; relevance: number }
+	) {
+		selection = { actualData, kind: 'existing', indicator, relevance };
 		step = 2;
 	}
 
@@ -262,80 +269,91 @@
 				{target}
 			/>
 		{:else if selection}
-			<div class="definition">
-				{#if errorMessage}
-					<p class="error" role="alert">{errorMessage}</p>
-				{/if}
-
-				<div class="details-section description">
-					<Editor label={$_('description')} bind:value={description} />
-					{#if description.trim() === ''}
-						<p class="hint">{$_('create_effect_dialog.description_hint')}</p>
-					{/if}
-				</div>
-
-				<div class="properties">
-					<span class="label" id="create-effect-dialog-kind">
-						{$_('create_effect_dialog.effect_kind')}
-					</span>
-					{#if kindOptions.length > 1}
-						<SingleChoiceDropdown
-							labelledBy="create-effect-dialog-kind"
-							options={kindOptions.map((o) => ({
-								label: $_(`create_effect_dialog.effect_kind.${o}`),
-								value: o
-							}))}
-							bind:value={chosenKind}
+			<div class="step-2">
+				{#if selection.kind === 'existing'}
+					<div class="chosen-indicator">
+						<SuggestedIndicatorCard
+							actualData={selection.actualData}
+							container={selection.indicator}
+							relevance={selection.relevance}
 						/>
-					{:else if kind}
-						<span class="value">{$_(`create_effect_dialog.effect_kind.${kind}`)}</span>
-					{/if}
-
-					{#if kind && kind !== effectKinds.enum.binary}
-						<span class="label" id="create-effect-dialog-unit">{$_('unit')}</span>
-						{#if selection.kind === 'new'}
-							<IndicatorUnitDropdown
-								editable
-								labelledBy="create-effect-dialog-unit"
-								bind:value={unit}
-							/>
-						{:else}
-							<span class="value">{shownUnit ? $_(shownUnit) : ''}</span>
-						{/if}
-					{/if}
-				</div>
-
-				{#if kind}
-					<div class="preview">
-						{#if selection.kind === 'existing'}
-							<h3>{selection.indicator.payload.title}</h3>
-						{:else}
-							<label class="title">
-								<span class="is-visually-hidden">{$_('title')}</span>
-								<input bind:value={title} placeholder={$_('title')} required type="text" />
-							</label>
-							{#if title.trim() === ''}
-								<p class="hint">{$_('create_effect_dialog.title_hint')}</p>
-							{/if}
-						{/if}
-
-						<h4>
-							{$_(`create_effect_dialog.effect_kind.${kind}`)}
-							{#if shownUnit}<small>{$_(shownUnit)}</small>{/if}
-						</h4>
-
-						{#if kind === effectKinds.enum.tendency}
-							<EditableTendency container={draft} editable />
-						{:else if kind === effectKinds.enum.series}
-							<PlannedValuesEditor bind:value={plannedValues} />
-							{#if !isValidValue}
-								<p class="hint">{$_('create_effect_dialog.planned_values_hint')}</p>
-							{/if}
-						{:else}
-							<BooleanValueToggle bind:checked={booleanValue} />
-						{/if}
 					</div>
 				{/if}
+				<div class="definition">
+					{#if errorMessage}
+						<p class="error" role="alert">{errorMessage}</p>
+					{/if}
+
+					<div class="details-section description">
+						<Editor label={$_('description')} bind:value={description} />
+						{#if description.trim() === ''}
+							<p class="hint">{$_('create_effect_dialog.description_hint')}</p>
+						{/if}
+					</div>
+
+					<div class="properties">
+						<span class="label" id="create-effect-dialog-kind">
+							{$_('create_effect_dialog.effect_kind')}
+						</span>
+						{#if kindOptions.length > 1}
+							<SingleChoiceDropdown
+								labelledBy="create-effect-dialog-kind"
+								options={kindOptions.map((o) => ({
+									label: $_(`create_effect_dialog.effect_kind.${o}`),
+									value: o
+								}))}
+								bind:value={chosenKind}
+							/>
+						{:else if kind}
+							<span class="value">{$_(`create_effect_dialog.effect_kind.${kind}`)}</span>
+						{/if}
+
+						{#if kind && kind !== effectKinds.enum.binary}
+							<span class="label" id="create-effect-dialog-unit">{$_('unit')}</span>
+							{#if selection.kind === 'new'}
+								<IndicatorUnitDropdown
+									editable
+									labelledBy="create-effect-dialog-unit"
+									bind:value={unit}
+								/>
+							{:else}
+								<span class="value">{shownUnit ? $_(shownUnit) : ''}</span>
+							{/if}
+						{/if}
+					</div>
+
+					{#if kind}
+						<div class="preview">
+							{#if selection.kind === 'existing'}
+								<h3>{selection.indicator.payload.title}</h3>
+							{:else}
+								<label class="title">
+									<span class="is-visually-hidden">{$_('title')}</span>
+									<input bind:value={title} placeholder={$_('title')} required type="text" />
+								</label>
+								{#if title.trim() === ''}
+									<p class="hint">{$_('create_effect_dialog.title_hint')}</p>
+								{/if}
+							{/if}
+
+							<h4>
+								{$_(`create_effect_dialog.effect_kind.${kind}`)}
+								{#if shownUnit}<small>{$_(shownUnit)}</small>{/if}
+							</h4>
+
+							{#if kind === effectKinds.enum.tendency}
+								<EditableTendency container={draft} editable />
+							{:else if kind === effectKinds.enum.series}
+								<PlannedValuesEditor bind:value={plannedValues} />
+								{#if !isValidValue}
+									<p class="hint">{$_('create_effect_dialog.planned_values_hint')}</p>
+								{/if}
+							{:else}
+								<BooleanValueToggle bind:checked={booleanValue} />
+							{/if}
+						</div>
+					{/if}
+				</div>
 			</div>
 		{/if}
 	</form>
@@ -417,19 +435,36 @@
 		width: 1.5rem;
 	}
 
+	.step-2 {
+		align-items: flex-start;
+		display: flex;
+		gap: 1rem;
+		justify-content: center;
+		min-height: 0;
+	}
+
+	/* The chosen indicator is shown on the left, next to the definition. */
+	.step-2:has(.chosen-indicator) {
+		justify-content: flex-start;
+	}
+
+	.chosen-indicator {
+		flex: 0 0 19.25rem;
+	}
+
 	.definition {
-		align-self: center;
 		background: var(--color-white);
 		border: 1px solid var(--color-gray-200);
 		border-radius: 16px;
 		box-shadow: var(--shadow-sm);
 		display: flex;
+		flex: 1 1 auto;
 		flex-direction: column;
 		gap: 1.5rem;
+		max-height: 100%;
 		max-width: 48rem;
 		overflow-y: auto;
 		padding: 2rem 2.5rem;
-		width: 100%;
 	}
 
 	.properties {

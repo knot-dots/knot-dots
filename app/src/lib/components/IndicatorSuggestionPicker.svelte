@@ -6,18 +6,17 @@
 	import { page } from '$app/state';
 	import { filterCategoryContext } from '$lib/categoryOptions';
 	import fetchSuggestedContainers from '$lib/client/fetchSuggestedContainers';
-	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
-	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
-	import RelevanceBadge from '$lib/components/RelevanceBadge.svelte';
 	import SearchToolbar from '$lib/components/SearchToolbar.svelte';
 	import SingleChoiceSelectableCardSet from '$lib/components/SingleChoiceSelectableCardSet.svelte';
+	import SuggestedIndicatorBody from '$lib/components/SuggestedIndicatorBody.svelte';
+	import SuggestedIndicatorFooter from '$lib/components/SuggestedIndicatorFooter.svelte';
 	import {
+		type ActualDataPayload,
 		type BinaryIndicatorPayload,
 		type Container,
 		type GoalPayload,
 		type IndicatorPayload,
-		isBinaryIndicatorContainer,
 		type MeasurePayload,
 		payloadTypes
 	} from '$lib/models';
@@ -26,7 +25,11 @@
 	interface Props {
 		includeBinaryIndicators?: boolean;
 		onCreateNew?: () => void;
-		onSelect: (container: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>) => void;
+		// Also receives what the card of the chosen indicator showed.
+		onSelect: (
+			container: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>,
+			suggestion: { actualData: Container<ActualDataPayload>[]; relevance: number }
+		) => void;
 		purpose: 'effect' | 'objective';
 		target: Container<GoalPayload | MeasurePayload>;
 		value?: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>;
@@ -114,6 +117,13 @@
 		new Map(suggestions.map(({ actualData, indicator }) => [indicator.guid, actualData]))
 	);
 
+	function select(indicator: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>) {
+		onSelect(indicator, {
+			actualData: actualDataByGuid.get(indicator.guid) ?? [],
+			relevance: relevanceByGuid.get(indicator.guid) ?? 0
+		});
+	}
+
 	let facets = $derived(searchResource.current?.facets ?? new Map<string, Map<string, number>>());
 
 	let nextOffset = $derived(pages.at(-1)?.page.nextOffset ?? null);
@@ -153,7 +163,7 @@
 </SearchToolbar>
 
 <div class="search-result">
-	<SingleChoiceSelectableCardSet {onSelect} {options} {value}>
+	<SingleChoiceSelectableCardSet onSelect={select} {options} {value}>
 		{#snippet leading()}
 			{#if onCreateNew}
 				<button class="create-new" onclick={onCreateNew} type="button">
@@ -165,23 +175,17 @@
 
 		<!-- Cards show the actual data of an indicator instead of its summary. -->
 		{#snippet optionBody(option)}
-			{@const actualData = actualDataByGuid.get(option.guid) ?? []}
-			{#if isBinaryIndicatorContainer(option)}
-				{#if actualData[0]}
-					<BooleanValueToggle checked={actualData[0].payload.booleanValue} disabled />
-				{/if}
-			{:else if actualData.length > 0}
-				<NewIndicatorChart container={option} relatedContainers={actualData} />
-			{/if}
+			<SuggestedIndicatorBody
+				actualData={actualDataByGuid.get(option.guid) ?? []}
+				container={option}
+			/>
 		{/snippet}
 
 		{#snippet optionFooter(option)}
-			<p class="badges">
-				{#each option.payload.indicatorCategory as indicatorCategory (indicatorCategory)}
-					<span class="badge badge--indigo">{$_(indicatorCategory)}</span>
-				{/each}
-				<RelevanceBadge score={relevanceByGuid.get(option.guid) ?? 0} />
-			</p>
+			<SuggestedIndicatorFooter
+				container={option}
+				relevance={relevanceByGuid.get(option.guid) ?? 0}
+			/>
 		{/snippet}
 	</SingleChoiceSelectableCardSet>
 
@@ -206,12 +210,6 @@
 		color: var(--color-yellow-500);
 		height: 1.5rem;
 		width: 1.5rem;
-	}
-
-	.badges {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem;
 	}
 
 	.create-new {
