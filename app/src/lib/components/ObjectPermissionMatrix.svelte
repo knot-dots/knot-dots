@@ -766,14 +766,15 @@
 		width: calc(100cqw - 1rem);
 	}
 
+	/* the title has no intrinsic width of its own (it fills what the toggle
+	   gets), so the group start can give way down to the toggle's minimum
+	   plus the badge; only then the control on the right truncates */
 	.section-start {
 		align-items: center;
 		display: inline-flex;
 		flex-grow: 1;
 		flex-shrink: 100;
 		gap: 0.375rem;
-		/* room for the shortest title plus the badge */
-		min-width: 14rem;
 	}
 
 	.section-badge {
@@ -789,6 +790,7 @@
 		border: none;
 		color: var(--color-text-default);
 		display: inline-flex;
+		flex: 1 1 auto;
 		font-weight: 500;
 		gap: 0.375rem;
 		min-width: 6rem;
@@ -797,9 +799,12 @@
 	}
 
 	.section-title {
+		flex: 1 1 0;
+		min-width: 0;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+		width: 0;
 	}
 
 	.section-toggle :global(svg) {
