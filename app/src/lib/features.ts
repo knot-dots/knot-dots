@@ -5,15 +5,7 @@ export const featureFlags = new Map([
 	['alpha', ['OpenAI', 'Adoptions', 'Templating', 'MCP'] as const],
 	[
 		'beta',
-		[
-			'ImportFromCsv',
-			'IOOI',
-			'Mistral',
-			'NewPropertyPanel',
-			'ResourceV2',
-			'TrafficLight',
-			'UrlSlug'
-		] as const
+		['ImportFromCsv', 'IOOI', 'Mistral', 'NewPropertyPanel', 'ResourceV2', 'UrlSlug'] as const
 	]
 ]);
 
@@ -69,10 +61,6 @@ export function createFeatureDecisions(features: string[]) {
 		},
 		useMcpTokenMenu() {
 			return features.includes('MCP');
-		},
-		// The flag keeps its former name, as users have stored it in their settings
-		useIndicatorReview() {
-			return features.includes('TrafficLight');
 		}
 	} satisfies Record<string, () => boolean>;
 }

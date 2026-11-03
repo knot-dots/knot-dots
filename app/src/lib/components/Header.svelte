@@ -116,9 +116,7 @@
 	// container changes, e.g. on every save of a section.
 	let showCompare = $derived(compare || (container !== undefined && isReportContainer(container)));
 
-	let showReview = $derived(
-		(showCompare || offerReview) && createFeatureDecisions(page.data.features).useIndicatorReview()
-	);
+	let showReview = $derived(showCompare || offerReview);
 
 	let compareBar = $derived(
 		createDisclosure({
