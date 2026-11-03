@@ -30,6 +30,7 @@ import type { RequestHandler } from './$types';
 
 export const GET = (async ({ locals, params, url }) => {
 	const expectedParams = z.object({
+		actualDataOrganizationalUnit: z.array(z.uuid()).default([]),
 		indicatorCategory: z.array(indicatorCategories).default([]),
 		indicatorType: z.array(indicatorTypes).default([]),
 		limit: z
@@ -110,11 +111,13 @@ export const GET = (async ({ locals, params, url }) => {
 				organizations: parseResult.data.organization,
 				organizationalUnits: parseResult.data.organizationalUnit
 			},
+			// The actual data shown on the cards is scoped separately, so that the
+			// relevance still takes the whole organization into account.
 			{
 				organizations: parseResult.data.organization,
 				organizationalUnits:
-					parseResult.data.organizationalUnit.length > 0
-						? parseResult.data.organizationalUnit
+					parseResult.data.actualDataOrganizationalUnit.length > 0
+						? parseResult.data.actualDataOrganizationalUnit
 						: null
 			}
 		)(connection);

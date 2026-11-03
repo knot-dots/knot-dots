@@ -71,6 +71,10 @@
 		async (_, __, { signal }) => {
 			const query = {
 				...$state.snapshot(filter),
+				// The cards show the actual data of the current organizational unit.
+				actualDataOrganizationalUnit: page.data.currentOrganizationalUnit
+					? [page.data.currentOrganizationalUnit.guid]
+					: [],
 				organization: [page.data.currentOrganization.guid],
 				payloadType: includeBinaryIndicators ? [] : [payloadTypes.enum.indicator],
 				terms

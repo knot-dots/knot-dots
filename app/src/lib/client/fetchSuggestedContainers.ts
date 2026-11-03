@@ -39,6 +39,7 @@ export default async function fetchSuggestedContainers(
 	guid: string,
 	filters: {
 		[key: string]: string | string[] | undefined;
+		actualDataOrganizationalUnit?: string[];
 		indicatorCategory?: string[];
 		indicatorType?: string[];
 		organization?: string[];
@@ -54,6 +55,9 @@ export default async function fetchSuggestedContainers(
 		for (const value of (filters[key] as string[]) ?? []) {
 			params.append(key, value);
 		}
+	}
+	for (const value of filters.actualDataOrganizationalUnit ?? []) {
+		params.append('actualDataOrganizationalUnit', value);
 	}
 	for (const value of filters.indicatorCategory ?? []) {
 		params.append('indicatorCategory', value);

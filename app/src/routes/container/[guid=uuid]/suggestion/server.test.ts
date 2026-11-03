@@ -2,11 +2,15 @@ import { NotFoundError } from 'slonik';
 import { beforeEach, expect, test, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
 	containers: new Map<string, unknown>(),
+	actualDataFilters: undefined as unknown,
 	indicators: [] as unknown[],
 	related: [] as unknown[]
 }));
 vi.mock('$lib/server/db', () => ({
-	getAllContainersRelatedToIndicators: () => async () => mocks.related,
+	getAllContainersRelatedToIndicators: (_: unknown, __: unknown, actualDataFilters: unknown) => {
+		mocks.actualDataFilters = actualDataFilters;
+		return async () => mocks.related;
+	},
 	getContainerByGuid: (guid: string) => async () => {
 		if (!mocks.containers.has(guid)) {
 			throw new NotFoundError('not found', { sql: 'SELECT 1', values: [] });
@@ -165,4 +169,22 @@ test('suggestions carry the actual data of their indicator the user may read', a
 	expect(actualDataOf(first.guid)).toEqual(['00000000-0000-4000-8000-000000000201']);
 	expect(actualDataOf(second.guid)).toEqual(['00000000-0000-4000-8000-000000000203']);
 	expect(actualDataOf(third.guid)).toEqual([]);
+});
+
+test('actual data is that of the given organizational unit, or of the organization', async () => {
+	const organizationalUnitGuid = '00000000-0000-4000-8000-000000000004';
+
+	await get(
+		`organization=${organizationGuid}&actualDataOrganizationalUnit=${organizationalUnitGuid}`
+	);
+	expect(mocks.actualDataFilters).toEqual({
+		organizations: [organizationGuid],
+		organizationalUnits: [organizationalUnitGuid]
+	});
+
+	await get(`organization=${organizationGuid}`);
+	expect(mocks.actualDataFilters).toEqual({
+		organizations: [organizationGuid],
+		organizationalUnits: null
+	});
 });
