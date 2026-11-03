@@ -107,8 +107,7 @@
 	// The card only knows that sections exist, not of which kind; the server
 	// filters this over-selection down to computed progress sections.
 	let isComputedProgressCandidate = $derived(
-		createFeatureDecisions(page.data.features).useComputedProgress() &&
-			isContainerWithProgress(container) &&
+		isContainerWithProgress(container) &&
 			container.payload.progress == null &&
 			container.relation.some(
 				({ object, predicate }) =>
