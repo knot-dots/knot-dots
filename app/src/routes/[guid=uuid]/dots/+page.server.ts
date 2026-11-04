@@ -1,8 +1,8 @@
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterCategoryContext } from '$lib/categoryOptions';
-import fetchContainerPage from '$lib/client/fetchContainerPage';
 import { type AnyPayload, type Container, payloadTypes } from '$lib/models';
 import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
+import { createContainerPageQuery } from '$lib/server/containerQuery';
 import {
 	ALL_LEVEL_COLUMN_IDS,
 	type AllLevelColumnId,
@@ -31,32 +31,25 @@ const ALL_LEVEL_PAYLOAD_TYPES = [
 	payloadTypes.enum.simple_measure
 ];
 
-export const load: PageServerLoad = async ({ depends, fetch, params, parent, url }) => {
+export const load: PageServerLoad = async ({ depends, locals, parent, url }) => {
 	depends('containers');
 
-	const baseQuery = createAllLevelQuery(url);
-	const [facetData, columnEntries, { categoryContext, currentOrganization }] = await Promise.all([
-		fetchContainerPage<Container<AnyPayload>>({
-			contextGuid: params.guid,
-			fetch,
-			limit: 1,
-			offset: 0,
-			query: baseQuery
-		}),
+	const applicationContext = await parent();
+	const { categoryContext, currentOrganization } = applicationContext;
+	const queryContainerPage = await createContainerPageQuery(locals, applicationContext);
+
+	const [facetData, columnEntries] = await Promise.all([
+		queryContainerPage(createAllLevelQuery(url), { limit: 1, offset: 0 }),
 		Promise.all(
 			ALL_LEVEL_COLUMN_IDS.map(async (columnId) => {
-				const data = await fetchContainerPage<Container<AnyPayload>>({
-					contextGuid: params.guid,
-					fetch,
+				const data = await queryContainerPage(createAllLevelQuery(url, columnId), {
 					limit: DEFAULT_PAGE_SIZE,
-					offset: 0,
-					query: createAllLevelQuery(url, columnId)
+					offset: 0
 				});
 
 				return [columnId, { containers: data.containers, page: data.page }] as const;
 			})
-		),
-		parent()
+		)
 	]);
 
 	const columns = Object.fromEntries(columnEntries) as Record<AllLevelColumnId, Column>;
