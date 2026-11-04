@@ -301,7 +301,7 @@ async function loadCategoryContextForQuery(
 
 type ApplicationContext = Awaited<ReturnType<typeof loadApplicationContext>>;
 
-type ContainerQueryContext = Pick<
+export type ContainerQueryContext = Pick<
 	ApplicationContext,
 	'categoryContext' | 'currentOrganization' | 'currentOrganizationalUnit' | 'organizationalUnits'
 >;
@@ -461,5 +461,29 @@ export async function loadContainerV2(params: {
 		containers,
 		page,
 		facets: mapToRecord(facets)
+	};
+}
+
+/**
+ * Prepares queries like GET /container/v2?contextGuid=… does for a server load
+ * that holds the application context of its layout already.
+ *
+ * Fetching /container/v2 from a server load handles a complete request per
+ * query, with authentication, the application context and the adoption scope
+ * loaded anew each time, and serializes the result only to parse it again.
+ * The queries prepared here share all of that instead.
+ */
+export async function createContainerPageQuery(
+	locals: App.Locals,
+	applicationContext: ContainerQueryContext
+) {
+	const scope = await loadContainerQueryScope(locals, applicationContext);
+
+	return (query: URLSearchParams, { limit, offset }: { limit: number; offset: number }) => {
+		const searchParams = new URLSearchParams(query);
+		searchParams.set('limit', String(limit));
+		searchParams.set('offset', String(offset));
+
+		return queryContainers(locals, scope, parseContainerQuery(searchParams), searchParams);
 	};
 }
