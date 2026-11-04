@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resource } from 'runed';
 	import { getContext, type Snippet } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { page } from '$app/state';
 	import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
@@ -11,10 +12,10 @@
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import KnowledgeAIButton from '$lib/components/KnowledgeAIButton.svelte';
-	import ProgramProperties from '$lib/components/ProgramProperties.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
+	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
@@ -27,7 +28,6 @@
 		programTypes,
 		status
 	} from '$lib/models';
-	import { ability, applicationState } from '$lib/stores';
 	import { extractCustomCategoryFiltersFromParams } from '$lib/utils/customCategoryFilters';
 
 	interface Props {
@@ -92,6 +92,12 @@
 		const params = overlay ? paramsFromFragment(url) : page.url.searchParams;
 		return !params.has('type') || params.getAll('type').includes(payloadType);
 	}
+
+	setBulkActionContext({
+		actions: ['visibility', 'delete'],
+		onSuccess: relatedContainersQuery.refetch,
+		selected: new SvelteSet<string>()
+	});
 </script>
 
 {#snippet footer()}
@@ -125,16 +131,6 @@
 				)
 			)}
 			<Sections bind:container {relatedContainers} sortable={!filterActive} />
-		{/snippet}
-
-		{#snippet properties()}
-			<ProgramProperties
-				bind:container
-				editable={$applicationState.containerDetailView.editable &&
-					$ability.can('update', container)}
-				{relatedContainers}
-				{revisions}
-			/>
 		{/snippet}
 	</EditableContainerDetailView>
 {/snippet}

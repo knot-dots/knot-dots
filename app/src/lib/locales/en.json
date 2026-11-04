@@ -887,7 +887,6 @@
 	"Templating": "Templating",
 	"term": "Term",
 	"text": "Supplementary text",
-	"Timeline": "Timeline",
 	"timeline.actions": "Timeline controls",
 	"timeline.empty": "None of the selected objects has a date.",
 	"timeline.go_to_end": "Go to the end",
@@ -936,7 +935,6 @@
 	"topic.waste_and_emissions": "Waste and emissions",
 	"topic.water": "Water",
 	"total": "Total",
-	"TrafficLight": "Rag Indicator",
 	"trend": "Trend",
 	"type": "Type",
 	"unit": "Unit",
@@ -982,7 +980,6 @@
 	"upload.pdf.help": "PDF, max 100 MB",
 	"upload.pdf.remove": "Remove PDF",
 	"upload.uploading": "Uploading…",
-	"UrlSlug": "URL slug",
 	"user": {
 		"display_name": "Name",
 		"email": "Email",

@@ -25,7 +25,6 @@
 	import TemplatePicker from '$lib/components/TemplatePicker.svelte';
 	import TimelineView from '$lib/components/TimelineView.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		actualDataPayload,
 		type AnyPayload,
@@ -95,10 +94,7 @@
 	// The timeline shows all items at once, but more make it hard to use.
 	const timelineLimit = 200;
 
-	let isTimeline = $derived(
-		container.payload.listType === 'timeline' &&
-			createFeatureDecisions(page.data.features).useTimeline()
-	);
+	let isTimeline = $derived(container.payload.listType === 'timeline');
 
 	let localTerms = $state('');
 

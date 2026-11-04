@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { page } from '$app/state';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import AdministrativeAreaCombobox from '$lib/components/AdministrativeAreaCombobox.svelte';
 	import EditableBoolean from '$lib/components/EditableBoolean.svelte';
@@ -10,7 +9,6 @@
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
 	import EditableSlug from '$lib/components/EditableSlug.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import type { Container, OrganizationPayload } from '$lib/models';
 	import { ability } from '$lib/stores';
 	import { workspaceModules, workspaces } from '$lib/workspaces';
@@ -40,8 +38,6 @@
 				}))
 		)
 	);
-
-	const features = $derived(createFeatureDecisions(page.data.features));
 
 	// In edit mode, an empty `visibleWorkspaces` historically meant "show all".
 	// Prefill with every selectable workspace so unchecking a box reliably hides
@@ -145,7 +141,7 @@
 		/>
 	{/if}
 
-	{#if features.useUrlSlug() && $ability.can('update', container, 'payload.slug')}
+	{#if $ability.can('update', container, 'payload.slug')}
 		<EditableSlug {editable} bind:container />
 	{/if}
 

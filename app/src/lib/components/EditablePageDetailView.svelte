@@ -4,7 +4,6 @@
 	import { SvelteSet } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
 	import Ellipsis from '~icons/flowbite/dots-horizontal-outline';
-	import { page } from '$app/state';
 	import autoSave from '$lib/client/autoSave';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import requestSubmit from '$lib/client/requestSubmit';
@@ -14,14 +13,11 @@
 	import EditableCoverSection from '$lib/components/EditableCoverSection.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import PageProperties from '$lib/components/PageProperties.svelte';
-	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
 	import PropertiesPanel from '$lib/components/PropertiesPanel.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import { getDetailViewContext } from '$lib/contexts/detailView';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
 		type Container,
@@ -76,16 +72,9 @@
 
 	let relatedContainers = $derived(relatedContainersQuery.current ?? sections);
 
-	// svelte-ignore non_reactive_update
-	let dialog: HTMLDialogElement;
-
 	const handleSubmit = $derived(autoSave(container, 2000));
 
 	const detailView = getDetailViewContext();
-
-	const useNewPropertyPanel = $derived(
-		createFeatureDecisions(page.data.features).useNewPropertyPanel()
-	);
 </script>
 
 {#snippet header()}
@@ -142,9 +131,7 @@
 							></h1>
 							<button
 								class="action-button"
-								onclick={useNewPropertyPanel
-									? detailView.properties.trigger.onclick
-									: () => dialog.showModal()}
+								onclick={detailView.properties.trigger.onclick}
 								type="button"
 							>
 								<Ellipsis />
@@ -172,26 +159,15 @@
 				<Sections bind:container {relatedContainers} />
 			</div>
 
-			{#if useNewPropertyPanel}
-				<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-					<PropertiesPanel
-						bind:container
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container)}
-						{relatedContainers}
-						{revisions}
-					/>
-				</form>
-			{:else}
-				<PropertiesDialog bind:dialog title={$_('organization.properties.title')}>
-					<PageProperties
-						bind:container
-						editable={$ability.can('update', container)}
-						{relatedContainers}
-						{revisions}
-					/>
-				</PropertiesDialog>
-			{/if}
+			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
+				<PropertiesPanel
+					bind:container
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					{relatedContainers}
+					{revisions}
+				/>
+			</form>
 		</article>
 
 		<ContextTabs slug={helpSlug.enum['page-view']} />

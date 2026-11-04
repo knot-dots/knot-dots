@@ -11,8 +11,8 @@ import {
 import { z } from 'zod';
 import {
 	anyContainer,
-	authenticatedMcpToken,
 	type AnyPayload,
+	authenticatedMcpToken,
 	type BinaryIndicatorPayload,
 	type Container,
 	container,
@@ -25,6 +25,7 @@ import {
 	grantTargets,
 	type HelpSlug,
 	type IndicatorPayload,
+	isOrganizationContainer,
 	isProgramContainer,
 	mcpToken,
 	type MemberRole,
@@ -646,7 +647,7 @@ export function createContainer(
 
 			if (container.payload.type === payloadTypes.enum.organization) {
 				organizationGuid = await createGroup(container.payload.name);
-				await updateAccessSettings(organizationGuid);
+				await updateAccessSettings(container.payload.slug ?? organizationGuid);
 			}
 
 			const containerResult = organizationGuid
@@ -758,6 +759,17 @@ export function updateContainer(
 				SET valid_currently = false
 				WHERE guid = ${container.guid}
 			`);
+
+			// The type of the previous revision and the parameter need to be
+			// narrowed, since there is currently no other way for TypeScript to
+			// infer that both have the same payload type.
+			if (isOrganizationContainer(previousRevision) && isOrganizationContainer(container)) {
+				if (container.payload.slug && container.payload.slug != previousRevision.payload.slug) {
+					await updateAccessSettings(container.payload.slug);
+				} else if (!container.payload.slug && previousRevision.payload.slug) {
+					await updateAccessSettings(container.guid);
+				}
+			}
 
 			const containerResult = await txConnection.one(sql.typeAlias('anyContainer')`
 				INSERT INTO container (guid, managed_by, organization, organizational_unit, own_matrix, payload, realm)

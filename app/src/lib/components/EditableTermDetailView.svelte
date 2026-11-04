@@ -11,7 +11,6 @@
 	import Header from '$lib/components/Header.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
-	import TermProperties from '$lib/components/TermProperties.svelte';
 	import { type AnyPayload, type Container, predicates, type TermPayload } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
@@ -89,10 +88,6 @@
 				<CreateAnotherButton {container} {relatedContainers} />
 				<CreateCopyButton {container} />
 			</footer>
-		{/snippet}
-
-		{#snippet properties()}
-			<TermProperties bind:container {editable} {relatedContainers} {revisions} />
 		{/snippet}
 	</EditableContainerDetailView>
 {/snippet}

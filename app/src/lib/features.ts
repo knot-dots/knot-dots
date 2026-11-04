@@ -3,22 +3,7 @@
 // and deliberately absent from these user-facing rings.
 export const featureFlags = new Map([
 	['alpha', ['OpenAI', 'Adoptions', 'Templating', 'MCP'] as const],
-	[
-		'beta',
-		[
-			'BulkActions',
-			'ComputedProgress',
-			'ImportFromCsv',
-			'IOOI',
-			'Mistral',
-			'NewPropertyPanel',
-			'ResourceV2',
-			'SubMeasures',
-			'Timeline',
-			'TrafficLight',
-			'UrlSlug'
-		] as const
-	]
+	['beta', ['ImportFromCsv', 'IOOI', 'Mistral', 'ResourceV2'] as const]
 ]);
 
 export function createFeatureDecisions(features: string[]) {
@@ -47,29 +32,14 @@ export function createFeatureDecisions(features: string[]) {
 		useTendentialObjectivesAndEffects() {
 			return features.includes('IOOI');
 		},
-		useUrlSlug() {
-			return features.includes('UrlSlug');
-		},
-		useSubMeasures() {
-			return features.includes('SubMeasures');
-		},
-		useBulkActions() {
-			return features.includes('BulkActions');
-		},
 		useAdoptions() {
 			return features.includes('Adoptions');
 		},
 		useComputedManagedBy() {
 			return features.includes('ComputedManagedBy');
 		},
-		useComputedProgress() {
-			return features.includes('ComputedProgress');
-		},
 		useMultipleProgramAssignment() {
 			return features.includes('MultipleProgramAssignment');
-		},
-		useNewPropertyPanel() {
-			return features.includes('NewPropertyPanel');
 		},
 		usePermissionMatrix() {
 			return features.includes('PermissionMatrix');
@@ -82,13 +52,6 @@ export function createFeatureDecisions(features: string[]) {
 		},
 		useMcpTokenMenu() {
 			return features.includes('MCP');
-		},
-		useTimeline() {
-			return features.includes('Timeline');
-		},
-		// The flag keeps its former name, as users have stored it in their settings
-		useIndicatorReview() {
-			return features.includes('TrafficLight');
 		}
 	} satisfies Record<string, () => boolean>;
 }

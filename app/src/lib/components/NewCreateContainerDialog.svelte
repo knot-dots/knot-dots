@@ -7,16 +7,13 @@
 	import createTemplateScopeSelection from '$lib/client/createTemplateScopeSelection.svelte';
 	import saveContainer from '$lib/client/saveContainer';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
-	import Badges from '$lib/components/Badges.svelte';
 	import CreateContainerTemplatePicker from '$lib/components/CreateContainerTemplatePicker.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
-	import NewContainerProperties from '$lib/components/NewContainerProperties.svelte';
 	import PropertiesBar from '$lib/components/PropertiesBar.svelte';
 	import TemplateHierarchyPreview from '$lib/components/TemplateHierarchyPreview.svelte';
 	import type { RootCopyPlacement, TemplateCopyPreview } from '$lib/containerCopy';
 	import { getToastContext } from '$lib/contexts/toast';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		isContainer,
 		isContainerWithBody,
@@ -229,16 +226,12 @@
 							</div>
 
 							{#if isContainer($createContainerDialogState.container)}
-								{#if createFeatureDecisions(page.data.features).useNewPropertyPanel()}
-									<PropertiesBar
-										bind:container={$createContainerDialogState.container}
-										editable
-										relatedContainers={[]}
-										revisions={[]}
-									/>
-								{:else}
-									<Badges bind:container={$createContainerDialogState.container} editable />
-								{/if}
+								<PropertiesBar
+									bind:container={$createContainerDialogState.container}
+									editable
+									relatedContainers={[]}
+									revisions={[]}
+								/>
 							{/if}
 
 							{#if isSimpleMeasureContainer($createContainerDialogState.container)}
@@ -248,10 +241,6 @@
 								/>
 							{/if}
 						</header>
-
-						{#if !createFeatureDecisions(page.data.features).useNewPropertyPanel()}
-							<NewContainerProperties bind:container={$createContainerDialogState.container} />
-						{/if}
 
 						{#if isContainerWithDescription($createContainerDialogState.container)}
 							<EditableFormattedText

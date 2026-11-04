@@ -10,7 +10,6 @@
 	import StackedProgress from '$lib/components/StackedProgress.svelte';
 	import Summary from '$lib/components/Summary.svelte';
 	import { getComputedProgressContext } from '$lib/contexts/computedProgress';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
 		computeProgressSegments,
@@ -73,8 +72,7 @@
 	// The card only knows that sections exist, not of which kind; the server
 	// filters this over-selection down to computed progress sections.
 	let isComputedProgressCandidate = $derived(
-		createFeatureDecisions(page.data.features).useComputedProgress() &&
-			isContainerWithProgress(container) &&
+		isContainerWithProgress(container) &&
 			container.payload.progress == null &&
 			container.relation.some(
 				({ object, predicate }) =>

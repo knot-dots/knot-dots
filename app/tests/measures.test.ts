@@ -66,7 +66,6 @@ test.describe('Measure monitoring', () => {
 			).toHaveText(`Team ${testProgram.payload.title}`);
 
 			// Delete the item
-			await dotsBoard.overlay.disclosePropertiesButton.click();
 			await dotsBoard.overlay.delete();
 		}
 	});

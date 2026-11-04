@@ -887,7 +887,6 @@
 	"Templating": "Vorlagen",
 	"term": "Begriff",
 	"text": "Ergänzungstext",
-	"Timeline": "Zeitleiste",
 	"timeline.actions": "Zeitleiste steuern",
 	"timeline.empty": "Keines der ausgewählten Objekte hat ein Datum.",
 	"timeline.go_to_end": "Zum Ende",
@@ -936,7 +935,6 @@
 	"topic.waste_and_emissions": "Abfall und Emissionen",
 	"topic.water": "Wasser",
 	"total": "Gesamt",
-	"TrafficLight": "Ampelvergleich",
 	"trend": "Trend",
 	"type": "Art",
 	"unit": "Einheit",
@@ -982,7 +980,6 @@
 	"upload.pdf.help": "PDF-Dateien, maximal 100 MB",
 	"upload.pdf.remove": "PDF löschen",
 	"upload.uploading": "Wird hochgeladen …",
-	"UrlSlug": "URL-Slug",
 	"user": {
 		"display_name": "Name",
 		"email": "E-Mail-Adresse",
