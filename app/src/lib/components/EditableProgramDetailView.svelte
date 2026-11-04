@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resource } from 'runed';
 	import { getContext, type Snippet } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { page } from '$app/state';
 	import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
@@ -15,6 +16,7 @@
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
+	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
@@ -92,6 +94,12 @@
 		const params = overlay ? paramsFromFragment(url) : page.url.searchParams;
 		return !params.has('type') || params.getAll('type').includes(payloadType);
 	}
+
+	setBulkActionContext({
+		actions: ['visibility', 'delete'],
+		onSuccess: relatedContainersQuery.refetch,
+		selected: new SvelteSet<string>()
+	});
 </script>
 
 {#snippet footer()}
