@@ -69,8 +69,7 @@
 		return _;
 	});
 
-	let detailView = $state({ properties: new Collapsible() });
-	setDetailViewContext(detailView);
+	setDetailViewContext({ properties: new Collapsible() });
 </script>
 
 {#if isBinaryIndicatorContainer(container)}
