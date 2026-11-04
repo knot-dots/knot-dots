@@ -781,27 +781,21 @@
 	   while scrolling sideways, so its title truncates instead of being
 	   covered by the controls on the right. The offset (measured from the
 	   wrapper's content edge) and the width leave the cell paddings free.
-	   The title gives way first, down to a readable rest; only then the
-	   control on the right truncates as well. */
+	   Toggle, badge and control are direct flex items: the title gives way
+	   first, down to the chevron and a couple of characters, only then the
+	   control on the right truncates; the badge keeps its size and stays
+	   right after the title. */
 	.section-header {
 		align-items: center;
 		display: flex;
-		gap: 0.5rem;
-		justify-content: space-between;
+		gap: 0.375rem;
 		left: 0.5rem;
 		position: sticky;
 		width: calc(100cqw - 1rem);
 	}
 
-	/* the title has no intrinsic width of its own (it fills what the toggle
-	   gets), so the group start can give way down to the toggle's minimum
-	   plus the badge; only then the control on the right truncates */
 	.section-start {
-		align-items: center;
-		display: inline-flex;
-		flex-grow: 1;
-		flex-shrink: 100;
-		gap: 0.375rem;
+		display: contents;
 	}
 
 	.section-badge {
@@ -817,23 +811,20 @@
 		border: none;
 		color: var(--color-text-default);
 		display: inline-flex;
-		flex: 1 1 auto;
+		flex: 0 100 auto;
 		font-weight: 500;
 		gap: 0.375rem;
-		/* the chevron and a couple of characters: the title always gives way
-		   first, the control on the right only after it */
 		min-width: 3rem;
 		padding: 0;
 		text-align: left;
 	}
 
 	.section-title {
-		flex: 1 1 0;
+		flex: 0 1 auto;
 		min-width: 0;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
-		width: 0;
 	}
 
 	.section-toggle :global(svg) {
@@ -845,6 +836,7 @@
 
 	.admins-link {
 		color: var(--color-text-link);
+		margin-left: auto;
 		min-width: 0;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -857,6 +849,7 @@
 		display: inline-flex;
 		font-weight: 500;
 		gap: 0.5rem;
+		margin-left: auto;
 		min-width: 0;
 	}
 
