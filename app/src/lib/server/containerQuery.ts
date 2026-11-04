@@ -39,7 +39,7 @@ import {
 } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import type { User } from '$lib/stores';
-import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
+import { extractCustomCategoryFiltersFromParams } from '$lib/utils/customCategoryFilters';
 import type { DatabaseConnection } from 'slonik';
 
 type Connect = <T>(fn: (connection: DatabaseConnection) => Promise<T>) => Promise<T>;
@@ -119,27 +119,27 @@ type ContainerQueryParams = Omit<
 	terms: string;
 };
 
-function parseContainerQuery(url: URL): ContainerQueryParams {
+function parseContainerQuery(searchParams: URLSearchParams): ContainerQueryParams {
 	const raw = Object.fromEntries(
 		Object.keys(querySchema.shape).map((key) => {
 			if (key === 'relatedTo') {
 				return [
 					key,
-					url.searchParams.has('relatedTo')
-						? url.searchParams.getAll('relatedTo')
-						: url.searchParams.getAll('related-to')
+					searchParams.has('relatedTo')
+						? searchParams.getAll('relatedTo')
+						: searchParams.getAll('related-to')
 				];
 			} else if (key === 'type') {
 				return [
 					key,
-					url.searchParams.has('type')
-						? url.searchParams.getAll('type')
-						: url.searchParams.getAll('payloadType')
+					searchParams.has('type')
+						? searchParams.getAll('type')
+						: searchParams.getAll('payloadType')
 				];
-			} else if (key === 'included' && !url.searchParams.has('includedChanged')) {
+			} else if (key === 'included' && !searchParams.has('includedChanged')) {
 				return [key, ['subordinate_organizational_units']];
 			}
-			return [key, url.searchParams.has(key) ? url.searchParams.getAll(key) : undefined];
+			return [key, searchParams.has(key) ? searchParams.getAll(key) : undefined];
 		})
 	);
 	const parseResult = querySchema.safeParse(raw);
@@ -299,18 +299,50 @@ async function loadCategoryContextForQuery(
 	});
 }
 
-export async function loadContainerV2(params: {
-	locals: App.Locals;
-	url: URL;
-}): Promise<ContainerV2Response> {
-	const query = parseContainerQuery(params.url);
-	const applicationContext = query.contextGuid
-		? await loadApplicationContext({
-				locals: params.locals,
-				params: { guid: query.contextGuid },
-				url: params.url
-			})
-		: undefined;
+type ApplicationContext = Awaited<ReturnType<typeof loadApplicationContext>>;
+
+type ContainerQueryContext = Pick<
+	ApplicationContext,
+	'categoryContext' | 'currentOrganization' | 'currentOrganizationalUnit' | 'organizationalUnits'
+>;
+
+// What queries in the same context have in common and need to look up only once.
+type ContainerQueryScope = {
+	applicationContext: ContainerQueryContext | undefined;
+	includeGuids: string[];
+};
+
+type ContainerPage = Omit<ContainerV2Response, 'facets'> & {
+	facets: Map<string, Map<string, number>>;
+};
+
+async function loadContainerQueryScope(
+	locals: App.Locals,
+	applicationContext: ContainerQueryContext | undefined
+): Promise<ContainerQueryScope> {
+	// Containers adopted into the current context are computed on demand and
+	// widen the organization/organizational unit scope of the query.
+	const includeGuids =
+		applicationContext && createFeatureDecisions(locals.features).useAdoptions()
+			? await locals.pool.connect(getAdoptedContainerGuids(adopterScope(applicationContext)))
+			: [];
+
+	if (applicationContext && includeGuids.length > 10000) {
+		const { currentOrganization, currentOrganizationalUnit } = applicationContext;
+		log.warn(
+			`the adoption scope of ${(currentOrganizationalUnit ?? currentOrganization).guid} spans ${includeGuids.length} containers`
+		);
+	}
+
+	return { applicationContext, includeGuids };
+}
+
+async function queryContainers(
+	locals: App.Locals,
+	{ applicationContext, includeGuids }: ContainerQueryScope,
+	query: ContainerQueryParams,
+	searchParams: URLSearchParams
+): Promise<ContainerPage> {
 	const organization =
 		query.organization === undefined
 			? []
@@ -322,11 +354,7 @@ export async function loadContainerV2(params: {
 	const scopedQuery = { ...query, organization };
 	const categoryContext =
 		applicationContext?.categoryContext ??
-		(await loadCategoryContextForQuery(
-			scopedQuery,
-			params.locals.pool.connect,
-			params.locals.user
-		));
+		(await loadCategoryContextForQuery(scopedQuery, locals.pool.connect, locals.user));
 
 	const queriedCategoryContext =
 		scopedQuery.type.length > 0
@@ -358,19 +386,11 @@ export async function loadContainerV2(params: {
 		}
 	}
 
-	// Containers adopted into the current context are computed on demand and
-	// widen the organization/organizational unit scope of the query.
-	const includeGuids =
-		applicationContext && createFeatureDecisions(params.locals.features).useAdoptions()
-			? await params.locals.pool.connect(getAdoptedContainerGuids(adopterScope(applicationContext)))
-			: [];
-
-	if (includeGuids.length > 10000) {
-		log.warn(`the adoption scope of ${query.contextGuid} spans ${includeGuids.length} containers`);
-	}
-
 	const useElasticsearch = canUseElasticsearch(scopedQuery);
-	const customCategories = extractCustomCategoryFilters(params.url, queriedCategoryContext.keys);
+	const customCategories = extractCustomCategoryFiltersFromParams(
+		searchParams,
+		queriedCategoryContext.keys
+	);
 
 	let rawContainers: Container<AnyPayload>[];
 	let esFacets: Record<string, Record<string, number>> | undefined;
@@ -387,7 +407,7 @@ export async function loadContainerV2(params: {
 		const filters = buildFilters(scopedQuery, customCategories, { ...ouOverrides, includeGuids });
 		rawContainers =
 			query.relatedTo.length > 0
-				? await params.locals.pool.connect(
+				? await locals.pool.connect(
 						getAllRelatedContainers(
 							scopedQuery.organization,
 							query.relatedTo,
@@ -399,12 +419,12 @@ export async function loadContainerV2(params: {
 							query.sort
 						)
 					)
-				: await params.locals.pool.connect(
+				: await locals.pool.connect(
 						getManyContainers(scopedQuery.organization, filters, query.sort)
 					);
 	}
 
-	const allVisible = filterVisible(rawContainers, params.locals.user);
+	const allVisible = filterVisible(rawContainers, locals.user);
 	const page = paginate(allVisible, query.limit, query.offset, allVisible.length);
 	const facets = esFacets
 		? baseFacetMap(esFacets, queriedCategoryContext)
@@ -413,6 +433,33 @@ export async function loadContainerV2(params: {
 	return {
 		containers: page.containers,
 		page: page.page,
+		facets
+	};
+}
+
+export async function loadContainerV2(params: {
+	locals: App.Locals;
+	url: URL;
+}): Promise<ContainerV2Response> {
+	const query = parseContainerQuery(params.url.searchParams);
+	const applicationContext = query.contextGuid
+		? await loadApplicationContext({
+				locals: params.locals,
+				params: { guid: query.contextGuid },
+				url: params.url
+			})
+		: undefined;
+	const scope = await loadContainerQueryScope(params.locals, applicationContext);
+	const { containers, facets, page } = await queryContainers(
+		params.locals,
+		scope,
+		query,
+		params.url.searchParams
+	);
+
+	return {
+		containers,
+		page,
 		facets: mapToRecord(facets)
 	};
 }
