@@ -209,14 +209,14 @@ const client = z.intersection(
 
 type Client = z.infer<typeof client>;
 
-function urlFromGuid(guid: string) {
+function urlFromGuidOrSlug(guidOrSlug: string) {
 	const url = new URL(env.PUBLIC_BASE_URL ?? '');
-	url.hostname = `${guid}.${url.hostname}`;
+	url.hostname = `${guidOrSlug}.${url.hostname}`;
 	url.pathname = '/*';
 	return url;
 }
 
-export async function updateAccessSettings(guid: string) {
+export async function updateAccessSettings(guidOrSlug: string) {
 	if (env.PUBLIC_DONT_USE_SUBDOMAINS) {
 		return;
 	}
@@ -244,7 +244,7 @@ export async function updateAccessSettings(guid: string) {
 		);
 	}
 
-	data[0].redirectUris.push(urlFromGuid(guid).href);
+	data[0].redirectUris.push(urlFromGuidOrSlug(guidOrSlug).href);
 
 	const putResponse = await fetch(
 		`${env.PUBLIC_KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/clients/${data[0].id}`,
