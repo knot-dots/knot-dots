@@ -4,29 +4,34 @@
 	import { createPopperActions } from 'svelte-popperjs';
 	import { _ } from 'svelte-i18n';
 	import { z } from 'zod';
-	import EnvelopeIcon from '~icons/flowbite/envelope-outline';
 	import PlusIcon from '~icons/flowbite/plus-outline';
 	import SearchIcon from '~icons/flowbite/search-outline';
 	import { keycloakUser, type KeycloakUser, type TeamWithMembers } from '$lib/models';
 
 	// what a permission matrix can add as a row: one of the organization's
-	// teams, or someone registered in the organization; the last entry of the
-	// list invites someone not registered yet
+	// teams, or someone registered in the organization; the last group of the
+	// list is for those not listed yet: a new team, or an invitation
 	export type SubjectSuggestion =
-		| { guid: string; kind: 'team'; label: string }
+		| { guid: string; kind: 'team'; label: string; members: number }
 		| { email: string; guid: string; kind: 'user'; label: string };
 
-	type Option = SubjectSuggestion | { guid: 'invite'; kind: 'invite' };
+	type Option =
+		| SubjectSuggestion
+		| { guid: 'create-team'; kind: 'create-team' }
+		| { guid: 'invite'; kind: 'invite' };
 
 	interface Props {
 		excluded: ReadonlyArray<string>;
+		oncreateteam?: () => void;
 		oninvite?: () => void;
 		onselect: (suggestion: SubjectSuggestion) => Promise<void> | void;
 		organization: string;
+		placeholder?: string;
 		teams: ReadonlyArray<TeamWithMembers>;
 	}
 
-	let { excluded, oninvite, onselect, organization, teams }: Props = $props();
+	let { excluded, oncreateteam, oninvite, onselect, organization, placeholder, teams }: Props =
+		$props();
 
 	let open = $state(false);
 	let input: HTMLInputElement | undefined = $state();
@@ -97,10 +102,11 @@
 	const teamSuggestions = $derived(
 		teams
 			.filter(({ container }) => !excluded.includes(container.guid))
-			.map(({ container }) => ({
+			.map(({ container, members }) => ({
 				guid: container.guid,
 				kind: 'team' as const,
-				label: container.payload.name
+				label: container.payload.name,
+				members: members.length
 			}))
 			.filter(({ label }) => label.toLocaleLowerCase().includes(filter))
 	);
@@ -118,6 +124,7 @@
 			.sort((a, b) => a.label.localeCompare(b.label))
 	);
 
+	const createTeamOption: Option = { guid: 'create-team', kind: 'create-team' };
 	const inviteOption: Option = { guid: 'invite', kind: 'invite' };
 
 	// picking an option hands it over once and closes the search again; the
@@ -130,7 +137,9 @@
 		combobox.set({ selected: undefined });
 		untrack(() => {
 			cancel();
-			if (selected.kind === 'invite') {
+			if (selected.kind === 'create-team') {
+				oncreateteam?.();
+			} else if (selected.kind === 'invite') {
 				oninvite?.();
 			} else {
 				onselect(selected);
@@ -147,7 +156,7 @@
 				use:combobox.input
 				autocomplete="off"
 				bind:this={input}
-				placeholder={$_('search')}
+				placeholder={placeholder ?? $_('search')}
 				onkeydown={(event) => event.key === 'Escape' && cancel()}
 			/>
 		</label>
@@ -167,6 +176,7 @@
 							<span class="badge badge--large badge--team badge--purple">
 								<span class="truncated">{suggestion.label}</span>
 							</span>
+							<span class="member-count">({suggestion.members})</span>
 						</label>
 					</li>
 				{/each}
@@ -180,7 +190,12 @@
 					<li class="option" class:active use:combobox.item={{ value: suggestion }}>
 						<label>
 							<input checked={active} tabindex="-1" type="radio" value={suggestion.guid} />
-							<span class="truncated">{suggestion.label}</span>
+							<span class="person">
+								<span class="truncated">{suggestion.label}</span>
+								{#if suggestion.label !== suggestion.email}
+									<span class="email truncated">{suggestion.email}</span>
+								{/if}
+							</span>
 						</label>
 					</li>
 				{/each}
@@ -189,16 +204,27 @@
 						{$_('permission_matrix.no_suggestions')}
 					</li>
 				{/if}
+				{#if oncreateteam || oninvite}
+					<li class="group-label" role="presentation">
+						{$_('permission_matrix.suggestions_not_listed')}
+					</li>
+				{/if}
+				{#if oncreateteam}
+					<li
+						class="option option--action"
+						class:active={$combobox.active?.guid === 'create-team'}
+						use:combobox.item={{ value: createTeamOption }}
+					>
+						<span class="truncated">{$_('teams.create_new')}</span>
+					</li>
+				{/if}
 				{#if oninvite}
 					<li
-						class="option option--invite"
+						class="option option--action"
 						class:active={$combobox.active?.guid === 'invite'}
 						use:combobox.item={{ value: inviteOption }}
 					>
-						<span class="invite">
-							<EnvelopeIcon />
-							<span class="truncated">{$_('invite.heading')}</span>
-						</span>
+						<span class="truncated">{$_('permission_matrix.invite_by_email')}</span>
 					</li>
 				{/if}
 			</ul>
@@ -263,17 +289,14 @@
 		outline: none;
 	}
 
-	/* the standard combobox panel of the design: as wide as its entries, at
-	   most as wide as the search field */
+	/* the suggestions panel of the design: 320px wide */
 	.dropdown-panel {
 		--dropdown-panel-border-color: var(--color-border-accent-subtle);
 		--dropdown-panel-border-radius: 12px;
 		--dropdown-panel-gap: 0;
 		--dropdown-panel-max-height: 30rem;
-		--dropdown-panel-max-width: 24.0625rem;
 		--dropdown-panel-padding: 0.25rem;
-
-		min-width: 13.625rem;
+		--dropdown-panel-width: 20rem;
 	}
 
 	.listbox {
@@ -296,7 +319,7 @@
 	}
 
 	.option > label,
-	.option > .invite {
+	.option--action {
 		align-items: center;
 		color: var(--color-text-default);
 		display: flex;
@@ -313,20 +336,22 @@
 		width: 1rem;
 	}
 
-	.option--invite {
-		border-top: 1px solid var(--color-border-subtle);
-		color: var(--color-text-accent-default);
-		margin-top: 0.25rem;
-	}
-
-	.option--invite .invite {
-		color: inherit;
-	}
-
-	.option--invite :global(svg) {
+	.member-count {
+		color: var(--color-text-subtle);
 		flex-shrink: 0;
-		height: 1rem;
-		width: 1rem;
+		font-weight: 400;
+	}
+
+	.person {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+
+	.person .email {
+		color: var(--color-text-subtle);
+		font-size: 0.75rem;
+		font-weight: 400;
 	}
 
 	.option:hover,

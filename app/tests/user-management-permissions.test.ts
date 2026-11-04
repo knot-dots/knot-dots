@@ -156,7 +156,7 @@ test.describe('Permission matrix', () => {
 		// the add row of the matrix searches teams and registered users inline;
 		// the last entry of the list opens the invite dialog
 		await page.getByRole('button', { name: 'Add item' }).click();
-		await page.getByRole('option', { name: 'Invite member' }).click();
+		await page.getByRole('option', { name: 'Invite a new person by email' }).click();
 
 		const dialog = page.getByRole('dialog');
 		const emailInput = dialog.getByRole('combobox', { name: 'Email' });

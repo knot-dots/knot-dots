@@ -1,12 +1,14 @@
 <script lang="ts">
 	import { SvelteMap } from 'svelte/reactivity';
 	import { invalidateAll } from '$app/navigation';
+	import { page } from '$app/state';
 	import { _ } from 'svelte-i18n';
 	import CheckCircleIcon from '~icons/flowbite/check-circle-outline';
 	import TrashBinIcon from '~icons/flowbite/trash-bin-outline';
 	import UserIcon from '~icons/flowbite/user-outline';
 	import saveGrants from '$lib/client/saveGrants';
 	import saveUser from '$lib/client/saveUser';
+	import CreateTeamDialog from '$lib/components/CreateTeamDialog.svelte';
 	import BadgeDropdown, { type BadgeDropdownValue } from '$lib/components/BadgeDropdown.svelte';
 	import SubjectCombobox, { type SubjectSuggestion } from '$lib/components/SubjectCombobox.svelte';
 	import TeamChip from '$lib/components/TeamChip.svelte';
@@ -26,6 +28,8 @@
 		memberRoleMatchingGrantSet,
 		memberRoles,
 		type TeamWithMembers,
+		containerOfType,
+		payloadTypes,
 		type User
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
@@ -180,6 +184,21 @@
 
 	// adding a row starts with the observer set; registered users who are no
 	// member yet get invited into the container on the way
+	// a team can be created right from the search; it then joins the matrix
+	// as a row of its own
+	// svelte-ignore non_reactive_update
+	let createTeamDialog: HTMLDialogElement;
+
+	const mayCreateTeam = $derived.by(() => {
+		const organization = page.data.organizations.find(
+			({ guid }) => guid === container.organization
+		);
+		return (
+			!!organization &&
+			$ability.can('create', containerOfType(payloadTypes.enum.organizational_unit, organization))
+		);
+	});
+
 	async function addSubject(suggestion: SubjectSuggestion) {
 		if (suggestion.kind === 'team') {
 			await save(suggestion.guid, grantSetForRole(memberRoles.enum.observer));
@@ -197,6 +216,13 @@
 		await invalidateAll();
 	}
 </script>
+
+<CreateTeamDialog
+	bind:dialog={createTeamDialog}
+	oncreated={(team) =>
+		addSubject({ guid: team.guid, kind: 'team', label: team.payload.name, members: 0 })}
+	organization={container.organization}
+/>
 
 <div class="table-wrapper">
 	<table>
@@ -290,6 +316,7 @@
 						<span class="add-controls">
 							<SubjectCombobox
 								excluded={rows.map(({ guid }) => guid)}
+								oncreateteam={mayCreateTeam ? () => createTeamDialog.showModal() : undefined}
 								{oninvite}
 								onselect={addSubject}
 								organization={container.organization}

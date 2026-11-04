@@ -67,7 +67,7 @@ test.describe('Object members matrix', () => {
 
 		// the invitation is the last entry of the inline search
 		await overlay.getByRole('button', { name: 'Add item' }).click();
-		await overlay.getByRole('option', { name: 'Invite member' }).click();
+		await overlay.getByRole('option', { name: 'Invite a new person by email' }).click();
 		const dialog = page.getByRole('dialog');
 		await dialog.getByRole('combobox', { name: 'Email' }).fill('bob@example.org');
 		await dialog.getByLabel('Role').selectOption('collaborator');
