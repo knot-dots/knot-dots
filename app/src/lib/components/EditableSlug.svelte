@@ -15,7 +15,9 @@
 	function oninput(event: Event) {
 		const input = event.currentTarget as HTMLInputElement;
 
-		if (input.validity.valid) {
+		if (input.value == '') {
+			container.payload.slug = undefined;
+		} else if (input.validity.valid) {
 			container.payload.slug = input.value;
 		} else {
 			event.stopPropagation();
