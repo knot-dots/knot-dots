@@ -60,6 +60,21 @@
 
 	let convertPending = $state(false);
 
+	// the properties stay mounted while their dialog is closed, so an
+	// unconfirmed conversion is dropped once the dialog closes; reopening
+	// then shows the stored kind
+	let typeChoice: HTMLDivElement | undefined = $state();
+
+	$effect(() => {
+		const dialog = typeChoice?.closest('dialog');
+		if (!dialog) {
+			return;
+		}
+		const reset = () => (convertPending = false);
+		dialog.addEventListener('close', reset);
+		return () => dialog.removeEventListener('close', reset);
+	});
+
 	const typeOptions = $derived([
 		{ label: $_('organizational_unit'), value: 'organizational_unit' },
 		{ label: $_('team'), value: teamType }
@@ -150,6 +165,7 @@
 		<!-- picking the team kind only opens the confirmation, so the form is
 		     not saved before it is confirmed -->
 		<div
+			bind:this={typeChoice}
 			class="type-choice"
 			oninput={(event) => {
 				if ((event.target as HTMLInputElement).value === teamType && !isTeam) {
