@@ -980,7 +980,6 @@
 	"upload.pdf.help": "PDF-Dateien, maximal 100 MB",
 	"upload.pdf.remove": "PDF löschen",
 	"upload.uploading": "Wird hochgeladen …",
-	"UrlSlug": "URL-Slug",
 	"user": {
 		"display_name": "Name",
 		"email": "E-Mail-Adresse",

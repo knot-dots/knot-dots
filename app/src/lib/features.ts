@@ -3,7 +3,7 @@
 // and deliberately absent from these user-facing rings.
 export const featureFlags = new Map([
 	['alpha', ['OpenAI', 'Adoptions', 'Templating', 'MCP'] as const],
-	['beta', ['ImportFromCsv', 'IOOI', 'Mistral', 'ResourceV2', 'UrlSlug'] as const]
+	['beta', ['ImportFromCsv', 'IOOI', 'Mistral', 'ResourceV2'] as const]
 ]);
 
 export function createFeatureDecisions(features: string[]) {
@@ -31,9 +31,6 @@ export function createFeatureDecisions(features: string[]) {
 		},
 		useTendentialObjectivesAndEffects() {
 			return features.includes('IOOI');
-		},
-		useUrlSlug() {
-			return features.includes('UrlSlug');
 		},
 		useAdoptions() {
 			return features.includes('Adoptions');
