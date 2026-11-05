@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { resource } from 'runed';
+	import { IsInViewport, resource } from 'runed';
 	import { _ } from 'svelte-i18n';
 	import ChartMixed from '~icons/knotdots/chart-mixed';
 	import Plus from '~icons/knotdots/plus';
@@ -45,18 +45,38 @@
 
 	let mayUpdate = $derived(editable && $ability.can('update', container));
 
+	let header = $state<HTMLElement>();
+
+	const inViewport = new IsInViewport(() => header);
+
+	let inViewportOnce = $state(false);
+
+	$effect(() => {
+		if (inViewport.current) {
+			inViewportOnce = true;
+		}
+	});
+
+	// A string compares by value, so replacing the container with an equal copy, as dragging the
+	// section does, fetches nothing again.
+	let itemKey = $derived(container.payload.item.join());
+
 	// Every indicator shows the actual data, objectives and effects of the organization or
 	// organizational unit the section belongs to, like its detail view does. The dashboard yields
 	// all of them with its indicators in one request.
 	const itemsResource = resource(
-		() => container.payload.item,
-		async (item, _, { signal }) => {
-			if (item.length === 0) {
+		[() => container.guid, () => itemKey, () => inViewportOnce],
+		async ([guid, itemKey, inViewportOnce], _, { signal }) => {
+			if (!inViewportOnce) {
+				return undefined;
+			}
+
+			if (itemKey === '') {
 				return [];
 			}
 
 			const containers = await fetchRelatedContainers(
-				container.guid,
+				guid,
 				{
 					organization: [container.organization],
 					organizationalUnit: container.organizational_unit ? [container.organizational_unit] : []
@@ -69,7 +89,8 @@
 			return containers
 				.filter(isIndicatorContainer)
 				.map((indicator) => ({ indicator, related: relatedTo(indicator.guid, related) }));
-		}
+		},
+		{ lazy: true }
 	);
 
 	// Keeps what belongs to the given indicator: its actual data, its objectives and effects, and
@@ -120,7 +141,7 @@
 	}
 </script>
 
-<header>
+<header bind:this={header}>
 	<svelte:element this={heading} class="details-heading">
 		{#if mayUpdate}
 			<label class="is-visually-hidden" for={idForTitle}>{$_('title')}</label>
