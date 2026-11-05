@@ -1,6 +1,12 @@
 import { Client, estypes } from '@elastic/elasticsearch';
 import { env as privateEnv } from '$env/dynamic/private';
-import { anyContainer, type AnyPayload, type Container, type PayloadType } from '$lib/models';
+import {
+	anyContainer,
+	type AnyPayload,
+	type Container,
+	hiddenPayloadTypes,
+	type PayloadType
+} from '$lib/models';
 import { enrichContainers } from '$lib/server/computeUserGrants';
 import { type ContainerQueryOptions, getPool } from '$lib/server/db';
 
@@ -241,6 +247,14 @@ export async function getManyContainersWithES(
 	}
 	if (filters.guid?.length) {
 		nonFacetFilters.push({ terms: { guid: filters.guid } });
+	} else {
+		// Hidden types are indexed for loading by guid; a search only reaches
+		// them when the type filter asks for them. Excluding them in the query
+		// rather than the post filter keeps them out of the facet counts, too.
+		const excludedTypes = hiddenPayloadTypes.filter((type) => !filters.type?.includes(type));
+		if (excludedTypes.length) {
+			nonFacetFilters.push({ bool: { must_not: { terms: { type: excludedTypes } } } });
+		}
 	}
 	if (filters.hierarchyLevels?.length) {
 		nonFacetFilters.push({
