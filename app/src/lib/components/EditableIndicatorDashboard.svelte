@@ -90,19 +90,24 @@
 	);
 
 	async function confirm(selected: string[]) {
-		const response = await saveContainer({
-			...container,
-			payload: { ...container.payload, item: selected }
-		});
-		if (response.ok) {
-			const updatedContainer = await response.json();
-			container.payload = updatedContainer.payload;
-			container.revision = updatedContainer.revision;
-		} else {
-			const error = await response.json();
-			alert(error.message);
+		try {
+			const response = await saveContainer({
+				...container,
+				payload: { ...container.payload, item: selected }
+			});
+			if (response.ok) {
+				const updatedContainer = await response.json();
+				container.payload = updatedContainer.payload;
+				container.revision = updatedContainer.revision;
+				dialog?.close();
+			} else {
+				const error = await response.json();
+				alert(error.message);
+			}
+		} catch (error) {
+			console.error(error);
+			alert($_('indicator_dashboard.save_failed'));
 		}
-		dialog?.close();
 	}
 </script>
 
