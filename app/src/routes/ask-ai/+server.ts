@@ -159,8 +159,13 @@ export const POST = (async ({ locals, request }) => {
 									relation: [
 										{
 											object: container.guid,
-											position: position++,
+											position: 0,
 											predicate: predicates.enum['is-part-of-program']
+										},
+										{
+											object: container.guid,
+											position: position++,
+											predicate: predicates.enum['is-section-of']
 										}
 									],
 									user: [
