@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { IsInViewport, resource } from 'runed';
+	import { untrack } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
@@ -39,8 +40,7 @@
 		value = []
 	}: Props = $props();
 
-	// Starts with the given value and is reset whenever the value changes
-	let selected = $derived(value);
+	let selected = $state<string[]>([]);
 
 	let applying = $state(false);
 
@@ -72,6 +72,15 @@
 	const mode = 'select';
 
 	const inViewport = new IsInViewport(() => dialog);
+
+	// Every time the dialog opens, the selection starts from the given value, so changes that
+	// were not applied are dropped. A new value arriving while the dialog is open leaves the
+	// selection in progress alone.
+	$effect(() => {
+		if (inViewport.current) {
+			selected = untrack(() => [...value]);
+		}
+	});
 
 	const indicatorsSchema = z.array(
 		createContainerSchema(z.discriminatedUnion('type', [binaryIndicatorPayload, indicatorPayload]))
