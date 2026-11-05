@@ -32,6 +32,7 @@
 		createContainerSchema,
 		createTemplateInstanceOf,
 		type CustomCollectionPayload,
+		isBinaryIndicatorContainer,
 		isIndicatorContainer,
 		isOrganizationalUnitContainer,
 		isProgramContainer,
@@ -493,8 +494,8 @@
 			onLoadMore={savedHasMore ? loadMoreSaved : undefined}
 		>
 			{#snippet itemSnippet(item)}
-				{#if isIndicatorContainer(item)}
-					{@const relatedContainers =
+				{#if isBinaryIndicatorContainer(item) || isIndicatorContainer(item)}
+					{const relatedContainers =
 						actualDataResource.current?.filter(({ payload }) => payload.indicator === item.guid) ??
 						[]}
 					<NewIndicatorCard
@@ -529,8 +530,8 @@
 		<ul class="catalog wide">
 			{#each items as item (item.guid)}
 				<li>
-					{#if isIndicatorContainer(item)}
-						{@const relatedContainers =
+					{#if isBinaryIndicatorContainer(item) || isIndicatorContainer(item)}
+						{const relatedContainers =
 							actualDataResource.current?.filter(
 								({ payload }) => payload.indicator === item.guid
 							) ?? []}
