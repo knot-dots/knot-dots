@@ -11,7 +11,7 @@
 	import OrganizationalUnitIcon from '~icons/knotdots/organizational-unit';
 	import tooltip from '$lib/attachments/tooltip';
 	import deleteContainer from '$lib/client/deleteContainer';
-	import saveContainer from '$lib/client/saveContainer';
+	import createTeam from '$lib/client/createTeam';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import Dropdown from '$lib/components/Dropdown.svelte';
 	import TeamChip from '$lib/components/TeamChip.svelte';
@@ -20,7 +20,6 @@
 		type Container,
 		containerOfType,
 		displayName,
-		type NewContainer,
 		type OrganizationalUnitPayload,
 		organizationalUnitType,
 		type OrganizationPayload,
@@ -132,20 +131,8 @@
 		}
 		saving = true;
 		const parent = managedOrganizationalUnits.find(({ guid }) => guid === area);
-		const team = containerOfType(
-			payloadTypes.enum.organizational_unit,
-			organization
-		) as NewContainer<OrganizationalUnitPayload>;
-		team.payload.name = trimmed;
-		team.payload.organizationalUnitType =
-			organizationalUnitType.enum['organizational_unit_type.team'];
-		team.payload.level = parent ? parent.payload.level + 1 : 1;
-		team.relation =
-			area === organization.guid
-				? []
-				: [{ object: area, position: 0, predicate: predicates.enum['is-part-of'] }];
 		try {
-			const response = await saveContainer(team);
+			const response = await createTeam(trimmed, organization, parent);
 			if (!response.ok) {
 				toast({ heading: $_('error.unexpected'), status: 'error' });
 				return;
