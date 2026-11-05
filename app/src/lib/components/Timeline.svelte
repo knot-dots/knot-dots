@@ -197,8 +197,34 @@
 		}
 	}
 
+	// On touch screens, swiping the preview moves to the previous or next item.
+	const swipeDistance = 48;
+	let swipeStart: { x: number; y: number } | undefined;
+	let swiped = false;
+
+	function startSwipe(event: PointerEvent) {
+		swiped = false;
+		swipeStart = event.pointerType === 'mouse' ? undefined : { x: event.clientX, y: event.clientY };
+	}
+
+	function endSwipe(event: PointerEvent) {
+		if (!swipeStart) return;
+		const dx = event.clientX - swipeStart.x;
+		const dy = event.clientY - swipeStart.y;
+		swipeStart = undefined;
+		if (Math.abs(dx) > swipeDistance && Math.abs(dx) > Math.abs(dy)) {
+			swiped = true;
+			select(currentIndex + (dx < 0 ? 1 : -1));
+		}
+	}
+
 	// Like Card.svelte, the whole preview opens the object, unless text is selected.
 	function handlePreviewClick(event: MouseEvent) {
+		if (swiped) {
+			swiped = false;
+			event.preventDefault();
+			return;
+		}
 		if (!titleLink || titleLink.contains(event.target as Node)) return;
 		if (!window.getSelection()?.toString()) titleLink.click();
 	}
@@ -233,6 +259,9 @@
 				class="timeline-preview-panel"
 				id="{id}-panel"
 				onclick={handlePreviewClick}
+				onpointercancel={() => (swipeStart = undefined)}
+				onpointerdown={startSwipe}
+				onpointerup={endSwipe}
 				role="tabpanel"
 			>
 				<div class="timeline-preview-text">
@@ -492,6 +521,8 @@
 		min-width: 0;
 		overflow: hidden;
 		padding: 1rem;
+		/* Horizontal swipes go to the preview, vertical ones scroll the page. */
+		touch-action: pan-y pinch-zoom;
 	}
 
 	.timeline-preview-panel:hover {
