@@ -895,7 +895,6 @@
 	"timeline.limit_exceeded": "The timeline shows the first {limit} of {total} objects.",
 	"timeline.next": "Next object",
 	"timeline.previous": "Previous object",
-	"timeline.show_details": "Show details",
 	"timeline.skipped_without_date": "{count, plural, one {# object without a date is} other {# objects without a date are}} not shown.",
 	"timeline.today": "Today",
 	"timeline.zoom_in": "Zoom in",

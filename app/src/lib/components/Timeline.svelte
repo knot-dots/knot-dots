@@ -57,7 +57,7 @@
 	// The card that is in the tab sequence, and selected if there is a preview
 	let currentGuid = $state<string>();
 
-	let detailsLink = $state<HTMLAnchorElement>();
+	let titleLink = $state<HTMLAnchorElement>();
 
 	const id = crypto.randomUUID();
 
@@ -193,8 +193,14 @@
 		} else if (event.key === 'Enter' && showPreview) {
 			// Like the links without a preview, Enter opens the object.
 			event.preventDefault();
-			detailsLink?.click();
+			titleLink?.click();
 		}
+	}
+
+	// Like Card.svelte, the whole preview opens the object, unless text is selected.
+	function handlePreviewClick(event: MouseEvent) {
+		if (!titleLink || titleLink.contains(event.target as Node)) return;
+		if (!window.getSelection()?.toString()) titleLink.click();
 	}
 
 	// Like Card.svelte, start a new overlay history unless already in an overlay.
@@ -220,10 +226,13 @@
 				<ChevronLeft />
 			</button>
 
+			<!-- The click is a larger target for the title link, which keyboard users reach. -->
+			<!-- svelte-ignore a11y_click_events_have_key_events, a11y_interactive_supports_focus -->
 			<div
 				aria-labelledby="{id}-tab-{selected.guid}"
 				class="timeline-preview-panel"
 				id="{id}-panel"
+				onclick={handlePreviewClick}
 				role="tabpanel"
 			>
 				<div class="timeline-preview-text">
@@ -231,7 +240,9 @@
 						{formatPeriod(selected, currentLocale)}
 					</time>
 					<svelte:element this={heading} class="timeline-preview-title">
-						{selected.title}
+						<a bind:this={titleLink} href={selected.href} onclick={updateOverlayHistory}>
+							{selected.title}
+						</a>
 					</svelte:element>
 					<p class={selected.badge.module ? `module-${selected.badge.module}` : undefined}>
 						<span class="badge">{selected.badge.label}</span>
@@ -239,16 +250,6 @@
 					<div class="timeline-preview-summary">
 						<Summary container={selected.container} />
 					</div>
-					<p>
-						<a
-							bind:this={detailsLink}
-							class="button button-alternate button-sm system-primary"
-							href={selected.href}
-							onclick={updateOverlayHistory}
-						>
-							{$_('timeline.show_details')}
-						</a>
-					</p>
 				</div>
 				{#if selected.image}
 					<figure>
@@ -482,13 +483,19 @@
 		align-items: safe center;
 		border: solid 1px var(--color-border-accent-subtle);
 		border-radius: var(--card-border-radius);
+		background-color: var(--color-surface-default);
 		box-shadow: var(--shadow-sm);
+		cursor: pointer;
 		display: flex;
 		gap: 2rem;
 		height: calc(var(--preview-height) + 2rem + 2px);
 		min-width: 0;
 		overflow: hidden;
 		padding: 1rem;
+	}
+
+	.timeline-preview-panel:hover {
+		background-color: var(--color-gray-100);
 	}
 
 	/* Text and image share the width of the card. */
@@ -516,6 +523,11 @@
 		line-clamp: 3;
 		line-height: 1.4;
 		overflow: hidden;
+	}
+
+	.timeline-preview-title a {
+		color: inherit;
+		text-decoration: none;
 	}
 
 	.timeline-preview-text :is(p, .timeline-preview-summary) {

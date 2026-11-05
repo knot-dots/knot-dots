@@ -130,9 +130,10 @@ test('The preview keeps the selected object when it is opened', async ({
 		await expect(secondCard).toHaveAttribute('aria-selected', 'true');
 		await expect(timeline.getByRole('heading', { name: second.payload.title })).toBeVisible();
 
-		// Open it in the overlay and assert the timeline stays on the second goal
-		const detailsLink = timeline.getByRole('link', { name: 'Show details' });
-		await (isMobile ? detailsLink.tap() : detailsLink.click());
+		// Open it in the overlay through the preview card and assert the timeline
+		// stays on the second goal
+		const preview = timeline.getByRole('tabpanel').locator('time');
+		await (isMobile ? preview.tap() : preview.click());
 		await expect(
 			landingPage.overlay.locator.getByRole('heading', { name: second.payload.title }).first()
 		).toBeVisible();

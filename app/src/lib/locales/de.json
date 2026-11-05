@@ -895,7 +895,6 @@
 	"timeline.limit_exceeded": "Die Zeitleiste zeigt die ersten {limit} von {total} Objekten.",
 	"timeline.next": "Nächstes Objekt",
 	"timeline.previous": "Vorheriges Objekt",
-	"timeline.show_details": "Details anzeigen",
 	"timeline.skipped_without_date": "{count, plural, one {# Objekt ohne Datum wird} other {# Objekte ohne Datum werden}} nicht angezeigt.",
 	"timeline.today": "Heute",
 	"timeline.zoom_in": "Vergrößern",
