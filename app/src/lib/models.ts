@@ -120,6 +120,37 @@ export function isPayloadType(value: unknown): value is PayloadType {
 	return payloadTypeValues.includes(value as PayloadType);
 }
 
+// The types a search returns unless a guid or type filter asks for others.
+// Sections, actual data and the like are indexed, but only reachable through
+// the containers they belong to.
+export const searchablePayloadTypes = [
+	'binary_indicator',
+	'effect',
+	'event',
+	'goal',
+	'help',
+	'indicator',
+	'knowledge',
+	'measure',
+	'objective',
+	'organization',
+	'organizational_unit',
+	'page',
+	'post',
+	'program',
+	'report',
+	'resource',
+	'resource_data',
+	'resource_v2',
+	'rule',
+	'simple_measure',
+	'task'
+] as const satisfies readonly PayloadType[];
+
+export const hiddenPayloadTypes = payloadTypeValues.filter(
+	(type) => !(searchablePayloadTypes as readonly PayloadType[]).includes(type)
+);
+
 const helpSlugValues = [
 	'all-catalog',
 	'all-level',
