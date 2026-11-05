@@ -440,62 +440,63 @@
 	/*
 	 * The preview has a fixed height so that neither the buttons nor the axis
 	 * move when another item with more or less content is selected. Title and
-	 * summary are truncated to fit into it.
+	 * summary are truncated to fit into it. Unlike the time axis, it keeps the
+	 * width of the content area.
 	 */
 	.timeline-preview {
 		--preview-height: 20rem;
 		--summary-lines: 4;
-		/* The room the buttons need from the edge of the full width */
-		--button-room: calc(0.75rem + 1.75rem + 0.5rem);
 
-		border: solid 1px var(--color-border-accent-subtle);
-		border-radius: var(--card-border-radius);
-		box-shadow: var(--shadow-sm);
 		margin-block: 1.5rem;
-		padding: 1rem;
+		max-width: var(--details-max-width);
 		position: relative;
 	}
 
 	/*
-	 * The text is aligned with the section title. The buttons are outside of
-	 * the content area, in line with the actions of the time axis.
+	 * The buttons are outside of the card, with the same distance on both
+	 * sides. Narrow screens have no room for them.
 	 */
 	.timeline-preview-button {
+		display: none;
 		position: absolute;
 		top: 50%;
 		transform: translateY(-50%);
 	}
 
 	.timeline-preview-button:first-child {
-		left: calc(var(--carousel-margin-left, 0px) + 0.75rem);
+		right: calc(100% + 0.5rem);
 	}
 
 	.timeline-preview-button:last-child {
-		right: calc(var(--carousel-margin-right, 0px) + 0.75rem);
+		left: calc(100% + 0.5rem);
 	}
 
+	@media (min-width: 30rem) {
+		.timeline-preview-button {
+			display: block;
+		}
+	}
+
+	/* The padding and the border come on top of the height of the content. */
 	.timeline-preview-panel {
 		align-items: safe center;
+		border: solid 1px var(--color-border-accent-subtle);
+		border-radius: var(--card-border-radius);
+		box-shadow: var(--shadow-sm);
 		display: flex;
 		gap: 2rem;
-		height: var(--preview-height);
+		height: calc(var(--preview-height) + 2rem + 2px);
 		min-width: 0;
 		overflow: hidden;
-		/* Only where the margin is too narrow for the buttons */
-		padding-left: max(0px, calc(var(--button-room) + var(--carousel-margin-left, 0px)));
-		padding-right: max(0px, calc(var(--button-room) + var(--carousel-margin-right, 0px)));
+		padding: 1rem;
 	}
 
-	/*
-	 * Text and image share the width of the section, but neither gets wider
-	 * than the content area.
-	 */
+	/* Text and image share the width of the card. */
 	.timeline-preview-text {
 		display: flex;
 		flex: 1 1 0;
 		flex-direction: column;
 		gap: 0.75rem;
-		max-width: var(--details-max-width, none);
 		min-width: 0;
 	}
 
@@ -545,7 +546,6 @@
 
 	.timeline-preview figure {
 		flex: 1 1 0;
-		max-width: var(--details-max-width, none);
 		min-width: 0;
 	}
 
