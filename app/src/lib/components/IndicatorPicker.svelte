@@ -42,6 +42,8 @@
 	// Starts with the given value and is reset whenever the value changes
 	let selected = $derived(value);
 
+	let applying = $state(false);
+
 	let filterBar = createDisclosure({ label: $_('filters'), expanded: true });
 
 	let sortBar = createDisclosure({ label: $_('sort') });
@@ -177,6 +179,15 @@
 		selected = selected.filter((guid) => !results.has(guid));
 	}
 
+	async function apply() {
+		applying = true;
+		try {
+			await onconfirm(selected);
+		} finally {
+			applying = false;
+		}
+	}
+
 	function onchange(event: Event & { currentTarget: HTMLInputElement }) {
 		selected = event.currentTarget.checked
 			? [...selected, event.currentTarget.value]
@@ -289,8 +300,8 @@
 				</button>
 				<button
 					class="button-primary system-primary selection-apply"
-					disabled={selected.length === 0 && value.length === 0}
-					onclick={() => onconfirm(selected)}
+					disabled={applying || (selected.length === 0 && value.length === 0)}
+					onclick={apply}
 					type="button"
 				>
 					{$_('picker_dialog.confirm', { values: { count: selected.length } })}
