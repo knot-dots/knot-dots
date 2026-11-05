@@ -44,6 +44,7 @@
 				{
 					organization: [container.organization],
 					payloadType: [
+						payloadTypes.enum.binary_indicator,
 						payloadTypes.enum.effect,
 						payloadTypes.enum.goal,
 						payloadTypes.enum.indicator,
