@@ -1718,7 +1718,7 @@ const initialIndicatorCollectionPayload = indicatorCollectionPayload;
 
 const indicatorDashboardPayload = z.strictObject({
 	...sectionStyle.shape,
-	item: z.array(z.uuid()).default([]),
+	item: z.array(z.uuid()).transform(deduplicate).default([]),
 	title: z.string(),
 	type: z.literal(payloadTypes.enum.indicator_dashboard),
 	visibility: visibility.default(visibility.enum['organization'])
