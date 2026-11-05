@@ -47,29 +47,6 @@ async function* fetchContainers(batchSize = 500) {
 			LEFT JOIN task_priority tp ON tp.task = c.guid
 			WHERE deleted = false
 				AND valid_currently
-				AND (c.payload ->> 'type') IN (
-					'binary_indicator',
-					'effect',
-					'event',
-					'goal',
-					'help',
-					'indicator',
-					'knowledge',
-					'measure',
-					'objective',
-					'organization',
-					'organizational_unit',
-					'page',
-					'post',
-					'program',
-					'report',
-					'resource',
-					'resource_data',
-					'resource_v2',
-					'rule',
-					'simple_measure',
-					'task'
-				)
 				AND (${lastGuid ? sql.fragment`c.guid > ${lastGuid}::uuid` : sql.fragment`true`})
 			ORDER BY c.guid
 			LIMIT ${batchSize}
