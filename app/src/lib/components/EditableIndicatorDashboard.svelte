@@ -4,7 +4,6 @@
 	import ChartMixed from '~icons/knotdots/chart-mixed';
 	import Plus from '~icons/knotdots/plus';
 	import tooltip from '$lib/attachments/tooltip';
-	import fetchContainers from '$lib/client/fetchContainers';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import saveContainer from '$lib/client/saveContainer';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
@@ -15,8 +14,12 @@
 		type AnyPayload,
 		type Container,
 		type IndicatorDashboardPayload,
+		isActualDataContainer,
+		isEffectContainer,
 		isIndicatorContainer,
-		payloadTypes
+		isObjectiveContainer,
+		payloadTypes,
+		predicates
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
@@ -43,7 +46,8 @@
 	let mayUpdate = $derived(editable && $ability.can('update', container));
 
 	// Every indicator shows the actual data, objectives and effects of the organization or
-	// organizational unit the section belongs to, like its detail view does.
+	// organizational unit the section belongs to, like its detail view does. The dashboard yields
+	// all of them with its indicators in one request.
 	const itemsResource = resource(
 		() => container.payload.item,
 		async (item, _, { signal }) => {
@@ -51,36 +55,41 @@
 				return [];
 			}
 
-			const indicators = (
-				await fetchContainers({ guid: item, payloadType: [payloadTypes.enum.indicator] }, 'alpha', {
-					signal
-				})
-			).filter(isIndicatorContainer);
-
-			return Promise.all(
-				indicators.map(async (indicator) => {
-					try {
-						const related = await fetchRelatedContainers(
-							indicator.guid,
-							{
-								organization: [container.organization],
-								organizationalUnit: container.organizational_unit
-									? [container.organizational_unit]
-									: []
-							},
-							'alpha',
-							{ signal }
-						);
-						return { indicator, related };
-					} catch (error) {
-						if (error instanceof DOMException && error.name === 'AbortError') throw error;
-						// Show the indicator without data rather than hiding the whole dashboard
-						return { indicator, related: [] };
-					}
-				})
+			const containers = await fetchRelatedContainers(
+				container.guid,
+				{
+					organization: [container.organization],
+					organizationalUnit: container.organizational_unit ? [container.organizational_unit] : []
+				},
+				'alpha',
+				{ signal }
 			);
+			const related = containers.filter((c) => !isIndicatorContainer(c));
+
+			return containers
+				.filter(isIndicatorContainer)
+				.map((indicator) => ({ indicator, related: relatedTo(indicator.guid, related) }));
 		}
 	);
+
+	// Keeps what belongs to the given indicator: its actual data, its objectives and effects, and
+	// everything else, such as the goals and measures these are part of.
+	function relatedTo(guid: string, containers: Container[]) {
+		return containers.filter((c) => {
+			if (isActualDataContainer(c)) {
+				return c.payload.indicator === guid;
+			}
+			if (isEffectContainer(c) || isObjectiveContainer(c)) {
+				return c.relation.some(
+					({ object, predicate }) =>
+						object === guid &&
+						(predicate === predicates.enum['is-measured-by'] ||
+							predicate === predicates.enum['is-objective-for'])
+				);
+			}
+			return true;
+		});
+	}
 
 	// Preserve the order of the selection
 	let items = $derived(
