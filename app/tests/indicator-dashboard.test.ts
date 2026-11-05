@@ -55,9 +55,19 @@ test('Selected indicators show the data of the organizational unit the section b
 	await expect(items.nth(1)).toContainText(otherIndicator.payload.title);
 	await expect(items.nth(1).getByText('No data available')).toBeVisible();
 
+	// Changes that are not applied are dropped
+	await section.hover();
+	await section.getByRole('button', { name: 'Add items', exact: true }).click();
+	await dialog.getByRole('searchbox').fill(otherIndicator.payload.title);
+	await dialog.getByRole('article').filter({ hasText: otherIndicator.payload.title }).click();
+	await expect(dialog.getByRole('button', { name: 'Apply (1)' })).toBeVisible();
+	await dialog.getByRole('button', { name: 'Cancel' }).click();
+	await expect(dialog).not.toBeVisible();
+
 	// Remove one indicator
 	await section.hover();
 	await section.getByRole('button', { name: 'Add items', exact: true }).click();
+	await expect(dialog.getByRole('button', { name: 'Apply (2)' })).toBeVisible();
 	await dialog.getByRole('searchbox').fill(otherIndicator.payload.title);
 	await dialog.getByRole('article').filter({ hasText: otherIndicator.payload.title }).click();
 	await dialog.getByRole('button', { name: 'Apply (1)' }).click();
