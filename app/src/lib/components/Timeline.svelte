@@ -448,7 +448,11 @@
 		/* The room the buttons need from the edge of the full width */
 		--button-room: calc(0.75rem + 1.75rem + 0.5rem);
 
-		padding: 1.5rem 0;
+		border: solid 1px var(--color-border-accent-subtle);
+		border-radius: var(--card-border-radius);
+		box-shadow: var(--shadow-sm);
+		margin-block: 1.5rem;
+		padding: 1rem;
 		position: relative;
 	}
 
