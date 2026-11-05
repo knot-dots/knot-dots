@@ -163,7 +163,9 @@
 	{/if}
 </header>
 
-{#if items.length > 0}
+{#if itemsResource.error}
+	<p>{$_('indicator_dashboard.load_failed')}</p>
+{:else if items.length > 0}
 	<ul class="indicators wide">
 		{#each items as { indicator, related } (indicator.guid)}
 			<li>

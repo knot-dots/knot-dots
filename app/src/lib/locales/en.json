@@ -411,6 +411,7 @@
 	"indicator_category.wegweiser_kommune": "Wegweiser Kommune",
 	"indicator_dashboard": "Indicator dashboard",
 	"indicator_dashboard.empty": "Select the indicators to show here.",
+	"indicator_dashboard.load_failed": "The indicators could not be loaded.",
 	"indicator_dashboard.save_failed": "The selection could not be saved.",
 	"indicator_picker.import_failed": "The indicators could not be activated.",
 	"indicator_picker.title": "Select indicators to activate",
