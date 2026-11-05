@@ -373,16 +373,6 @@
 		height: 3.125rem;
 	}
 
-	/* the roster shows no hover backgrounds */
-	tbody tr,
-	tbody tr:hover {
-		background-color: white;
-	}
-
-	td:hover {
-		background-color: transparent;
-	}
-
 	.col-name {
 		min-width: 13.75rem;
 		width: 13.75rem;
@@ -398,6 +388,12 @@
 		text-align: center;
 	}
 
+	/* the add row is an action bar, not a record: no row or cell highlighting */
+	tr.add-row,
+	tr.add-row:hover {
+		background-color: white;
+	}
+
 	tr.add-row td {
 		border: none;
 		height: 3rem;
@@ -405,9 +401,8 @@
 		padding-top: 0;
 	}
 
-	tr.add-row :global(button:hover),
-	tr.add-row :global(button:active) {
-		background: none;
+	tr.add-row td:hover {
+		background-color: transparent;
 	}
 
 	tr.empty-row td {

@@ -367,16 +367,6 @@
 		padding: 0.625rem 0.5rem;
 	}
 
-	/* the table shows no hover backgrounds */
-	tbody tr,
-	tbody tr:hover {
-		background-color: white;
-	}
-
-	td:hover {
-		background-color: transparent;
-	}
-
 	.header-content {
 		align-items: center;
 		display: flex;
@@ -419,6 +409,17 @@
 	.is-empty {
 		color: var(--color-text-subtle);
 		font-weight: 400;
+	}
+
+	/* the row being added is an action bar, not a record: no row or cell
+	   highlighting */
+	tr.create-row,
+	tr.create-row:hover {
+		background-color: white;
+	}
+
+	tr.create-row td:hover {
+		background-color: transparent;
 	}
 
 	/* the row being added: the name field in focus, the area as a select */
@@ -498,12 +499,7 @@
 		width: 1rem;
 	}
 
-	/* the design sets the button in the body size, without a hover background */
-	.add-button:hover,
-	.add-button:active {
-		background: none;
-	}
-
+	/* the design sets the button in the body size */
 	.add-button {
 		border-radius: 4px;
 		font-size: 0.875rem;
