@@ -1,36 +1,22 @@
 <script lang="ts">
+	import type { resource } from 'runed';
 	import { _ } from 'svelte-i18n';
 	import { source } from 'sveltekit-sse';
 	import AskAI from '~icons/knotdots/ask-ai';
 	import Check from '~icons/flowbite/check-outline';
 	import Rotate from '~icons/flowbite/rotate-solid';
-	import { page } from '$app/state';
 	import { getToastContext } from '$lib/contexts/toast';
-	import {
-		type Container,
-		containerOfType,
-		paramsFromFragment,
-		payloadTypes,
-		type ProgramPayload
-	} from '$lib/models';
-	import { fetchContainersRelatedToProgram } from '$lib/remote/data.remote';
+	import { type Container, containerOfType, payloadTypes, type ProgramPayload } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
-	import { extractCustomCategoryFiltersFromParams } from '$lib/utils/customCategoryFilters';
 
 	interface Props {
 		container: Container<ProgramPayload>;
+		relatedContainersQuery: ReturnType<typeof resource>;
 	}
 
-	let { container }: Props = $props();
+	let { container, relatedContainersQuery }: Props = $props();
 
 	let isThinking = $state(false);
-
-	let params = $derived(
-		extractCustomCategoryFiltersFromParams(
-			paramsFromFragment(page.url),
-			page.data.categoryContext.keys
-		)
-	);
 
 	let toast = getToastContext();
 
@@ -64,10 +50,7 @@
 					});
 					break;
 			}
-			fetchContainersRelatedToProgram({
-				guid: container.guid,
-				params
-			}).refresh();
+			relatedContainersQuery.refetch();
 		});
 	}
 </script>
