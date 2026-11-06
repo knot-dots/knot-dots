@@ -239,210 +239,208 @@
 	}
 </script>
 
-<section aria-label={label} class="timeline">
-	{#if showPreview && selected}
-		<div class="timeline-preview" class:has-images={hasImages}>
-			<button
-				class="action-button action-button--padding-tight timeline-preview-button"
-				disabled={currentIndex === 0}
-				onclick={() => select(currentIndex - 1)}
-				type="button"
-				{@attach tooltip($_('timeline.previous'))}
-			>
-				<ChevronLeft />
-			</button>
-
-			<!-- The click is a larger target for the title link, which keyboard users reach. -->
-			<!-- svelte-ignore a11y_click_events_have_key_events, a11y_interactive_supports_focus -->
-			<div
-				aria-labelledby="{id}-tab-{selected.guid}"
-				class="timeline-preview-panel"
-				id="{id}-panel"
-				onclick={handlePreviewClick}
-				onpointercancel={() => (swipeStart = undefined)}
-				onpointerdown={startSwipe}
-				onpointerup={endSwipe}
-				role="tabpanel"
-			>
-				<div class="timeline-preview-text">
-					<time datetime={machineReadable(selected.start, selected.allDay)}>
-						{formatPeriod(selected, currentLocale)}
-					</time>
-					<svelte:element this={heading} class="timeline-preview-title">
-						<a bind:this={titleLink} href={selected.href} onclick={updateOverlayHistory}>
-							{selected.title}
-						</a>
-					</svelte:element>
-					<p class={selected.badge.module ? `module-${selected.badge.module}` : undefined}>
-						<span class="badge">{selected.badge.label}</span>
-					</p>
-					<div class="timeline-preview-summary">
-						<Summary container={selected.container} />
-					</div>
-				</div>
-				{#if selected.image}
-					<figure>
-						<img alt="" src={selected.image.url} />
-						{#if selected.image.credit}
-							<figcaption>{selected.image.credit}</figcaption>
-						{/if}
-					</figure>
-				{/if}
-			</div>
-
-			<button
-				class="action-button action-button--padding-tight timeline-preview-button"
-				disabled={currentIndex === items.length - 1}
-				onclick={() => select(currentIndex + 1)}
-				type="button"
-				{@attach tooltip($_('timeline.next'))}
-			>
-				<ChevronRight />
-			</button>
-		</div>
-	{/if}
-
-	<div class="timeline-navigation" style:--track-height="{trackHeight}px">
-		<div class="timeline-actions" role="toolbar" aria-label={$_('timeline.actions')}>
-			<button
-				class="action-button action-button--padding-tight"
-				disabled={level >= range.max}
-				onclick={() => changeZoom(1)}
-				type="button"
-				{@attach tooltip($_('timeline.zoom_in'), { placement: 'right' })}
-			>
-				<ZoomIn />
-			</button>
-			<button
-				class="action-button action-button--padding-tight"
-				disabled={level <= range.min}
-				onclick={() => changeZoom(-1)}
-				type="button"
-				{@attach tooltip($_('timeline.zoom_out'), { placement: 'right' })}
-			>
-				<ZoomOut />
-			</button>
-			<button
-				class="action-button action-button--padding-tight"
-				onclick={() => select(0)}
-				type="button"
-				{@attach tooltip($_('timeline.go_to_start'), { placement: 'right' })}
-			>
-				<ChevronDoubleLeft />
-			</button>
-			<button
-				class="action-button action-button--padding-tight"
-				onclick={() => select(items.length - 1)}
-				type="button"
-				{@attach tooltip($_('timeline.go_to_end'), { placement: 'right' })}
-			>
-				<ChevronDoubleRight />
-			</button>
-			<button
-				class="action-button action-button--padding-tight"
-				onclick={goToToday}
-				type="button"
-				{@attach tooltip($_('timeline.go_to_today'), { placement: 'right' })}
-			>
-				<CalendarMonth />
-			</button>
-		</div>
-
-		<div
-			bind:clientWidth={width}
-			bind:this={scroller}
-			class="timeline-scroller"
-			onscroll={() => (scrollLeft = scroller?.scrollLeft ?? 0)}
+{#if showPreview && selected}
+	<div class="timeline-preview" class:has-images={hasImages}>
+		<button
+			class="action-button action-button--padding-tight timeline-preview-button"
+			disabled={currentIndex === 0}
+			onclick={() => select(currentIndex - 1)}
+			type="button"
+			{@attach tooltip($_('timeline.previous'))}
 		>
-			<div class="timeline-track" style:width="{trackWidth}px">
-				{#if showsToday}
-					<div class="timeline-today" style:left="{x(today)}px">
-						<span>{$_('timeline.today')}</span>
-					</div>
-				{/if}
+			<ChevronLeft />
+		</button>
 
-				<ol
-					aria-label={showPreview ? label : undefined}
-					aria-orientation={showPreview ? 'horizontal' : undefined}
-					class="timeline-items"
-					onkeydown={handleKeydown}
-					role={showPreview ? 'tablist' : undefined}
-				>
-					{#each items as item, index (item.guid)}
-						{@const left = x(item.start)}
-						{@const end = endOf(item)}
-						{@const top = 8 + layout.rows[index] * rowHeight}
-						{@const isActive =
-							viewedGuid === item.guid || (showPreview && selected?.guid === item.guid)}
-						<li
-							class="timeline-item"
-							class:is-active={isActive}
-							role={showPreview ? 'presentation' : undefined}
-							style:--top="{top}px"
-							style:left="{left}px"
-							style:top="{top}px"
-							style:width="{Math.max(cardWidth, end === undefined ? 0 : x(end) - left)}px"
-						>
-							{#if showPreview}
-								<button
-									aria-controls="{id}-panel"
-									aria-selected={index === currentIndex}
-									class="timeline-card"
-									data-guid={item.guid}
-									id="{id}-tab-{item.guid}"
-									onclick={() => select(index)}
-									role="tab"
-									tabindex={index === currentIndex ? 0 : -1}
-									type="button"
-								>
-									{@render cardContent(item)}
-								</button>
-							{:else}
-								<a
-									class="timeline-card"
-									data-guid={item.guid}
-									href={item.href}
-									onclick={updateOverlayHistory}
-									onfocus={() => (currentGuid = item.guid)}
-									tabindex={index === currentIndex ? 0 : -1}
-								>
-									{@render cardContent(item)}
-								</a>
-							{/if}
+		<!-- The click is a larger target for the title link, which keyboard users reach. -->
+		<!-- svelte-ignore a11y_click_events_have_key_events, a11y_interactive_supports_focus -->
+		<div
+			aria-labelledby="{id}-tab-{selected.guid}"
+			class="timeline-preview-panel"
+			id="{id}-panel"
+			onclick={handlePreviewClick}
+			onpointercancel={() => (swipeStart = undefined)}
+			onpointerdown={startSwipe}
+			onpointerup={endSwipe}
+			role="tabpanel"
+		>
+			<div class="timeline-preview-text">
+				<time datetime={machineReadable(selected.start, selected.allDay)}>
+					{formatPeriod(selected, currentLocale)}
+				</time>
+				<svelte:element this={heading} class="timeline-preview-title">
+					<a bind:this={titleLink} href={selected.href} onclick={updateOverlayHistory}>
+						{selected.title}
+					</a>
+				</svelte:element>
+				<p class={selected.badge.module ? `module-${selected.badge.module}` : undefined}>
+					<span class="badge">{selected.badge.label}</span>
+				</p>
+				<div class="timeline-preview-summary">
+					<Summary container={selected.container} />
+				</div>
+			</div>
+			{#if selected.image}
+				<figure>
+					<img alt="" src={selected.image.url} />
+					{#if selected.image.credit}
+						<figcaption>{selected.image.credit}</figcaption>
+					{/if}
+				</figure>
+			{/if}
+		</div>
+
+		<button
+			class="action-button action-button--padding-tight timeline-preview-button"
+			disabled={currentIndex === items.length - 1}
+			onclick={() => select(currentIndex + 1)}
+			type="button"
+			{@attach tooltip($_('timeline.next'))}
+		>
+			<ChevronRight />
+		</button>
+	</div>
+{/if}
+
+<div class="timeline-navigation wide" style:--track-height="{trackHeight}px">
+	<div class="timeline-actions" role="toolbar" aria-label={$_('timeline.actions')}>
+		<button
+			class="action-button action-button--padding-tight"
+			disabled={level >= range.max}
+			onclick={() => changeZoom(1)}
+			type="button"
+			{@attach tooltip($_('timeline.zoom_in'), { placement: 'right' })}
+		>
+			<ZoomIn />
+		</button>
+		<button
+			class="action-button action-button--padding-tight"
+			disabled={level <= range.min}
+			onclick={() => changeZoom(-1)}
+			type="button"
+			{@attach tooltip($_('timeline.zoom_out'), { placement: 'right' })}
+		>
+			<ZoomOut />
+		</button>
+		<button
+			class="action-button action-button--padding-tight"
+			onclick={() => select(0)}
+			type="button"
+			{@attach tooltip($_('timeline.go_to_start'), { placement: 'right' })}
+		>
+			<ChevronDoubleLeft />
+		</button>
+		<button
+			class="action-button action-button--padding-tight"
+			onclick={() => select(items.length - 1)}
+			type="button"
+			{@attach tooltip($_('timeline.go_to_end'), { placement: 'right' })}
+		>
+			<ChevronDoubleRight />
+		</button>
+		<button
+			class="action-button action-button--padding-tight"
+			onclick={goToToday}
+			type="button"
+			{@attach tooltip($_('timeline.go_to_today'), { placement: 'right' })}
+		>
+			<CalendarMonth />
+		</button>
+	</div>
+
+	<div
+		bind:clientWidth={width}
+		bind:this={scroller}
+		class="timeline-scroller"
+		onscroll={() => (scrollLeft = scroller?.scrollLeft ?? 0)}
+	>
+		<div class="timeline-track" style:width="{trackWidth}px">
+			{#if showsToday}
+				<div class="timeline-today" style:left="{x(today)}px">
+					<span>{$_('timeline.today')}</span>
+				</div>
+			{/if}
+
+			<ol
+				aria-label={showPreview ? label : undefined}
+				aria-orientation={showPreview ? 'horizontal' : undefined}
+				class="timeline-items"
+				onkeydown={handleKeydown}
+				role={showPreview ? 'tablist' : undefined}
+			>
+				{#each items as item, index (item.guid)}
+					{@const left = x(item.start)}
+					{@const end = endOf(item)}
+					{@const top = 8 + layout.rows[index] * rowHeight}
+					{@const isActive =
+						viewedGuid === item.guid || (showPreview && selected?.guid === item.guid)}
+					<li
+						class="timeline-item"
+						class:is-active={isActive}
+						role={showPreview ? 'presentation' : undefined}
+						style:--top="{top}px"
+						style:left="{left}px"
+						style:top="{top}px"
+						style:width="{Math.max(cardWidth, end === undefined ? 0 : x(end) - left)}px"
+					>
+						{#if showPreview}
+							<button
+								aria-controls="{id}-panel"
+								aria-selected={index === currentIndex}
+								class="timeline-card"
+								data-guid={item.guid}
+								id="{id}-tab-{item.guid}"
+								onclick={() => select(index)}
+								role="tab"
+								tabindex={index === currentIndex ? 0 : -1}
+								type="button"
+							>
+								{@render cardContent(item)}
+							</button>
+						{:else}
+							<a
+								class="timeline-card"
+								data-guid={item.guid}
+								href={item.href}
+								onclick={updateOverlayHistory}
+								onfocus={() => (currentGuid = item.guid)}
+								tabindex={index === currentIndex ? 0 : -1}
+							>
+								{@render cardContent(item)}
+							</a>
+						{/if}
+						<span
+							aria-hidden="true"
+							class="timeline-stem"
+							style:height="{trackHeight - top - cardHeight + 8}px"
+						></span>
+						{#if end === undefined}
+							<span aria-hidden="true" class="timeline-dot"></span>
+						{:else}
 							<span
 								aria-hidden="true"
-								class="timeline-stem"
-								style:height="{trackHeight - top - cardHeight + 8}px"
+								class="timeline-span"
+								style:width="{Math.max(x(end) - left, 2)}px"
 							></span>
-							{#if end === undefined}
-								<span aria-hidden="true" class="timeline-dot"></span>
-							{:else}
-								<span
-									aria-hidden="true"
-									class="timeline-span"
-									style:width="{Math.max(x(end) - left, 2)}px"
-								></span>
-							{/if}
-						</li>
-					{/each}
-				</ol>
+						{/if}
+					</li>
+				{/each}
+			</ol>
 
-				<div aria-hidden="true" class="timeline-axis">
-					{#each ticks.minor as minorTick (minorTick.time)}
-						<span class="timeline-tick" style:left="{x(minorTick.time)}px">
-							{minorTick.label}
-						</span>
-					{/each}
-					{#each ticks.major as majorTick (majorTick.time)}
-						<span class="timeline-tick timeline-tick--major" style:left="{x(majorTick.time)}px">
-							{majorTick.label}
-						</span>
-					{/each}
-				</div>
+			<div aria-hidden="true" class="timeline-axis">
+				{#each ticks.minor as minorTick (minorTick.time)}
+					<span class="timeline-tick" style:left="{x(minorTick.time)}px">
+						{minorTick.label}
+					</span>
+				{/each}
+				{#each ticks.major as majorTick (majorTick.time)}
+					<span class="timeline-tick timeline-tick--major" style:left="{x(majorTick.time)}px">
+						{majorTick.label}
+					</span>
+				{/each}
 			</div>
 		</div>
 	</div>
-</section>
+</div>
 
 {#snippet cardContent(item: TimelineItem)}
 	<time datetime={machineReadable(item.start, item.allDay)}>
@@ -452,19 +450,6 @@
 {/snippet}
 
 <style>
-	/*
-	 * Like the carousel, the timeline overrides the maximum width of the
-	 * children of a section, so that the time axis can span the full width.
-	 * The content of the preview keeps it.
-	 */
-	.timeline {
-		container-type: inline-size;
-		/* Keep the positioned elements below overlays */
-		isolation: isolate;
-		max-width: none;
-		width: 100%;
-	}
-
 	/* Preview */
 
 	/*
@@ -477,8 +462,8 @@
 		--preview-height: 20rem;
 		--summary-lines: 4;
 
+		container-type: inline-size;
 		margin-block: 1.5rem;
-		max-width: var(--details-max-width);
 		position: relative;
 	}
 
