@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { SvelteMap } from 'svelte/reactivity';
 	import { invalidateAll } from '$app/navigation';
+	import { page } from '$app/state';
 	import { _ } from 'svelte-i18n';
 	import ChevronDownIcon from '~icons/flowbite/chevron-down-outline';
 	import ChevronRightIcon from '~icons/flowbite/chevron-right-outline';
 	import InfoIcon from '~icons/flowbite/info-circle-outline';
-	import EnvelopeIcon from '~icons/flowbite/envelope-outline';
 	import TrashBinIcon from '~icons/flowbite/trash-bin-outline';
 	import UserIcon from '~icons/flowbite/user-outline';
 	import RoleIcon from '~icons/knotdots/arrow-circle-down-outline';
@@ -13,6 +13,7 @@
 	import saveGrantInheritance from '$lib/client/saveGrantInheritance';
 	import saveGrants from '$lib/client/saveGrants';
 	import saveUser from '$lib/client/saveUser';
+	import CreateTeamDialog from '$lib/components/CreateTeamDialog.svelte';
 	import BadgeDropdown, { type BadgeDropdownValue } from '$lib/components/BadgeDropdown.svelte';
 	import PermissionCheckbox from '$lib/components/PermissionCheckbox.svelte';
 	import SubjectCombobox, { type SubjectSuggestion } from '$lib/components/SubjectCombobox.svelte';
@@ -35,6 +36,8 @@
 		memberRoles,
 		predicates,
 		type TeamWithMembers,
+		containerOfType,
+		payloadTypes,
 		type User
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
@@ -133,6 +136,7 @@
 	// expanded states follow the active sections until toggled by hand
 	let adminsExpanded = $state(true);
 	let ownExpandedOverride = $state<boolean | undefined>();
+
 	let sectionExpandedOverrides = new SvelteMap<string, boolean>();
 	const ownExpanded = $derived(ownExpandedOverride ?? !inherits);
 	const sectionExpanded = (section: (typeof inheritedSections)[number]) =>
@@ -251,6 +255,21 @@
 
 	// adding a row starts with the observer set; registered users who are no
 	// member yet get invited into the container on the way
+	// a team can be created right from the search; it then joins the matrix
+	// as a row of its own
+	// svelte-ignore non_reactive_update
+	let createTeamDialog: HTMLDialogElement;
+
+	const mayCreateTeam = $derived.by(() => {
+		const organization = page.data.organizations.find(
+			({ guid }) => guid === container.organization
+		);
+		return (
+			!!organization &&
+			$ability.can('create', containerOfType(payloadTypes.enum.organizational_unit, organization))
+		);
+	});
+
 	async function addSubject(suggestion: SubjectSuggestion) {
 		if (suggestion.kind === 'team') {
 			await save(suggestion.guid, grantSetForRole(memberRoles.enum.observer));
@@ -303,6 +322,13 @@
 		{/if}
 	</span>
 {/snippet}
+
+<CreateTeamDialog
+	bind:dialog={createTeamDialog}
+	oncreated={(team) =>
+		addSubject({ guid: team.guid, kind: 'team', label: team.payload.name, members: 0 })}
+	organization={container.organization}
+/>
 
 <div class="table-wrapper wide">
 	<table>
@@ -514,16 +540,12 @@
 							<span class="add-controls">
 								<SubjectCombobox
 									excluded={ownRows.map(({ guid }) => guid)}
+									oncreateteam={mayCreateTeam ? () => createTeamDialog.showModal() : undefined}
+									{oninvite}
 									onselect={addSubject}
 									organization={container.organization}
 									{teams}
 								/>
-								{#if oninvite}
-									<button class="button-alternate button-xs" type="button" onclick={oninvite}>
-										<EnvelopeIcon />
-										<span>{$_('invite.heading')}</span>
-									</button>
-								{/if}
 							</span>
 						</td>
 					</tr>
@@ -625,11 +647,24 @@
 		z-index: 1;
 	}
 
-	/* the matrix does not use the global row highlighting */
-	tbody tr,
-	tbody tr:hover,
-	tbody tr:has(input[type='checkbox']:checked) {
+	/* checked boxes do not tint the row (the global rule would); the checkbox
+	   lives in its own component, so it must stay unscoped inside :has() */
+	tbody tr:has(:global(input[type='checkbox']:checked)) {
 		background-color: white;
+	}
+
+	tbody tr:has(:global(input[type='checkbox']:checked)):hover {
+		background-color: var(--color-gray-050);
+	}
+
+	/* the add row is an action bar, not a record: no row or cell highlighting */
+	tr.add-row,
+	tr.add-row:hover {
+		background-color: white;
+	}
+
+	tr.add-row td:hover {
+		background-color: transparent;
 	}
 
 	thead tr:first-child th {
@@ -737,22 +772,37 @@
 		color: var(--color-icon-strong);
 	}
 
+	/* the scroll container measures the visible width for the group heads */
+	.table-wrapper {
+		container-type: inline-size;
+	}
+
+	/* A group head spans the visible width only and sticks to the left edge
+	   while scrolling sideways, so its title truncates instead of being
+	   covered by the controls on the right. The offset (measured from the
+	   wrapper's content edge) and the width leave the cell paddings free.
+	   Toggle, badge and control are direct flex items: the title gives way
+	   first, down to the chevron and a couple of characters, only then the
+	   control on the right truncates; the badge keeps its size and stays
+	   right after the title. */
 	.section-header {
 		align-items: center;
 		display: flex;
-		gap: 0.5rem;
-		justify-content: space-between;
+		gap: 0.375rem;
+		left: 0.5rem;
+		position: sticky;
+		width: calc(100cqw - 1rem);
 	}
 
 	.section-start {
-		align-items: center;
-		display: inline-flex;
-		gap: 0.375rem;
+		display: contents;
 	}
 
 	.section-badge {
 		--badge-background-color: var(--color-background-accent-subtle);
 		--badge-color: var(--color-text-accent-default);
+
+		flex-shrink: 0;
 	}
 
 	.section-toggle {
@@ -761,35 +811,56 @@
 		border: none;
 		color: var(--color-text-default);
 		display: inline-flex;
+		flex: 0 100 auto;
 		font-weight: 500;
 		gap: 0.375rem;
+		min-width: 3rem;
 		padding: 0;
+		text-align: left;
+	}
+
+	.section-title {
+		flex: 0 1 auto;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.section-toggle :global(svg) {
 		color: var(--color-icon-accent-default);
+		flex-shrink: 0;
 		height: 1rem;
 		width: 1rem;
 	}
 
 	.admins-link {
-		background-color: var(--color-surface-container-raised);
 		color: var(--color-text-link);
-		padding-left: 0.5rem;
-		position: sticky;
-		right: 0.5rem;
+		margin-left: auto;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.inherit-toggle {
 		align-items: center;
-		background-color: var(--color-surface-accent-container);
 		color: var(--color-text-accent-strong);
 		display: inline-flex;
 		font-weight: 500;
 		gap: 0.5rem;
-		padding-left: 0.5rem;
-		position: sticky;
-		right: 0.5rem;
+		margin-left: auto;
+		min-width: 0;
+	}
+
+	.inherit-toggle > span {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.inherit-toggle .toggle {
+		flex-shrink: 0;
 	}
 
 	.inherit-toggle .toggle {
@@ -827,10 +898,12 @@
 		gap: 0.5rem;
 	}
 
+	/* as high as the search field, so the rows below stay put when it opens */
 	.add-controls {
 		align-items: center;
 		display: flex;
 		gap: 0.5rem;
+		min-height: 2.25rem;
 	}
 
 	.user-name {

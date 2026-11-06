@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { SvelteMap } from 'svelte/reactivity';
 	import { invalidateAll } from '$app/navigation';
+	import { page } from '$app/state';
 	import { _ } from 'svelte-i18n';
 	import CheckCircleIcon from '~icons/flowbite/check-circle-outline';
-	import EnvelopeIcon from '~icons/flowbite/envelope-outline';
 	import TrashBinIcon from '~icons/flowbite/trash-bin-outline';
 	import UserIcon from '~icons/flowbite/user-outline';
 	import saveGrants from '$lib/client/saveGrants';
 	import saveUser from '$lib/client/saveUser';
+	import CreateTeamDialog from '$lib/components/CreateTeamDialog.svelte';
 	import BadgeDropdown, { type BadgeDropdownValue } from '$lib/components/BadgeDropdown.svelte';
 	import SubjectCombobox, { type SubjectSuggestion } from '$lib/components/SubjectCombobox.svelte';
 	import TeamChip from '$lib/components/TeamChip.svelte';
@@ -27,6 +28,8 @@
 		memberRoleMatchingGrantSet,
 		memberRoles,
 		type TeamWithMembers,
+		containerOfType,
+		payloadTypes,
 		type User
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
@@ -181,6 +184,21 @@
 
 	// adding a row starts with the observer set; registered users who are no
 	// member yet get invited into the container on the way
+	// a team can be created right from the search; it then joins the matrix
+	// as a row of its own
+	// svelte-ignore non_reactive_update
+	let createTeamDialog: HTMLDialogElement;
+
+	const mayCreateTeam = $derived.by(() => {
+		const organization = page.data.organizations.find(
+			({ guid }) => guid === container.organization
+		);
+		return (
+			!!organization &&
+			$ability.can('create', containerOfType(payloadTypes.enum.organizational_unit, organization))
+		);
+	});
+
 	async function addSubject(suggestion: SubjectSuggestion) {
 		if (suggestion.kind === 'team') {
 			await save(suggestion.guid, grantSetForRole(memberRoles.enum.observer));
@@ -198,6 +216,13 @@
 		await invalidateAll();
 	}
 </script>
+
+<CreateTeamDialog
+	bind:dialog={createTeamDialog}
+	oncreated={(team) =>
+		addSubject({ guid: team.guid, kind: 'team', label: team.payload.name, members: 0 })}
+	organization={container.organization}
+/>
 
 <div class="table-wrapper">
 	<table>
@@ -291,16 +316,12 @@
 						<span class="add-controls">
 							<SubjectCombobox
 								excluded={rows.map(({ guid }) => guid)}
+								oncreateteam={mayCreateTeam ? () => createTeamDialog.showModal() : undefined}
+								{oninvite}
 								onselect={addSubject}
 								organization={container.organization}
 								{teams}
 							/>
-							{#if oninvite}
-								<button class="button-alternate button-xs" type="button" onclick={oninvite}>
-									<EnvelopeIcon />
-									<span>{$_('invite.heading')}</span>
-								</button>
-							{/if}
 						</span>
 					</td>
 				</tr>
@@ -320,6 +341,26 @@
 	thead th {
 		position: sticky;
 		z-index: 1;
+	}
+
+	/* checked boxes do not tint the row (the global rule would); the checkbox
+	   lives in its own component, so it must stay unscoped inside :has() */
+	tbody tr:has(:global(input[type='checkbox']:checked)) {
+		background-color: white;
+	}
+
+	tbody tr:has(:global(input[type='checkbox']:checked)):hover {
+		background-color: var(--color-gray-050);
+	}
+
+	/* the add row is an action bar, not a record: no row or cell highlighting */
+	tr.add-row,
+	tr.add-row:hover {
+		background-color: white;
+	}
+
+	tr.add-row td:hover {
+		background-color: transparent;
 	}
 
 	thead tr:first-child th {
@@ -394,10 +435,12 @@
 		white-space: nowrap;
 	}
 
+	/* as high as the search field, so the rows below stay put when it opens */
 	.add-controls {
 		align-items: center;
 		display: flex;
 		gap: 0.5rem;
+		min-height: 2.25rem;
 	}
 
 	.user-cell {

@@ -3634,6 +3634,14 @@ export function memberRoleOf(
 	return null;
 }
 
+// Whether the user holds a row on the container: a member role of their own,
+// or a row of one of their teams on the container's own matrix (user_grant.own
+// is computed for the request user with the teams expanded). A team row lying
+// dormant — the container inherits again — grants nothing and does not count.
+export function isMemberOrTeamMemberOf(user: { guid: string }, container: Container<AnyPayload>) {
+	return isMemberOf(user, container) || (container.user_grant?.own.length ?? 0) > 0;
+}
+
 export function isAssignedTo(user: { guid: string }) {
 	return (container: Container<TaskPayload>) => container.payload.assignee.includes(user.guid);
 }

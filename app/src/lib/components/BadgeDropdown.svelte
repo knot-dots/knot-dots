@@ -93,6 +93,9 @@
 
 <style>
 	.dropdown-button {
+		/* the small chevron of the design */
+		--dropdown-button-chevron-icon-size: 0.75rem;
+
 		border-radius: 6px;
 		font-size: 0.875rem;
 		gap: 0.25rem;
@@ -102,7 +105,7 @@
 
 	.dropdown-button.dropdown-button--empty {
 		--dropdown-button-default-background: transparent;
-		--dropdown-button-default-color: var(--color-gray-500);
+		--dropdown-button-default-color: var(--color-text-default);
 		--dropdown-button-expanded-background: rgb(from var(--color-primary-500) r g b / 0.15);
 	}
 

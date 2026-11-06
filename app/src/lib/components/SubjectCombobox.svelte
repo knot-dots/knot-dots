@@ -4,28 +4,38 @@
 	import { createPopperActions } from 'svelte-popperjs';
 	import { _ } from 'svelte-i18n';
 	import { z } from 'zod';
-	import CloseIcon from '~icons/flowbite/close-outline';
 	import PlusIcon from '~icons/flowbite/plus-outline';
-	import { teamColor } from '$lib/components/TeamChip.svelte';
+	import SearchIcon from '~icons/flowbite/search-outline';
 	import { keycloakUser, type KeycloakUser, type TeamWithMembers } from '$lib/models';
 
 	// what a permission matrix can add as a row: one of the organization's
-	// teams, or someone registered in the organization
+	// teams, or someone registered in the organization; the last group of the
+	// list is for those not listed yet: a new team, or an invitation
 	export type SubjectSuggestion =
-		| { guid: string; kind: 'team'; label: string }
+		| { guid: string; kind: 'team'; label: string; members: number }
 		| { email: string; guid: string; kind: 'user'; label: string };
+
+	type Option =
+		| SubjectSuggestion
+		| { guid: 'create-team'; kind: 'create-team' }
+		| { guid: 'invite'; kind: 'invite' };
 
 	interface Props {
 		excluded: ReadonlyArray<string>;
+		oncreateteam?: () => void;
+		oninvite?: () => void;
 		onselect: (suggestion: SubjectSuggestion) => Promise<void> | void;
 		organization: string;
+		placeholder?: string;
 		teams: ReadonlyArray<TeamWithMembers>;
 	}
 
-	let { excluded, onselect, organization, teams }: Props = $props();
+	let { excluded, oncreateteam, oninvite, onselect, organization, placeholder, teams }: Props =
+		$props();
 
 	let open = $state(false);
 	let input: HTMLInputElement | undefined = $state();
+	let root: HTMLDivElement | undefined = $state();
 	let registeredUsers: KeycloakUser[] = $state([]);
 	let registeredUsersLoaded = false;
 
@@ -58,7 +68,6 @@
 
 	function start() {
 		open = true;
-		loadRegisteredUsers();
 	}
 
 	function cancel() {
@@ -68,9 +77,24 @@
 
 	$effect(() => {
 		if (open && input) {
+			loadRegisteredUsers();
 			input.focus();
 			combobox.open();
 		}
+	});
+
+	// a click anywhere outside the field and its list closes the search
+	$effect(() => {
+		if (!open) {
+			return;
+		}
+		const onPointerDown = (event: PointerEvent) => {
+			if (root && !root.contains(event.target as Node)) {
+				cancel();
+			}
+		};
+		document.addEventListener('pointerdown', onPointerDown, true);
+		return () => document.removeEventListener('pointerdown', onPointerDown, true);
 	});
 
 	const filter = $derived($combobox.filter.trim().toLocaleLowerCase());
@@ -78,10 +102,11 @@
 	const teamSuggestions = $derived(
 		teams
 			.filter(({ container }) => !excluded.includes(container.guid))
-			.map(({ container }) => ({
+			.map(({ container, members }) => ({
 				guid: container.guid,
 				kind: 'team' as const,
-				label: container.payload.name
+				label: container.payload.name,
+				members: members.length
 			}))
 			.filter(({ label }) => label.toLocaleLowerCase().includes(filter))
 	);
@@ -99,130 +124,234 @@
 			.sort((a, b) => a.label.localeCompare(b.label))
 	);
 
+	const createTeamOption: Option = { guid: 'create-team', kind: 'create-team' };
+	const inviteOption: Option = { guid: 'invite', kind: 'invite' };
+
 	// picking an option hands it over once and closes the search again; the
 	// selection is cleared first so later store updates do not repeat it
 	$effect(() => {
-		const selected = $combobox.selected as SubjectSuggestion | undefined;
+		const selected = $combobox.selected as Option | undefined;
 		if (!selected) {
 			return;
 		}
 		combobox.set({ selected: undefined });
 		untrack(() => {
 			cancel();
-			onselect(selected);
+			if (selected.kind === 'create-team') {
+				oncreateteam?.();
+			} else if (selected.kind === 'invite') {
+				oninvite?.();
+			} else {
+				onselect(selected);
+			}
 		});
 	});
 </script>
 
 {#if open}
-	<div class="dropdown subject-combobox">
-		<div class="combobox-input" use:popperRef>
+	<div bind:this={root} class="dropdown subject-combobox">
+		<label class="combobox-input" use:popperRef>
+			<SearchIcon />
 			<input
 				use:combobox.input
 				autocomplete="off"
 				bind:this={input}
-				placeholder={$_('search')}
+				placeholder={placeholder ?? $_('search')}
 				onkeydown={(event) => event.key === 'Escape' && cancel()}
 			/>
-			<button
-				aria-label={$_('cancel')}
-				class="action-button action-button--padding-tight"
-				type="button"
-				onclick={cancel}
-			>
-				<CloseIcon />
-			</button>
-		</div>
+		</label>
 
-		{#if $combobox.expanded}
-			<div class="dropdown-panel" use:popperContent>
-				<ul class="listbox" use:combobox.items>
-					{#if teamSuggestions.length > 0}
-						<li class="group-label" role="presentation">
-							{$_('permission_matrix.suggestions_teams')}
-						</li>
-					{/if}
-					{#each teamSuggestions as suggestion (suggestion.guid)}
-						<li
-							class="option"
-							class:active={$combobox.active?.guid === suggestion.guid}
-							use:combobox.item={{ value: suggestion }}
-						>
-							<span class="badge badge--large badge--{teamColor(suggestion.guid)}">
-								{suggestion.label}
+		<div class="dropdown-panel" use:popperContent>
+			<ul class="listbox" use:combobox.items>
+				{#if teamSuggestions.length > 0}
+					<li class="group-label" role="presentation">
+						{$_('permission_matrix.suggestions_teams')}
+					</li>
+				{/if}
+				{#each teamSuggestions as suggestion (suggestion.guid)}
+					{@const active = $combobox.active?.guid === suggestion.guid}
+					<li class="option" class:active use:combobox.item={{ value: suggestion }}>
+						<label>
+							<input checked={active} tabindex="-1" type="radio" value={suggestion.guid} />
+							<span class="badge badge--large badge--team badge--purple">
+								<span class="truncated">{suggestion.label}</span>
 							</span>
-						</li>
-					{/each}
-					{#if userSuggestions.length > 0}
-						<li class="group-label" role="presentation">
-							{$_('permission_matrix.suggestions_users')}
-						</li>
-					{/if}
-					{#each userSuggestions as suggestion (suggestion.guid)}
-						<li
-							class="option"
-							class:active={$combobox.active?.guid === suggestion.guid}
-							use:combobox.item={{ value: suggestion }}
-						>
-							<span class="truncated">{suggestion.label}</span>
-						</li>
-					{/each}
-					{#if teamSuggestions.length === 0 && userSuggestions.length === 0}
-						<li class="group-label" role="presentation">
-							{$_('permission_matrix.no_suggestions')}
-						</li>
-					{/if}
-				</ul>
-			</div>
-		{/if}
+							<span class="member-count">({suggestion.members})</span>
+						</label>
+					</li>
+				{/each}
+				{#if userSuggestions.length > 0}
+					<li class="group-label" role="presentation">
+						{$_('permission_matrix.suggestions_users')}
+					</li>
+				{/if}
+				{#each userSuggestions as suggestion (suggestion.guid)}
+					{@const active = $combobox.active?.guid === suggestion.guid}
+					<li class="option" class:active use:combobox.item={{ value: suggestion }}>
+						<label>
+							<input checked={active} tabindex="-1" type="radio" value={suggestion.guid} />
+							<span class="person">
+								<span class="truncated">{suggestion.label}</span>
+								{#if suggestion.label !== suggestion.email}
+									<span class="email truncated">{suggestion.email}</span>
+								{/if}
+							</span>
+						</label>
+					</li>
+				{/each}
+				{#if teamSuggestions.length === 0 && userSuggestions.length === 0}
+					<li class="group-label" role="presentation">
+						{$_('permission_matrix.no_suggestions')}
+					</li>
+				{/if}
+				{#if oncreateteam || oninvite}
+					<li class="group-label" role="presentation">
+						{$_('permission_matrix.suggestions_not_listed')}
+					</li>
+				{/if}
+				{#if oncreateteam}
+					<li
+						class="option option--action"
+						class:active={$combobox.active?.guid === 'create-team'}
+						use:combobox.item={{ value: createTeamOption }}
+					>
+						<span class="truncated">{$_('teams.create_new')}</span>
+					</li>
+				{/if}
+				{#if oninvite}
+					<li
+						class="option option--action"
+						class:active={$combobox.active?.guid === 'invite'}
+						use:combobox.item={{ value: inviteOption }}
+					>
+						<span class="truncated">{$_('permission_matrix.invite_by_email')}</span>
+					</li>
+				{/if}
+			</ul>
+		</div>
 	</div>
 {:else}
-	<button class="button-alternate button-xs system-primary" type="button" onclick={start}>
+	<button
+		class="button-alternate button-xs system-primary add-button"
+		type="button"
+		onclick={start}
+	>
 		<PlusIcon />
 		<span>{$_('add_item')}</span>
 	</button>
 {/if}
 
 <style>
-	.subject-combobox {
-		width: 16rem;
+	/* the design sets the button in the body size, not the small button size */
+	.add-button {
+		border-radius: 4px;
+		font-size: 0.875rem;
+		gap: 0.25rem;
+		line-height: 1;
+		min-height: 1.75rem;
 	}
 
+	/* the standard search field of the design (input-select): icon, focus
+	   border, 36px high, 385px wide */
 	.combobox-input {
 		align-items: center;
+		background: var(--color-surface-default);
+		border: 2px solid var(--focus-color);
+		border-radius: 8px;
 		display: flex;
-		gap: 0.25rem;
+		gap: 0.375rem;
+		max-width: 100%;
+		min-height: 2.25rem;
+		padding: 0 0.375rem;
+		width: 24.0625rem;
+	}
+
+	.combobox-input > :global(svg) {
+		color: var(--color-icon-default);
+		flex-shrink: 0;
+		height: 1rem;
+		width: 1rem;
 	}
 
 	.combobox-input > input {
-		border-radius: var(--form-control-border-radius);
+		background: none;
+		border: none;
+		color: var(--color-text-default);
 		flex-grow: 1;
-		min-height: var(--form-control-min-height);
-		padding: var(--form-control-padding-y) var(--form-control-padding-x);
+		font-size: 0.875rem;
+		font-weight: 500;
+		min-height: 0;
+		min-width: 0;
+		padding: 0;
 	}
 
+	.combobox-input > input:focus {
+		outline: none;
+	}
+
+	/* the suggestions panel of the design: 320px wide */
 	.dropdown-panel {
-		width: 16rem;
+		--dropdown-panel-border-color: var(--color-border-accent-subtle);
+		--dropdown-panel-border-radius: 12px;
+		--dropdown-panel-gap: 0;
+		--dropdown-panel-max-height: 30rem;
+		--dropdown-panel-padding: 0.25rem;
+		--dropdown-panel-width: 20rem;
 	}
 
 	.listbox {
 		display: flex;
 		flex-direction: column;
-		gap: 0.125rem;
 		list-style: none;
 		margin: 0;
 	}
 
 	.group-label {
-		color: var(--color-text-muted);
+		color: var(--color-text-subtle);
 		font-size: 0.75rem;
-		padding: 0.5rem 0.75rem 0.125rem;
+		font-weight: 500;
+		padding: 0.5rem 0.75rem 0.25rem;
 	}
 
 	.option {
 		border-radius: 0.5rem;
 		cursor: pointer;
-		padding: 0.5rem 0.75rem;
+	}
+
+	.option > label,
+	.option--action {
+		align-items: center;
+		color: var(--color-text-default);
+		display: flex;
+		font-size: 0.875rem;
+		font-weight: 500;
+		gap: 0.5rem;
+		min-height: 2.5rem;
+		padding: 0.5rem;
+	}
+
+	.option > label > input[type='radio'] {
+		flex-shrink: 0;
+		height: 1rem;
+		width: 1rem;
+	}
+
+	.member-count {
+		color: var(--color-text-subtle);
+		flex-shrink: 0;
+		font-weight: 400;
+	}
+
+	.person {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+
+	.person .email {
+		color: var(--color-text-subtle);
+		font-size: 0.75rem;
+		font-weight: 400;
 	}
 
 	.option:hover,
