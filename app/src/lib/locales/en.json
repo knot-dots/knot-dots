@@ -559,6 +559,7 @@
 	"organizational_unit": "Organizational unit",
 	"organizational_unit.create": "Add organizational unit",
 	"organizational_unit.level": "Level",
+	"organizational_unit.type": "Type",
 	"organizational_units": "Organizational units",
 	"organization.create": "Add organization",
 	"organizations": "Organizations",
@@ -862,14 +863,22 @@
 	"tasks": "Tasks",
 	"team": "Team",
 	"teams": {
+		"and_more": "{names} and {count} more",
 		"belongs_to": "Belongs to",
+		"changes_apply_everywhere": "Changes apply to every object in which this team holds rights.",
+		"convert_button": "Convert to a team",
+		"convert_heading": "Convert to a team?",
+		"convert_message": "“{name}” then no longer appears in the sidebar. Its members receive every right the team is granted on other objects. Contents and workspaces are kept.",
 		"create": "Create team",
 		"create_new": "Create a new team",
 		"manage": "Edit in the user management",
 		"members": "Members",
+		"members_count": "Members ({count})",
 		"name_placeholder": "Name of the team",
 		"no_members": "No members yet",
-		"show_members": "Show the members of {name}"
+		"search_person": "Search a person by name or email",
+		"show_members": "Show the members of {name}",
+		"to_team": "To the team"
 	},
 	"teaser": "Teaser",
 	"teaser_highlight": "Spotlight teaser",
@@ -997,6 +1006,7 @@
 	"user_management": {
 		"views": {
 			"permissions": "Permissions",
+			"teams": "Teams",
 			"users": "Users"
 		}
 	},

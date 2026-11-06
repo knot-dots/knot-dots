@@ -23,6 +23,7 @@ export const overlayKey = z.enum([
 	'resources',
 	'table',
 	'tasks',
+	'team',
 	'templates',
 	'view'
 ]);

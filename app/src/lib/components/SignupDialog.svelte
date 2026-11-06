@@ -200,13 +200,6 @@
 		margin: 1rem 0;
 	}
 
-	input {
-		border: none;
-		border-radius: 4px;
-		color: var(--color-gray-700);
-		padding: 0.375rem;
-	}
-
 	.dialog-actions span {
 		color: var(--color-gray-500);
 	}

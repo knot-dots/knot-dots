@@ -52,13 +52,6 @@
 		| { guid: string; team: TeamWithMembers; user?: undefined };
 	const userSubject = (user: User): Subject => ({ guid: user.guid, user });
 	const teamSubject = (team: TeamWithMembers): Subject => ({ guid: team.container.guid, team });
-	// the roster of a team is its own user management, open to those who
-	// manage the users there
-	const manageHrefFor = (team: TeamWithMembers) =>
-		$ability.can('manage-users', team.container)
-			? `/${team.container.guid}/user-management`
-			: undefined;
-
 	// every stored grant is editable individually: the rights on the object
 	// itself and the rights on subordinate objects form separate column groups
 	const columnGroups = [
@@ -266,7 +259,7 @@
 					<td class="col-name" class:locked={!editable}>
 						<span class="user-cell">
 							{#if subject.team}
-								<TeamChip manageHref={manageHrefFor(subject.team)} team={subject.team} />
+								<TeamChip team={subject.team} />
 							{:else}
 								<span class="user-name">{displayName(subject.user)}</span>
 							{/if}

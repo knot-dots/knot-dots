@@ -150,7 +150,7 @@
 
 {#if open}
 	<div bind:this={root} class="dropdown subject-combobox">
-		<label class="combobox-input" use:popperRef>
+		<label class="combobox-input focus-indicator" use:popperRef>
 			<SearchIcon />
 			<input
 				use:combobox.input
@@ -211,7 +211,7 @@
 				{/if}
 				{#if oncreateteam}
 					<li
-						class="option option--action"
+						class="option"
 						class:active={$combobox.active?.guid === 'create-team'}
 						use:combobox.item={{ value: createTeamOption }}
 					>
@@ -220,7 +220,7 @@
 				{/if}
 				{#if oninvite}
 					<li
-						class="option option--action"
+						class="option"
 						class:active={$combobox.active?.guid === 'invite'}
 						use:combobox.item={{ value: inviteOption }}
 					>
@@ -231,39 +231,24 @@
 		</div>
 	</div>
 {:else}
-	<button
-		class="button-alternate button-xs system-primary add-button"
-		type="button"
-		onclick={start}
-	>
+	<button class="button-alternate button-xs system-primary" type="button" onclick={start}>
 		<PlusIcon />
 		<span>{$_('add_item')}</span>
 	</button>
 {/if}
 
 <style>
-	/* the design sets the button in the body size, not the small button size */
-	.add-button {
-		border-radius: 4px;
-		font-size: 0.875rem;
-		gap: 0.25rem;
-		line-height: 1;
-		min-height: 1.75rem;
-	}
-
-	/* the standard search field of the design (input-select): icon, focus
-	   border, 36px high, 385px wide */
 	.combobox-input {
+		background-color: var(--color-gray-050);
 		align-items: center;
-		background: var(--color-surface-default);
-		border: 2px solid var(--focus-color);
 		border-radius: 8px;
 		display: flex;
-		gap: 0.375rem;
-		max-width: 100%;
-		min-height: 2.25rem;
-		padding: 0 0.375rem;
-		width: 24.0625rem;
+		padding-left: 0.5rem;
+	}
+
+	.combobox-input:hover,
+	.combobox-input:focus-within {
+		background-color: var(--color-gray-100);
 	}
 
 	.combobox-input > :global(svg) {
@@ -274,15 +259,12 @@
 	}
 
 	.combobox-input > input {
-		background: none;
+		background-color: transparent;
 		border: none;
-		color: var(--color-text-default);
-		flex-grow: 1;
-		font-size: 0.875rem;
-		font-weight: 500;
-		min-height: 0;
-		min-width: 0;
-		padding: 0;
+		display: inline-block;
+		flex-grow: 0;
+		min-height: 1.75rem;
+		padding: 0 0.5rem;
 	}
 
 	.combobox-input > input:focus {
@@ -299,13 +281,6 @@
 		--dropdown-panel-width: 20rem;
 	}
 
-	.listbox {
-		display: flex;
-		flex-direction: column;
-		list-style: none;
-		margin: 0;
-	}
-
 	.group-label {
 		color: var(--color-text-subtle);
 		font-size: 0.75rem;
@@ -318,22 +293,18 @@
 		cursor: pointer;
 	}
 
-	.option > label,
-	.option--action {
+	.option > span {
 		align-items: center;
-		color: var(--color-text-default);
+		border-radius: 8px;
 		display: flex;
 		font-size: 0.875rem;
-		font-weight: 500;
 		gap: 0.5rem;
 		min-height: 2.5rem;
-		padding: 0.5rem;
+		padding: 0.5rem 0.75rem;
 	}
 
-	.option > label > input[type='radio'] {
-		flex-shrink: 0;
-		height: 1rem;
-		width: 1rem;
+	.option > span:hover {
+		background-color: var(--color-gray-100);
 	}
 
 	.member-count {
@@ -352,10 +323,5 @@
 		color: var(--color-text-subtle);
 		font-size: 0.75rem;
 		font-weight: 400;
-	}
-
-	.option:hover,
-	.option.active {
-		background-color: var(--color-gray-100);
 	}
 </style>
