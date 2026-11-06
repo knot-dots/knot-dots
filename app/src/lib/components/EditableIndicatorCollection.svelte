@@ -12,6 +12,7 @@
 		containerOfType,
 		type IndicatorCollectionPayload,
 		isActualDataContainer,
+		isBinaryIndicatorContainer,
 		isEffectContainer,
 		isGoalContainer,
 		isIndicatorContainer,
@@ -47,7 +48,7 @@
 
 	let items = $derived(
 		relatedContainers
-			.filter(isIndicatorContainer)
+			.filter((c) => isBinaryIndicatorContainer(c) || isIndicatorContainer(c))
 			.filter((item) =>
 				[
 					actualDataContainers.some(({ payload }) => payload.indicator === item.guid),

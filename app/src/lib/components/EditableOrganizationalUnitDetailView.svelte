@@ -76,6 +76,7 @@
 					organization: [container.organization],
 					organizationalUnit: [container.guid],
 					payloadType: [
+						payloadTypes.enum.binary_indicator,
 						payloadTypes.enum.actual_data,
 						payloadTypes.enum.effect,
 						payloadTypes.enum.goal,
