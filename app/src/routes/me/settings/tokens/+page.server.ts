@@ -1,12 +1,14 @@
 import { error, fail } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
+import { env } from '$env/dynamic/public';
 import { createFeatureDecisions } from '$lib/features';
 import {
 	createMcpToken as insertMcpToken,
 	getMcpTokensForUser,
 	revokeMcpToken
 } from '$lib/server/db';
+import { mcpAuthorizationServer, mcpResourceUrl } from '$lib/server/mcp/oauth';
 import { mcpScopes } from '$lib/server/mcp/scopes';
 import { generateMcpToken } from '$lib/server/mcp/tokens';
 import type { Actions, PageServerLoad } from './$types';
@@ -27,6 +29,16 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const user = requireAuthenticatedUser(locals);
 
 	return {
+		// OAuth clients are refused at /mcp unless the user may use MCP.
+		oauth: createFeatureDecisions(locals.features).useMcp()
+			? {
+					// Keycloak's account console lists the MCP client among the
+					// applications the user has granted access to.
+					accountUrl: `${mcpAuthorizationServer()}/account/applications`,
+					clientId: env.PUBLIC_KC_MCP_CLIENT_ID,
+					serverUrl: mcpResourceUrl().href
+				}
+			: undefined,
 		title: unwrapFunctionStore(_)('mcp_tokens.title'),
 		tokens: await locals.pool.connect(getMcpTokensForUser(user.guid))
 	};
