@@ -113,5 +113,26 @@ test.describe('MCP over OAuth', () => {
 		});
 		expect(response.status()).toBe(200);
 		expect(await response.text()).toContain('"serverInfo"');
+
+		// Looking up users needs a scope the connection does not have yet; the
+		// client is asked to request it, so that the user consents separately.
+		const userLookup = await request.post('/mcp', {
+			data: {
+				id: 2,
+				jsonrpc: '2.0',
+				method: 'tools/call',
+				params: {
+					arguments: { organizationGuid: '00000000-0000-4000-8000-000000000003' },
+					name: 'search_organization_users'
+				}
+			},
+			headers: {
+				Accept: 'application/json, text/event-stream',
+				Authorization: `Bearer ${accessToken}`,
+				'Mcp-Protocol-Version': '2025-06-18'
+			}
+		});
+		expect(userLookup.status()).toBe(403);
+		expect(userLookup.headers()['www-authenticate']).toContain('users:read');
 	});
 });
