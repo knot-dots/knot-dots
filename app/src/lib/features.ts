@@ -26,9 +26,6 @@ export function createFeatureDecisions(features: string[]) {
 		useIOOI() {
 			return features.includes('IOOI');
 		},
-		useBinaryIndicators() {
-			return features.includes('IOOI');
-		},
 		useTendentialObjectivesAndEffects() {
 			return features.includes('IOOI');
 		},

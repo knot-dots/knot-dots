@@ -147,7 +147,7 @@
 			<ObjectiveOrEffectReviewBanner {container} {relatedContainers} />
 
 			{#if indicator}
-				{#if createFeatureDecisions(page.data.features).useBinaryIndicators() && isBinaryIndicatorContainer(indicator)}
+				{#if isBinaryIndicatorContainer(indicator)}
 					<div class="details-section">
 						<BooleanValueToggle
 							bind:checked={

@@ -14,7 +14,6 @@
 	import createComparisonData from '$lib/client/createComparisonData.svelte';
 	import IndicatorPicker from '$lib/components/IndicatorPicker.svelte';
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type BinaryIndicatorPayload,
 		type Container,
@@ -89,11 +88,6 @@
 	let comparisonDataMap = $derived(comparisonData.comparisonDataMap);
 
 	let parent = $derived(page.data.currentOrganizationalUnit ?? page.data.currentOrganization);
-
-	let mayCreateBinaryIndicator = $derived(
-		createFeatureDecisions(page.data.features).useBinaryIndicators() &&
-			$mayCreateContainer(payloadTypes.enum.binary_indicator, parent)
-	);
 
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
@@ -178,7 +172,7 @@
 </script>
 
 <div class="indicators">
-	{#if ($mayCreateContainer(payloadTypes.enum.indicator, parent) || mayCreateBinaryIndicator) && $applicationState.containerDetailView.editable}
+	{#if ($mayCreateContainer(payloadTypes.enum.indicator, parent) || $mayCreateContainer(payloadTypes.enum.binary_indicator, parent)) && $applicationState.containerDetailView.editable}
 		<p>
 			{#if $mayCreateContainer(payloadTypes.enum.actual_data, parent)}
 				<button
@@ -197,7 +191,7 @@
 				</button>
 			{/if}
 
-			{#if mayCreateBinaryIndicator}
+			{#if $mayCreateContainer(payloadTypes.enum.binary_indicator, parent)}
 				<button class="button button-xs" type="button" onclick={createBinaryIndicator}>
 					<Plus />
 					{$_('indicators.create_binary')}
