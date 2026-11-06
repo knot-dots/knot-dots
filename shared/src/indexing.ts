@@ -6,8 +6,14 @@ import { z } from 'zod';
 import {
 	getAvailableInScopeGuids,
 	isTemplateRoot,
-	type Relation
+	type PayloadType,
+	type Relation,
+	searchablePayloadTypes
 } from '@knot-dots/app/src/lib/models.ts';
+
+function isSearchableType(type: string | undefined) {
+	return (searchablePayloadTypes as readonly PayloadType[]).includes(type as PayloadType);
+}
 
 const envSchema = z.object({
 	DE_LABELS_PATH: z.string().default('/opt/labels/de.json')
@@ -94,13 +100,6 @@ export function createIndexWithMappings(client: Client, index: string) {
 						match_mapping_type: 'string',
 						mapping: { type: 'keyword', ignore_above: 2048 }
 					}
-				},
-				{
-					payload_strings: {
-						path_match: 'payload.*',
-						match_mapping_type: 'string',
-						mapping: { type: 'keyword', ignore_above: 2048 }
-					}
 				}
 			],
 			dynamic: true,
@@ -158,16 +157,29 @@ export function createIndexWithMappings(client: Client, index: string) {
 						subject: { type: 'keyword' }
 					}
 				},
+				// Only the payload fields that queries filter, facet or sort by
+				// are indexed. Everything else stays in _source for delivery,
+				// which keeps the values of actual data and the content of
+				// sections out of the index.
 				payload: {
+					dynamic: false,
 					properties: {
-						level: { type: 'keyword' },
-						programType: { type: 'keyword' },
+						administrativeType: { type: 'keyword' },
+						assignee: { type: 'keyword' },
+						category: { type: 'object', dynamic: true },
+						federalState: { type: 'keyword' },
+						hierarchyLevel: { type: 'integer' },
+						indicator: { type: 'keyword' },
 						indicatorCategory: { type: 'keyword' },
 						indicatorType: { type: 'keyword' },
-						taskCategory: { type: 'keyword' },
+						level: { type: 'keyword' },
+						programType: { type: 'keyword' },
+						resource: { type: 'keyword' },
 						resourceCategory: { type: 'keyword' },
 						resourceUnit: { type: 'keyword' },
-						category: { type: 'object', dynamic: true }
+						status: { type: 'keyword' },
+						taskCategory: { type: 'keyword' },
+						template: { type: 'boolean' }
 					}
 				}
 			}
@@ -293,21 +305,25 @@ export function toDoc(row: {
 		task_category_labels: taskCategoryLabels,
 		resource_category_labels: resourceCategoryLabels,
 		resource_unit_labels: resourceUnitLabels,
-		text: [
-			title,
-			description,
-			body,
-			...programTypeLabels,
-			...indicatorCategoryLabels,
-			...indicatorTypeLabels,
-			...taskCategoryLabels,
-			...resourceCategoryLabels,
-			...resourceUnitLabels,
-			...additionalText,
-			...categoryValues
-		]
-			.filter(Boolean)
-			.join(' '),
+		// Hidden types are only loaded by guid, so their content stays out of
+		// the full text.
+		text: isSearchableType(type)
+			? [
+					title,
+					description,
+					body,
+					...programTypeLabels,
+					...indicatorCategoryLabels,
+					...indicatorTypeLabels,
+					...taskCategoryLabels,
+					...resourceCategoryLabels,
+					...resourceUnitLabels,
+					...additionalText,
+					...categoryValues
+				]
+					.filter(Boolean)
+					.join(' ')
+			: undefined,
 		date: [
 			originalPayload.publicationDate,
 			originalPayload.startDate,
