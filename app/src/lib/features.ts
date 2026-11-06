@@ -51,12 +51,14 @@ export function createFeatureDecisions(features: string[]) {
 			return features.includes('Templating');
 		},
 		// The MCP server answers only where the deployment enables it, so it can
-		// be switched off at runtime; who may create tokens is decided by the MCP
-		// flag on top.
+		// be switched off at runtime; who may use it is decided by the MCP flag
+		// on top.
 		useMcpServer() {
 			return features.includes('McpServer');
 		},
-		useMcpTokenMenu() {
+		// Users with the MCP flag see the token menu, may create personal access
+		// tokens and may connect OAuth clients.
+		useMcp() {
 			return features.includes('McpServer') && features.includes('MCP');
 		}
 	} satisfies Record<string, () => boolean>;

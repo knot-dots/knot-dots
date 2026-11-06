@@ -36,7 +36,7 @@ export const actions = {
 	create: async ({ locals, request }) => {
 		const user = requireAuthenticatedUser(locals);
 		// Listing and revoking tokens keep working while MCP is switched off.
-		if (!createFeatureDecisions(locals.features).useMcpTokenMenu()) {
+		if (!createFeatureDecisions(locals.features).useMcp()) {
 			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
 		}
 		const data = await request.formData();

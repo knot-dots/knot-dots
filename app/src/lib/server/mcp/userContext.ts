@@ -21,7 +21,9 @@ export async function loadMcpUserContext(
 		grants: grantRecordsFromGrants(grants),
 		guid: user.guid,
 		isAuthenticated: true,
-		// Personal tokens currently carry database grants, not Keycloak realm roles.
+		// MCP requests carry database grants, not Keycloak realm roles: personal
+		// tokens know no roles, and the MCP client's OAuth access tokens leave
+		// them out (fullScopeAllowed is off).
 		roles: [],
 		settings: user.settings
 	};

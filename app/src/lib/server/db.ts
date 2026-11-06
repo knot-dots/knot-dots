@@ -2789,6 +2789,16 @@ export function getUser(subject: string) {
 	};
 }
 
+// Like getUser, but for subjects that may have no row yet, such as a Keycloak
+// user who has never signed in to the web application.
+export function findUser(subject: string) {
+	return async (connection: DatabaseConnection) => {
+		return await connection.maybeOne(sql.typeAlias('user')`
+			SELECT * FROM "user" WHERE guid = ${subject}
+		`);
+	};
+}
+
 export function getAllRelatedUsers(guid: string, predicates: Predicate[]) {
 	return async (connection: DatabaseConnection) => {
 		return await connection.any(sql.typeAlias('user')`

@@ -21,6 +21,7 @@
 		"@opentelemetry/sdk-node": "^0.300.0",
 		"@opentelemetry/sdk-trace": "^3.0.0",
 		"import-in-the-middle": "^3.5.3",
+		"jose": "^6.2.15",
 		"roarr": "^7.21.7"
 	},
 	"devDependencies": {

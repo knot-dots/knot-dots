@@ -80,7 +80,7 @@
 						<span class="truncated">{$_('profile.settings')}</span>
 					</button>
 				</li>
-				{#if createFeatureDecisions(page.data.features).useMcpTokenMenu()}
+				{#if createFeatureDecisions(page.data.features).useMcp()}
 					<li
 						class={['menu-item', ...($menu.active === 'tokens' ? ['menu-item--active'] : [])]}
 						use:menu.item={{ value: 'tokens' }}
