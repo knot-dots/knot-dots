@@ -142,11 +142,6 @@ jobs:
           timeout 240s bash -c 'until curl --fail --silent --output /dev/null http://localhost:3000; do sleep 2; done'
         env:
           TEST_IMAGE: app:test # Use the pre-built image for tests
-      - name: Start resource sampling (diagnostics)
-        run: |
-          nproc; free -m
-          nohup bash -c 'while true; do date -u +%T; docker stats --no-stream --format "{{.Name}} {{.CPUPerc}} {{.MemUsage}}"; sleep 10; done' > /tmp/docker-stats.log 2>&1 &
-          curl -s "localhost:9200/_stats/indexing,refresh,search,merge,docs?filter_path=_all.total" > /tmp/es-stats-before.json || true
       - name: Run Playwright tests
         # Six workers worked best on the 8 vCPU runner, which also runs the
         # services of the E2E environment.
@@ -159,28 +154,6 @@ jobs:
           --env PLAYWRIGHT_EXTERNAL_SERVER=true
           "$PLAYWRIGHT_IMAGE"
           npx playwright test --workers 6
-      - name: Show resource usage (diagnostics)
-        if: ${{ always() }}
-        run: |
-          echo "== docker stats averages"
-          python3 - <<'PY'
-          import re
-          from collections import defaultdict
-          cpu = defaultdict(list); mem = {}
-          for line in open('/tmp/docker-stats.log'):
-              m = re.match(r'(\S+) ([0-9.]+)% (\S+)', line)
-              if m:
-                  cpu[m.group(1)].append(float(m.group(2))); mem[m.group(1)] = m.group(3)
-          for name, values in sorted(cpu.items()):
-              print(f"{name:40s} avg {sum(values)/len(values):6.1f}%  max {max(values):6.1f}%  mem {mem[name]}  samples {len(values)}")
-          PY
-          echo "== elasticsearch stats before"; cat /tmp/es-stats-before.json; echo
-          echo "== elasticsearch stats after"; curl -s "localhost:9200/_stats/indexing,refresh,search,merge,docs?filter_path=_all.total"; echo
-          echo "== elasticsearch node stats"; curl -s "localhost:9200/_nodes/stats/jvm,os,process?filter_path=nodes.*.jvm.mem.heap_used_percent,nodes.*.jvm.gc,nodes.*.os.cpu,nodes.*.process.cpu"; echo
-          echo "== queue"; curl -s "localhost:9324/?Action=GetQueueAttributes&QueueUrl=http://localhost:9324/queue/indexing-queue&AttributeName.1=All" | head -c 2000; echo
-          echo "== worker log summary"
-          docker compose logs --no-color indexing-worker 2>/dev/null | grep -o '"message":"[^"]*"' | sed 's/\[[0-9a-f-]\{36\}\]/[guid]/g' | sort | uniq -c | sort -rn | head -15
-          echo "== top"; top -bn1 | head -25
       - name: Show E2E service logs
         if: ${{ failure() }}
         run: docker compose logs --no-color --tail=200
