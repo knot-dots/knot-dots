@@ -159,10 +159,6 @@
 		teamToDelete = null;
 		await invalidateAll();
 	}
-
-	function focus(node: HTMLInputElement) {
-		node.focus();
-	}
 </script>
 
 {#if teamToDelete}
@@ -232,12 +228,13 @@
 			{#if creating}
 				<tr class="create-row">
 					<td class="col-team focus-indicator">
+						<!-- svelte-ignore a11y_autofocus -->
 						<input
 							aria-label={$_('teams.name_placeholder')}
+							autofocus
 							disabled={saving}
 							placeholder={$_('teams.name_placeholder')}
 							type="text"
-							use:focus
 							bind:value={name}
 							onkeydown={(event) => {
 								if (event.key === 'Enter') {
