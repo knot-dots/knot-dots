@@ -11,10 +11,16 @@ import { hashMcpToken } from '$lib/server/mcp/tokens';
 
 const tokenPattern = /^mcp_pat_[A-Za-z0-9_-]{43}$/;
 
-export const mcpAuthExtra = z.strictObject({
-	tokenId: z.uuid(),
-	userId: z.uuid()
-});
+// Exactly one of tokenId and clientId says how a request was authenticated:
+// tokenId names a personal access token, clientId the OAuth client that
+// Keycloak issued the access token to.
+export const mcpAuthExtra = z
+	.strictObject({
+		clientId: z.string().min(1).optional(),
+		tokenId: z.uuid().optional(),
+		userId: z.uuid()
+	})
+	.refine(({ clientId, tokenId }) => (clientId === undefined) !== (tokenId === undefined));
 
 export type McpAuth = z.infer<typeof mcpAuthExtra>;
 

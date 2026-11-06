@@ -279,8 +279,11 @@ export function createMcpToken({
 }
 
 // A relation change records the relation: containerGuid is its subject and
-// relation.relatedContainerGuid its object.
+// relation.relatedContainerGuid its object. A write records either the
+// personal access token (tokenId) or the OAuth client (clientId) it was made
+// with.
 export function recordMcpWriteEvent({
+	clientId,
 	containerGuid,
 	relation,
 	revision,
@@ -288,20 +291,23 @@ export function recordMcpWriteEvent({
 	tool,
 	userId
 }: {
+	clientId?: string;
 	containerGuid: string;
 	relation?: { predicate: string; relatedContainerGuid: string };
 	revision: number | null;
-	tokenId: string;
+	tokenId?: string;
 	tool: string;
 	userId: string;
 }) {
 	return async (connection: DatabaseConnection) => {
 		await connection.query(sql.typeAlias('void')`
 			INSERT INTO mcp_write_event (
-				token_id, user_id, tool, container_guid, revision, predicate, related_container_guid
+				token_id, client_id, user_id, tool, container_guid, revision, predicate,
+				related_container_guid
 			)
 			VALUES (
-				${tokenId},
+				${tokenId ?? null},
+				${clientId ?? null},
 				${userId},
 				${tool},
 				${containerGuid},

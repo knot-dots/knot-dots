@@ -138,6 +138,7 @@ export function updateMcpContainer(input: UpdateContainerInput & McpAuth) {
 					{
 						afterUpdate: (container, txConnection) =>
 							recordMcpWriteEvent({
+								clientId: input.clientId,
 								containerGuid: container.guid,
 								revision: container.revision,
 								tokenId: input.tokenId,

@@ -117,7 +117,14 @@ function serializeRelation({ object, predicate, subject }: Relation) {
 // Nothing is written if the relation already has the requested state.
 function changeMcpContainerRelation(
 	action: 'add' | 'remove',
-	{ objectGuid, predicate, subjectGuid, tokenId, userId }: ContainerRelationChangeInput & McpAuth
+	{
+		clientId,
+		objectGuid,
+		predicate,
+		subjectGuid,
+		tokenId,
+		userId
+	}: ContainerRelationChangeInput & McpAuth
 ) {
 	return (connection: DatabaseConnection): Promise<ContainerRelationChangeOutput> =>
 		runAsRequestUser(userId, async () => {
@@ -174,6 +181,7 @@ function changeMcpContainerRelation(
 					afterChange: async (txConnection) => {
 						for (const change of changes) {
 							await recordMcpWriteEvent({
+								clientId,
 								containerGuid: change.subject,
 								relation: { predicate: change.predicate, relatedContainerGuid: change.object },
 								revision: null,

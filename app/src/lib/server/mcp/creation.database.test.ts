@@ -19,7 +19,9 @@ import { generateMcpToken } from '$lib/server/mcp/tokens';
 
 const realm = 'test';
 
-async function createTestAuth(connection: Fixtures['connection']): Promise<McpAuth> {
+async function createTestAuth(
+	connection: Fixtures['connection']
+): Promise<McpAuth & { tokenId: string }> {
 	const userId = uuid();
 	await createOrUpdateUser({ family_name: '', given_name: '', guid: userId, realm, settings: {} })(
 		connection
@@ -152,6 +154,33 @@ test('creates containers under a structural parent with appended positions', asy
 			user_id: auth.userId
 		}))
 	);
+});
+
+test('records the OAuth client of writes made with an OAuth access token', async ({
+	connection
+}: Fixtures) => {
+	const { userId } = await createTestAuth(connection);
+	const clientId = 'knot-dots-mcp';
+	const organization = await createOrganization(
+		connection,
+		userId,
+		predicates.enum['is-collaborator-of']
+	);
+	const program = await createProgram(connection, organization);
+
+	const created = await createGoalUnder(organization, program.guid, { clientId, userId })(
+		connection
+	);
+
+	await expect(
+		connection.any(sql.type(
+			z.object({ client_id: z.string().nullable(), token_id: z.uuid().nullable() })
+		)`
+			SELECT client_id, token_id
+			FROM mcp_write_event
+			WHERE container_guid = ${created.guid}
+		`)
+	).resolves.toEqual([{ client_id: clientId, token_id: null }]);
 });
 
 test('rejects creation for a user who may only observe the organization', async ({

@@ -91,7 +91,7 @@ export function payloadValidationMessage(error: {
 }
 
 export function createAndRecordContainer({
-	auth: { tokenId, userId },
+	auth: { clientId, tokenId, userId },
 	data,
 	tool,
 	user
@@ -113,6 +113,7 @@ export function createAndRecordContainer({
 			return await createAuthorizedContainer({
 				afterCreate: (created, txConnection) =>
 					recordMcpWriteEvent({
+						clientId,
 						containerGuid: created.guid,
 						revision: created.revision,
 						tokenId,
