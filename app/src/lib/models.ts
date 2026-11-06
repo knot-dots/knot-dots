@@ -1335,7 +1335,7 @@ export const customCollectionPayload = z.strictObject({
 	allowSort: z.boolean().default(false),
 	description: z.string().trim().optional(),
 	filter: z.record(z.string(), z.array(z.string()).transform(deduplicate)).default({}),
-	item: z.array(z.uuid()).default([]),
+	item: z.array(z.uuid()).transform(deduplicate).default([]),
 	listType: z
 		.enum([listTypes.enum.wall, listTypes.enum.carousel, 'timeline'])
 		.default(listTypes.enum.wall),
@@ -2368,7 +2368,7 @@ const initialQuotePayload = quotePayload.partial({ title: true });
 
 export const relationCollectionPayload = z.strictObject({
 	...sectionStyle.shape,
-	item: z.array(z.uuid()).default([]),
+	item: z.array(z.uuid()).transform(deduplicate).default([]),
 	listType: z.enum([listTypes.enum.carousel, listTypes.enum.wall]).default(listTypes.enum.carousel),
 	payloadType: payloadTypes,
 	predicate: predicates,
