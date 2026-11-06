@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { _ } from 'svelte-i18n';
-	import ChevronDownIcon from '~icons/flowbite/chevron-down-outline';
 	import OrganizationalUnitIcon from '~icons/knotdots/organizational-unit';
 	import createTeam from '$lib/client/createTeam';
 	import Dialog from '$lib/components/Dialog.svelte';
@@ -88,28 +87,29 @@
 <Dialog bind:dialog>
 	<form onsubmit={handleSubmit}>
 		<h3>{$_('teams.create')}</h3>
-		<label>
-			{$_('user.display_name')}
+		<div class="field">
+			{const id = crypto.randomUUID()}
+			<label class="field-label" for={id}>{$_('user.display_name')}</label>
 			<!-- svelte-ignore a11y_autofocus -->
 			<input
 				autofocus
 				disabled={saving}
+				{id}
 				placeholder={$_('teams.name_placeholder')}
 				required
 				type="text"
 				bind:value={name}
 			/>
-		</label>
+		</div>
 		<div class="field">
 			<span class="field-label">{$_('teams.belongs_to')}</span>
 			<Dropdown label={$_('teams.belongs_to')} strategy="fixed">
 				{#snippet button(popover)}
-					<button class="area-select" type="button" use:popover.button>
-						<span class="badge badge--large badge--purple badge--team">
+					<button class="dropdown-button dropdown-button--select" type="button" use:popover.button>
+						<span class="badge badge--large badge--purple">
 							<OrganizationalUnitIcon />
 							<span class="truncated">{areaName}</span>
 						</span>
-						<ChevronDownIcon />
 					</button>
 				{/snippet}
 				{#snippet panel(popover)}
@@ -150,84 +150,13 @@
 		width: 100%;
 	}
 
-	form label,
 	.field {
 		display: block;
 		margin-top: 1rem;
 	}
 
-	form input[type='text'] {
-		display: block;
-		width: 100%;
-	}
-
 	.field-label {
 		display: block;
 		margin-bottom: 0.25rem;
-	}
-
-	.field :global(.dropdown) {
-		display: block;
-	}
-
-	.area-select,
-	.area-select:hover,
-	.area-select:active {
-		align-items: center;
-		background: var(--color-surface-default);
-		border: 1px solid var(--color-border-default);
-		border-radius: 8px;
-		color: var(--color-text-default);
-		display: flex;
-		gap: 0.5rem;
-		justify-content: space-between;
-		min-height: 2.25rem;
-		padding: 0.25rem 0.75rem 0.25rem 0.25rem;
-		width: 100%;
-	}
-
-	.area-select > :global(svg) {
-		flex-shrink: 0;
-		height: 0.75rem;
-		width: 0.75rem;
-	}
-
-	.area-select .badge {
-		--badge-icon-size: 1rem;
-
-		max-width: 100%;
-	}
-
-	.listbox {
-		border: none;
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-		margin: 0;
-		min-width: 17.5rem;
-		padding: 0;
-	}
-
-	.listbox label {
-		align-items: center;
-		border-radius: 0.5rem;
-		cursor: pointer;
-		display: flex;
-		font-size: 0.875rem;
-		font-weight: 500;
-		gap: 0.5rem;
-		margin: 0;
-		min-height: 2.5rem;
-		padding: 0.5rem;
-	}
-
-	.listbox label:hover {
-		background-color: var(--color-gray-100);
-	}
-
-	.listbox input[type='radio'] {
-		flex-shrink: 0;
-		height: 1rem;
-		width: 1rem;
 	}
 </style>

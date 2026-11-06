@@ -3,7 +3,6 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import { _ } from 'svelte-i18n';
-	import ChevronDownIcon from '~icons/flowbite/chevron-down-outline';
 	import PlusIcon from '~icons/flowbite/plus-outline';
 	import TrashBinIcon from '~icons/flowbite/trash-bin-outline';
 	import UserIcon from '~icons/flowbite/user-outline';
@@ -182,19 +181,19 @@
 				<th class="col-team">
 					<span class="header-content">
 						<UsersGroupIcon />
-						<span class="header-label">{$_('team')}</span>
+						<span class="truncated">{$_('team')}</span>
 					</span>
 				</th>
 				<th class="col-members">
 					<span class="header-content">
 						<UserIcon />
-						<span class="header-label">{$_('teams.members')}</span>
+						<span class="truncated">{$_('teams.members')}</span>
 					</span>
 				</th>
 				<th class="col-area">
 					<span class="header-content">
 						<OrganizationalUnitIcon />
-						<span class="header-label">{$_('teams.belongs_to')}</span>
+						<span class="truncated">{$_('teams.belongs_to')}</span>
 					</span>
 				</th>
 				<th class="col-actions"></th>
@@ -232,10 +231,9 @@
 			{/each}
 			{#if creating}
 				<tr class="create-row">
-					<td class="col-team">
+					<td class="col-team focus-indicator">
 						<input
 							aria-label={$_('teams.name_placeholder')}
-							class="name-input"
 							disabled={saving}
 							placeholder={$_('teams.name_placeholder')}
 							type="text"
@@ -253,11 +251,14 @@
 					</td>
 					<td class="col-members"><span class="is-empty">{$_('teams.no_members')}</span></td>
 					<td class="col-area">
-						<Dropdown label={$_('teams.belongs_to')} strategy="fixed">
+						<Dropdown label={$_('teams.belongs_to')}>
 							{#snippet button(popover)}
-								<button class="area-select" type="button" use:popover.button>
+								<button
+									class="dropdown-button dropdown-button--select"
+									type="button"
+									use:popover.button
+								>
 									<span class="truncated">{areaName}</span>
-									<ChevronDownIcon />
 								</button>
 							{/snippet}
 							{#snippet panel(popover)}
@@ -297,11 +298,7 @@
 	</table>
 
 	{#if mayCreate && !creating}
-		<button
-			class="button-alternate button-xs system-primary add-button"
-			type="button"
-			onclick={start}
-		>
+		<button class="button-alternate button-xs system-primary" type="button" onclick={start}>
 			<PlusIcon />
 			<span>{$_('teams.create')}</span>
 		</button>
@@ -309,16 +306,12 @@
 </div>
 
 <style>
-	.table-wrapper {
-		margin: 1rem 1.5rem 0;
-		overflow: auto;
-		position: relative;
-	}
-
 	table {
 		border-collapse: separate;
 		border-spacing: 0;
 		font-size: 0.875rem;
+		margin-bottom: 0.625rem;
+		position: relative;
 		width: max-content;
 	}
 
@@ -330,9 +323,7 @@
 
 	th,
 	td {
-		border-bottom: 1px solid var(--color-border-subtle);
 		border-right: 1px solid var(--color-border-subtle);
-		padding: 0.5rem;
 		white-space: nowrap;
 	}
 
@@ -342,16 +333,14 @@
 	}
 
 	th {
-		color: var(--color-gray-600);
 		font-weight: 400;
 		height: 2.5rem;
 	}
 
 	td {
-		color: var(--color-gray-800);
 		font-weight: 500;
 		height: 3.125rem;
-		padding: 0.625rem 0.5rem;
+		padding: 0 0.5rem;
 	}
 
 	.header-content {
@@ -366,15 +355,20 @@
 		width: 1rem;
 	}
 
-	.header-label {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
 	.col-team {
+		--form-control-background: transparent;
+		--form-control-border: none;
+		--form-control-border-radius: 0;
+		--form-control-padding-x: 0;
+		--form-control-padding-y: 0;
+
+		color: var(--color-text-strong);
 		min-width: 16.25rem;
 		width: 16.25rem;
+	}
+
+	.col-team input:focus {
+		outline-style: none;
 	}
 
 	.col-members {
@@ -383,6 +377,10 @@
 	}
 
 	.col-area {
+		--dropdown-button-default-background: transparent;
+		--dropdown-button-border-width: 1px;
+		--dropdown-button-border-radius: 8px;
+
 		min-width: 17.5rem;
 		width: 17.5rem;
 	}
@@ -407,92 +405,5 @@
 
 	tr.create-row td:hover {
 		background-color: transparent;
-	}
-
-	/* the row being added: the name field in focus, the area as a select */
-	.create-row td {
-		padding: 0.4375rem 0.5rem;
-	}
-
-	.name-input {
-		background: var(--color-surface-default);
-		border: 2px solid var(--focus-color);
-		border-radius: 8px;
-		color: var(--color-text-default);
-		font-size: 0.875rem;
-		font-weight: 500;
-		min-height: 2.25rem;
-		padding: 0 0.5rem;
-		width: 100%;
-	}
-
-	.name-input:focus {
-		outline: none;
-	}
-
-	.area-select,
-	.area-select:hover,
-	.area-select:active {
-		align-items: center;
-		background: var(--color-surface-default);
-		border: 1px solid var(--color-border-default);
-		border-radius: 8px;
-		color: var(--color-text-default);
-		display: flex;
-		font-size: 0.875rem;
-		font-weight: 500;
-		gap: 0.5rem;
-		justify-content: space-between;
-		min-height: 2.25rem;
-		padding: 0 0.75rem;
-		width: 16.5rem;
-	}
-
-	.area-select :global(svg) {
-		flex-shrink: 0;
-		height: 0.75rem;
-		width: 0.75rem;
-	}
-
-	.listbox {
-		border: none;
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-		margin: 0;
-		min-width: 17.5rem;
-		padding: 0;
-	}
-
-	.listbox label {
-		align-items: center;
-		border-radius: 0.5rem;
-		cursor: pointer;
-		display: flex;
-		font-size: 0.875rem;
-		font-weight: 500;
-		gap: 0.5rem;
-		min-height: 2.5rem;
-		padding: 0.5rem;
-	}
-
-	.listbox label:hover {
-		background-color: var(--color-gray-100);
-	}
-
-	.listbox input[type='radio'] {
-		flex-shrink: 0;
-		height: 1rem;
-		width: 1rem;
-	}
-
-	/* the design sets the button in the body size */
-	.add-button {
-		border-radius: 4px;
-		font-size: 0.875rem;
-		gap: 0.25rem;
-		line-height: 1;
-		margin-top: 0.5rem;
-		min-height: 1.75rem;
 	}
 </style>

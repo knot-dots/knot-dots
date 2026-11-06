@@ -4,7 +4,6 @@
 	import { page } from '$app/state';
 	import { _ } from 'svelte-i18n';
 	import ArrowRightIcon from '~icons/flowbite/arrow-right-outline';
-	import ChevronDownIcon from '~icons/flowbite/chevron-down-outline';
 	import InfoIcon from '~icons/flowbite/info-circle-outline';
 	import TrashBinIcon from '~icons/flowbite/trash-bin-outline';
 	import UsersGroupIcon from '~icons/flowbite/users-group-outline';
@@ -133,49 +132,52 @@
 <div class="details-section">
 	<header class="team-header">
 		<h1 class="details-title">{container.payload.name}</h1>
-		<div class="labels">
-			<span class="badge badge--large badge--purple badge--team">
-				<UsersGroupIcon />
-				<span class="truncated">{$_('team')}</span>
-			</span>
-			{#if mayManage}
-				<Dropdown label={$_('teams.belongs_to')}>
-					{#snippet button(popover)}
-						<button
-							class="badge badge--large badge--purple badge--team area-button"
-							type="button"
-							use:popover.button
-						>
-							<OrganizationalUnitIcon />
-							<span class="truncated">{parent.name}</span>
-							<ChevronDownIcon class="chevron" />
-						</button>
-					{/snippet}
-					{#snippet panel(popover)}
-						<fieldset class="listbox">
-							{#each areaOptions as option (option.guid)}
-								<label>
-									<input
-										checked={option.guid === parent.guid}
-										name="area"
-										type="radio"
-										value={option.guid}
-										onchange={() => {
-											popover.close();
-											moveTo(option.guid);
-										}}
-									/>
-									<span class="truncated">{option.name}</span>
-								</label>
-							{/each}
-						</fieldset>
-					{/snippet}
-				</Dropdown>
-			{:else}
+		<ul class="labels">
+			<li>
 				<span class="badge badge--large badge--purple badge--team">
-					<OrganizationalUnitIcon />
-					<span class="truncated">{parent.name}</span>
+					<UsersGroupIcon />
+					<span class="truncated">{$_('team')}</span>
 				</span>
+			</li>
+			{#if mayManage}
+				<li>
+					<Dropdown label={$_('teams.belongs_to')}>
+						{#snippet button(popover)}
+							<button class="dropdown-button" type="button" use:popover.button>
+								<span class="badge badge--large badge--purple badge--team">
+									<OrganizationalUnitIcon />
+									<span class="truncated">{parent.name}</span>
+								</span>
+							</button>
+						{/snippet}
+						{#snippet panel(popover)}
+							<fieldset class="listbox">
+								{#each areaOptions as option (option.guid)}
+									<label>
+										<input
+											checked={option.guid === parent.guid}
+											name="area"
+											type="radio"
+											value={option.guid}
+											onchange={() => {
+												popover.close();
+												moveTo(option.guid);
+											}}
+										/>
+										<span class="truncated">{option.name}</span>
+									</label>
+								{/each}
+							</fieldset>
+						{/snippet}
+					</Dropdown>
+				</li>
+			{:else}
+				<li>
+					<span class="badge badge--large badge--purple badge--team">
+						<OrganizationalUnitIcon />
+						<span class="truncated">{parent.name}</span>
+					</span>
+				</li>
 			{/if}
 			{#if !overlay}
 				<a
@@ -186,7 +188,7 @@
 					<span>{$_('teams.to_team')}</span>
 				</a>
 			{/if}
-		</div>
+		</ul>
 	</header>
 
 	<div class="roster">
@@ -274,33 +276,34 @@
 		margin-bottom: 0;
 	}
 
-	/* the labels of the design: badges with the unit icon, the team badge and
-	   the link to the unit itself */
 	.labels {
+		--badge-border-radius: 8px;
+		--badge-border-width: 1px;
+		--badge-icon-size: 1rem;
+		--badge-min-height: 1.75rem;
+		--badge-padding-x: 0.5rem;
+		--dropdown-button-active-background: transparent;
+		--dropdown-button-border-radius: 8px;
+		--dropdown-button-default-background: transparent;
+		--dropdown-button-expanded-background: transparent;
+		--dropdown-button-hover-background: transparent;
+		--dropdown-button-gap: 0.125rem;
+		--dropdown-button-padding-x: 0;
+		--dropdown-button-padding-y: 0;
+
 		align-items: center;
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.25rem;
 	}
 
-	.labels .badge {
-		--badge-icon-size: 1rem;
-
-		max-width: 10rem;
+	.labels li:not(:has(> button)) {
+		border-radius: 12px;
+		padding: 0.25rem;
 	}
 
-	.area-button,
-	.area-button:hover,
-	.area-button:active {
-		background: var(--badge-background-color);
-		border-color: var(--badge-border-color, var(--color-border-raised));
-		cursor: pointer;
-	}
-
-	.area-button :global(.chevron) {
-		flex-shrink: 0;
-		height: 0.75rem;
-		width: 0.75rem;
+	.labels li:not(:has(> button)):hover {
+		background-color: var(--color-background-accent-hover);
 	}
 
 	.team-link {
@@ -349,9 +352,7 @@
 
 	th,
 	td {
-		border-bottom: 1px solid var(--color-border-subtle);
 		border-right: 1px solid var(--color-border-subtle);
-		padding: 0.625rem 0.5rem;
 		white-space: nowrap;
 	}
 
@@ -361,14 +362,11 @@
 	}
 
 	th {
-		color: var(--color-gray-600);
 		font-weight: 400;
 		height: 2.5rem;
-		text-align: left;
 	}
 
 	td {
-		color: var(--color-gray-800);
 		font-weight: 500;
 		height: 3.125rem;
 	}
