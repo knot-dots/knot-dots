@@ -84,10 +84,9 @@ test('Selected objects can be displayed in a timeline', async ({
 		await selectItems(landingPage, section, [goal.payload.title, undatedGoal.payload.title]);
 
 		// Assert the dated goal is shown and the undated one is reported
-		const timeline = section.getByRole('region', { name: 'Chronicle' });
-		const card = timeline.getByRole('link', { name: new RegExp(goal.payload.title) });
+		const card = section.getByRole('link', { name: goal.payload.title });
 		await expect(card).toBeVisible();
-		await expect(timeline.getByText(undatedGoal.payload.title)).toHaveCount(0);
+		await expect(section.getByText(undatedGoal.payload.title)).toHaveCount(0);
 		await expect(section.getByText('1 object without a date is not shown.')).toBeVisible();
 
 		// Open the goal in the overlay
@@ -120,19 +119,19 @@ test('The preview keeps the selected object when it is opened', async ({
 		await selectItems(landingPage, section, [first.payload.title, second.payload.title]);
 
 		// Move on to the second goal with the keyboard
-		const timeline = section.getByRole('region', { name: 'Chronicle' });
-		const firstCard = timeline.getByRole('tab', { name: new RegExp(first.payload.title) });
-		const secondCard = timeline.getByRole('tab', { name: new RegExp(second.payload.title) });
+		const firstCard = section.getByRole('tab', { name: first.payload.title });
+		const secondCard = section.getByRole('tab', { name: second.payload.title });
 		await expect(firstCard).toHaveAttribute('aria-selected', 'true');
-		await expect(timeline.getByRole('heading', { name: first.payload.title })).toBeVisible();
+		await expect(section.getByRole('heading', { name: first.payload.title })).toBeVisible();
 		await firstCard.focus();
 		await firstCard.press('ArrowRight');
 		await expect(secondCard).toHaveAttribute('aria-selected', 'true');
-		await expect(timeline.getByRole('heading', { name: second.payload.title })).toBeVisible();
+		await expect(section.getByRole('heading', { name: second.payload.title })).toBeVisible();
 
-		// Open it in the overlay and assert the timeline stays on the second goal
-		const detailsLink = timeline.getByRole('link', { name: 'Show details' });
-		await (isMobile ? detailsLink.tap() : detailsLink.click());
+		// Open it in the overlay through the preview card and assert the timeline
+		// stays on the second goal
+		const preview = section.getByRole('tabpanel').locator('time');
+		await (isMobile ? preview.tap() : preview.click());
 		await expect(
 			landingPage.overlay.locator.getByRole('heading', { name: second.payload.title }).first()
 		).toBeVisible();
@@ -167,9 +166,8 @@ for (const preview of [false, true]) {
 			);
 
 			// Cards are links without and tabs with a preview, but the keys are the same.
-			const timeline = section.getByRole('region', { name: 'Chronicle' });
 			const [a, b, c] = goals.map(({ payload }) =>
-				timeline.getByRole(preview ? 'tab' : 'link', { name: new RegExp(payload.title) })
+				section.getByRole(preview ? 'tab' : 'link', { name: payload.title })
 			);
 
 			// The cards are a single tab stop
@@ -221,15 +219,14 @@ test('The time axis can be zoomed in down to hours', async ({
 			goals.map(({ payload }) => payload.title)
 		);
 
-		const timeline = section.getByRole('region', { name: 'Chronicle' });
-		const zoomIn = timeline.getByRole('button', { name: 'Zoom in' });
-		await expect(timeline.getByText('2032', { exact: true })).toBeVisible();
-		await expect(timeline.getByRole('button', { name: 'Zoom out' })).toBeDisabled();
+		const zoomIn = section.getByRole('button', { name: 'Zoom in' });
+		await expect(section.getByText('2032', { exact: true })).toBeVisible();
+		await expect(section.getByRole('button', { name: 'Zoom out' })).toBeDisabled();
 
 		while (await zoomIn.isEnabled()) {
 			await zoomIn.click();
 		}
-		await expect(timeline.getByText(/^\d{2}:00$/).first()).toBeVisible();
+		await expect(section.getByText(/^\d{2}:00$/).first()).toBeVisible();
 	} finally {
 		for (const goal of goals) await deleteContainer(adminContext, goal);
 	}
