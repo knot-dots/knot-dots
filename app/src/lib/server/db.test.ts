@@ -101,6 +101,17 @@ function newContainerInput(
 	});
 }
 
+async function createTestUser(connection: Fixtures['connection']) {
+	const guid = uuid();
+	await createOrUpdateUser({ family_name: '', given_name: '', guid, realm, settings: {} })(
+		connection
+	);
+	return guid;
+}
+
+const team = (...members: string[]) =>
+	members.map((subject) => ({ predicate: predicates.enum['is-member-of'], subject }));
+
 const organization = uuid();
 
 function initializeNewContainer(
@@ -579,14 +590,6 @@ test.skipIf(!process.env.ELASTICSEARCH_INDEX_ALIAS).for([
 	}
 );
 
-async function createTestUser(connection: Fixtures['connection']) {
-	const guid = uuid();
-	await createOrUpdateUser({ family_name: '', given_name: '', guid, realm, settings: {} })(
-		connection
-	);
-	return guid;
-}
-
 function newManagedByContainer(
 	type: AnyPayload['type'],
 	options: { organizationalUnit?: string; memberOf?: string; relation?: PartialRelation[] } = {}
@@ -668,28 +671,6 @@ test('deleting a program keeps members of other programs together with their chi
 			.map(({ object }) => object)
 	).toEqual([remainingProgram.guid]);
 });
-
-async function createProgramPair(connection: Fixtures['connection']) {
-	const firstProgram = await createContainer(
-		initializeNewContainer({ title: 'First program', type: payloadTypes.enum.program }, [])
-	)(connection);
-	const secondProgram = await createContainer(
-		initializeNewContainer({ title: 'Second program', type: payloadTypes.enum.program }, [])
-	)(connection);
-	const sharedGoal = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [
-			{ object: firstProgram.guid, position: 0, predicate: predicates.enum['is-part-of-program'] },
-			{ object: secondProgram.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
-		])
-	)(connection);
-	const childOfShared = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.measure), [
-			{ object: sharedGoal.guid, position: 0, predicate: predicates.enum['is-part-of'] },
-			{ object: firstProgram.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
-		])
-	)(connection);
-	return { childOfShared, firstProgram, secondProgram, sharedGoal };
-}
 
 test('deleting a shared goal itself takes its children along and leaves both programs', async ({
 	connection,
@@ -791,13 +772,13 @@ function revisionHistory(connection: Fixtures['connection'], guid: string) {
 }
 
 test('restoring a deleted container adds a revision equal to the one before the deletion', async ({
-	connection
-}: Fixtures) => {
+	connection,
+	containers
+}) => {
 	const member = await createTestUser(connection);
 	const deleter = await createTestUser(connection);
-	const goal = await createContainer(
-		newManagedByContainer(payloadTypes.enum.goal, { memberOf: member })
-	)(connection);
+	const goal = containers.add({ type: payloadTypes.enum.goal }, { user: team(member) });
+	await containers.persist();
 	const before = await getContainerByGuid(goal.guid)(connection);
 
 	await deleteContainer({
@@ -837,17 +818,16 @@ function relationHistory(connection: Fixtures['connection'], relation: Omit<Rela
 }
 
 test('restoring a deleted container restores the relations deleted along with it', async ({
-	connection
-}: Fixtures) => {
-	const program = await createContainer(
-		initializeNewContainer({ title: 'Program', type: payloadTypes.enum.program }, [])
-	)(connection);
-	const goal = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [
-			{ object: program.guid, position: 0, predicate: predicates.enum['is-part-of-program'] },
-			{ object: program.guid, position: 3, predicate: predicates.enum['is-section-of'] }
-		])
-	)(connection);
+	connection,
+	containers,
+	relations
+}) => {
+	const program = containers.add({ title: 'Program', type: payloadTypes.enum.program });
+	const goal = containers.add({ type: payloadTypes.enum.goal });
+	relations.add(goal, predicates.enum['is-part-of-program'], program);
+	relations.add(goal, predicates.enum['is-section-of'], program, 3);
+	await containers.persist();
+	await relations.persist();
 	const before = await getContainerByGuid(goal.guid)(connection);
 
 	await deleteContainerRecursively(before)(connection);
@@ -885,16 +865,15 @@ async function backdateDeletion(connection: Fixtures['connection'], guid: string
 }
 
 test('restoring leaves a relation alone that was removed before the deletion', async ({
-	connection
-}: Fixtures) => {
-	const program = await createContainer(
-		initializeNewContainer({ title: 'Program', type: payloadTypes.enum.program }, [])
-	)(connection);
-	const goal = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [
-			{ object: program.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
-		])
-	)(connection);
+	connection,
+	containers,
+	relations
+}) => {
+	const program = containers.add({ title: 'Program', type: payloadTypes.enum.program });
+	const goal = containers.add({ type: payloadTypes.enum.goal });
+	relations.add(goal, predicates.enum['is-part-of-program'], program);
+	await containers.persist();
+	await relations.persist();
 	const detached = await updateContainer(
 		modifiedContainer.parse({ ...(await getContainerByGuid(goal.guid)(connection)), relation: [] })
 	)(connection);
@@ -908,16 +887,15 @@ test('restoring leaves a relation alone that was removed before the deletion', a
 });
 
 test('restoring skips relations to containers that are still deleted until those come back', async ({
-	connection
-}: Fixtures) => {
-	const goal = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [])
-	)(connection);
-	const measure = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.measure), [
-			{ object: goal.guid, position: 0, predicate: predicates.enum['is-part-of'] }
-		])
-	)(connection);
+	connection,
+	containers,
+	relations
+}) => {
+	const goal = containers.add({ type: payloadTypes.enum.goal });
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	relations.add(measure, predicates.enum['is-part-of'], goal);
+	await containers.persist();
+	await relations.persist();
 	const measureBefore = await getContainerByGuid(measure.guid)(connection);
 
 	await deleteContainerRecursively(await getContainerByGuid(goal.guid)(connection))(connection);
@@ -933,11 +911,11 @@ test('restoring skips relations to containers that are still deleted until those
 });
 
 test('restoring fails when there is no deleted container to restore', async ({
-	connection
-}: Fixtures) => {
-	const goal = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [])
-	)(connection);
+	connection,
+	containers
+}) => {
+	const goal = containers.add({ type: payloadTypes.enum.goal });
+	await containers.persist();
 
 	await expect(restoreContainerRecursively(goal.guid)(connection)).rejects.toThrow(
 		ContainerRestoreError
@@ -982,12 +960,15 @@ test('restoring an organization is refused because its Keycloak group is gone', 
 });
 
 test('the restored revision keeps the own matrix and the grants derived from the member roles', async ({
-	connection
-}: Fixtures) => {
+	connection,
+	organization
+}) => {
 	const member = await createTestUser(connection);
+	// createManyContainers() does not write own_matrix, so the program is no fixture.
 	const program = await createContainer({
-		...newManagedByContainer(payloadTypes.enum.program, { memberOf: member }),
-		own_matrix: true
+		...newContainerInput(organization, { type: payloadTypes.enum.program }, []),
+		own_matrix: true,
+		user: team(member)
 	})(connection);
 	const before = await getContainerByGuid(program.guid)(connection);
 	const grantsBefore = await computeUserGrants(connection, member, [program.guid]);
@@ -1028,22 +1009,18 @@ async function expectRestored(
 }
 
 test('restoring a program brings back the objects deleted along with it', async ({
-	connection
-}: Fixtures) => {
-	const program = await createContainer(
-		initializeNewContainer({ title: 'Program', type: payloadTypes.enum.program }, [])
-	)(connection);
-	const goal = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [
-			{ object: program.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
-		])
-	)(connection);
-	const measure = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.measure), [
-			{ object: goal.guid, position: 0, predicate: predicates.enum['is-part-of'] },
-			{ object: program.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
-		])
-	)(connection);
+	connection,
+	containers,
+	relations
+}) => {
+	const program = containers.add({ title: 'Program', type: payloadTypes.enum.program });
+	const goal = containers.add({ type: payloadTypes.enum.goal });
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	relations.add(goal, predicates.enum['is-part-of-program'], program);
+	relations.add(measure, predicates.enum['is-part-of'], goal);
+	relations.add(measure, predicates.enum['is-part-of-program'], program);
+	await containers.persist();
+	await relations.persist();
 	const before = await snapshot(connection, [program.guid, goal.guid, measure.guid]);
 
 	await deleteContainerRecursively(before.get(program.guid)!)(connection);
@@ -1057,21 +1034,17 @@ test('restoring a program brings back the objects deleted along with it', async 
 });
 
 test('restoring a program leaves a goal deleted that was deleted on its own before', async ({
-	connection
-}: Fixtures) => {
-	const program = await createContainer(
-		initializeNewContainer({ title: 'Program', type: payloadTypes.enum.program }, [])
-	)(connection);
-	const earlierGoal = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [
-			{ object: program.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
-		])
-	)(connection);
-	const goal = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [
-			{ object: program.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
-		])
-	)(connection);
+	connection,
+	containers,
+	relations
+}) => {
+	const program = containers.add({ title: 'Program', type: payloadTypes.enum.program });
+	const earlierGoal = containers.add({ type: payloadTypes.enum.goal });
+	const goal = containers.add({ type: payloadTypes.enum.goal });
+	relations.add(earlierGoal, predicates.enum['is-part-of-program'], program);
+	relations.add(goal, predicates.enum['is-part-of-program'], program);
+	await containers.persist();
+	await relations.persist();
 
 	await deleteContainerRecursively(await getContainerByGuid(earlierGoal.guid)(connection))(
 		connection
@@ -1087,22 +1060,25 @@ test('restoring a program leaves a goal deleted that was deleted on its own befo
 });
 
 test('restoring a measure brings back its sections and the templates available only in it', async ({
-	connection
-}: Fixtures) => {
-	const measure = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.measure), [])
-	)(connection);
-	const section = await createContainer(
-		initializeNewContainer(
-			{ body: 'Section body', title: 'Section', type: payloadTypes.enum.text },
-			[{ object: measure.guid, position: 0, predicate: predicates.enum['is-section-of'] }]
-		)
-	)(connection);
-	const template = await createContainer(
-		initializeNewContainer({ template: true, title: 'Template', type: payloadTypes.enum.report }, [
-			{ object: measure.guid, position: 0, predicate: predicates.enum['is-available-in'] }
-		])
-	)(connection);
+	connection,
+	containers,
+	relations
+}) => {
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	const section = containers.add({
+		body: 'Section body',
+		title: 'Section',
+		type: payloadTypes.enum.text
+	});
+	const template = containers.add({
+		template: true,
+		title: 'Template',
+		type: payloadTypes.enum.report
+	});
+	relations.add(section, predicates.enum['is-section-of'], measure);
+	relations.add(template, predicates.enum['is-available-in'], measure);
+	await containers.persist();
+	await relations.persist();
 	const before = await snapshot(connection, [measure.guid, section.guid, template.guid]);
 
 	await deleteContainerRecursively(before.get(measure.guid)!)(connection);
@@ -1116,20 +1092,18 @@ test('restoring a measure brings back its sections and the templates available o
 });
 
 test('restoring an organizational unit brings back the containers it owned', async ({
-	connection
-}: Fixtures) => {
-	const organizationalUnit = await createContainer(
-		initializeNewContainer(
-			{ name: 'Unit', type: payloadTypes.enum.organizational_unit } as Partial<AnyPayload> &
-				Pick<AnyPayload, 'type'>,
-			[]
-		)
-	)(connection);
-	const measure = await createContainer(
-		newManagedByContainer(payloadTypes.enum.measure, {
-			organizationalUnit: organizationalUnit.guid
-		})
-	)(connection);
+	connection,
+	containers
+}) => {
+	const organizationalUnit = containers.add({
+		name: 'Unit',
+		type: payloadTypes.enum.organizational_unit
+	});
+	const measure = containers.add(
+		{ type: payloadTypes.enum.measure },
+		{ organizational_unit: organizationalUnit.guid }
+	);
+	await containers.persist();
 	const before = await snapshot(connection, [organizationalUnit.guid, measure.guid]);
 
 	await deleteOrganizationalUnitContainer(
@@ -1143,9 +1117,10 @@ test('restoring an organizational unit brings back the containers it owned', asy
 });
 
 test('restoring a program reattaches the shared goal that survived its deletion', async ({
-	connection
-}: Fixtures) => {
-	const { childOfShared, firstProgram, sharedGoal } = await createProgramPair(connection);
+	connection,
+	programPair
+}) => {
+	const { childOfShared, firstProgram, sharedGoal } = programPair;
 	const before = await snapshot(connection, [
 		firstProgram.guid,
 		sharedGoal.guid,
