@@ -35,6 +35,7 @@ import {
 	getAllGrantsOfUserFromMemberRoles,
 	getContainerCopyGraph,
 	getContainerByGuid,
+	getIndicatorGuidsInUse,
 	getManyContainers,
 	getManyOrganizationalUnitContainers,
 	restoreContainerRecursively,
@@ -1310,6 +1311,88 @@ test('omitting the template filter returns a complete mixed program hierarchy', 
 	expect(nonTemplates.map(({ guid }) => guid)).toContain(section.guid);
 	expect(nonTemplates.map(({ guid }) => guid)).not.toContain(program.guid);
 	expect(nonTemplates.map(({ guid }) => guid)).not.toContain(measure.guid);
+});
+
+// An indicator is in use once it is related to a container of the organization the
+// way the app relates them: an effect (created by createEffect for a measure) is
+// measured by it, an objective (created by createObjective for a goal) is an objective
+// for it, or actual data names it in its payload.
+test('getIndicatorGuidsInUse returns the indicators measured or reported on within scope', async ({
+	connection
+}) => {
+	const otherOrganization = uuid();
+	const organizationalUnit = uuid();
+	const create = (
+		payload: Partial<AnyPayload> & Pick<AnyPayload, 'type'>,
+		relation: PartialRelation[],
+		scope: { organization?: string; organizationalUnit?: string } = {}
+	) =>
+		createContainer(
+			newContainer.parse({
+				managed_by: scope.organization ?? organization,
+				organization: scope.organization ?? organization,
+				organizational_unit: scope.organizationalUnit ?? null,
+				payload,
+				realm,
+				relation
+			})
+		)(connection);
+	const indicator = (title: string) =>
+		create({ title, type: payloadTypes.enum.indicator, unit: 'unit.percent' }, []);
+	const effectOf = (measure: string, indicator: string): PartialRelation[] => [
+		{ object: indicator, position: 0, predicate: predicates.enum['is-measured-by'] },
+		{ object: measure, position: 0, predicate: predicates.enum['is-part-of'] }
+	];
+	const objectiveOf = (goal: string, indicator: string): PartialRelation[] => [
+		{ object: indicator, position: 0, predicate: predicates.enum['is-objective-for'] },
+		{ object: goal, position: 0, predicate: predicates.enum['is-part-of'] }
+	];
+	const actualData = (indicator: string) =>
+		({
+			indicator,
+			title: 'Actual data',
+			type: payloadTypes.enum.actual_data
+		}) as Partial<AnyPayload> & Pick<AnyPayload, 'type'>;
+
+	const measured = await indicator('Measured by an effect');
+	const objective = await indicator('Objective of a goal');
+	const reported = await indicator('Reported on by actual data');
+	const reportedInUnit = await indicator('Reported on by actual data of a unit');
+	const measuredElsewhere = await indicator('Measured by an effect of another organization');
+	const reportedElsewhere = await indicator('Reported on by actual data of another organization');
+	const unused = await indicator('Unused');
+
+	const measure = await create(simplePayload(payloadTypes.enum.measure), []);
+	await create(simplePayload(payloadTypes.enum.effect), effectOf(measure.guid, measured.guid));
+	const goal = await create(simplePayload(payloadTypes.enum.goal), []);
+	await create(simplePayload(payloadTypes.enum.objective), objectiveOf(goal.guid, objective.guid));
+	await create(actualData(reported.guid), []);
+	await create(actualData(reportedInUnit.guid), [], { organizationalUnit });
+
+	const otherMeasure = await create(simplePayload(payloadTypes.enum.measure), [], {
+		organization: otherOrganization
+	});
+	await create(
+		simplePayload(payloadTypes.enum.effect),
+		effectOf(otherMeasure.guid, measuredElsewhere.guid),
+		{ organization: otherOrganization }
+	);
+	await create(actualData(reportedElsewhere.guid), [], { organization: otherOrganization });
+
+	const inOrganization = await getIndicatorGuidsInUse(
+		{ organizations: [organization] },
+		{ organizations: [organization], organizationalUnits: null }
+	)(connection);
+	expect(inOrganization.sort()).toEqual([measured.guid, objective.guid, reported.guid].sort());
+	expect(inOrganization).not.toContain(unused.guid);
+	expect(inOrganization).not.toContain(measuredElsewhere.guid);
+	expect(inOrganization).not.toContain(reportedElsewhere.guid);
+
+	const inUnit = await getIndicatorGuidsInUse(
+		{ organizations: [organization], organizationalUnits: [organizationalUnit] },
+		{ organizations: [organization], organizationalUnits: [organizationalUnit] }
+	)(connection);
+	expect(inUnit).toEqual([reportedInUnit.guid]);
 });
 
 test('getContainerCopyGraph follows current downward copy edges once and stops at cycles', async ({
