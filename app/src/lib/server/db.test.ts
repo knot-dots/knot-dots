@@ -112,25 +112,6 @@ async function createTestUser(connection: Fixtures['connection']) {
 const team = (...members: string[]) =>
 	members.map((subject) => ({ predicate: predicates.enum['is-member-of'], subject }));
 
-const organization = uuid();
-
-function initializeNewContainer(
-	payload: Partial<AnyPayload> & Pick<AnyPayload, 'type'>,
-	relation: PartialRelation[]
-) {
-	return newContainer.parse({
-		managed_by: organization,
-		organization,
-		organizational_unit: null,
-		payload,
-		realm,
-		relation
-	});
-}
-
-const simplePayload = (type: AnyPayload['type']) =>
-	({ title: 'Lorem ipsum', type }) as Partial<AnyPayload> & Pick<AnyPayload, 'type'>;
-
 test('containers can be related to each other', async ({
 	connection,
 	containers,
@@ -1998,38 +1979,22 @@ test('updating the managed_by of a sub-measure leaves its parent measure untouch
 });
 
 test('getAdoptedContainerGuids: adopted programs and their contents', async ({
-	connection
-}: Fixtures) => {
-	const adopter = await createContainer(
-		initializeNewContainer(
-			{ name: 'Lorem ipsum', type: payloadTypes.enum.organizational_unit } as Partial<AnyPayload> &
-				Pick<AnyPayload, 'type'>,
-			[]
-		)
-	)(connection);
-	const program = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.program), [
-			{ object: adopter.guid, position: 0, predicate: predicates.enum['is-adopted-by'] }
-		])
-	)(connection);
-	const rule = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.rule), [
-			{ object: program.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
-		])
-	)(connection);
-	const section = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.rule), [
-			{ object: program.guid, position: 0, predicate: predicates.enum['is-section-of'] }
-		])
-	)(connection);
-	const nested = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.rule), [
-			{ object: section.guid, position: 0, predicate: predicates.enum['is-part-of'] }
-		])
-	)(connection);
-	await createContainer(initializeNewContainer(simplePayload(payloadTypes.enum.rule), []))(
-		connection
-	);
+	connection,
+	containers,
+	relations
+}) => {
+	const adopter = containers.add({ type: payloadTypes.enum.organizational_unit });
+	const program = containers.add({ type: payloadTypes.enum.program });
+	const rule = containers.add({ type: payloadTypes.enum.rule });
+	const section = containers.add({ type: payloadTypes.enum.rule });
+	const nested = containers.add({ type: payloadTypes.enum.rule });
+	containers.add({ type: payloadTypes.enum.rule });
+	relations.add(program, predicates.enum['is-adopted-by'], adopter);
+	relations.add(rule, predicates.enum['is-part-of-program'], program);
+	relations.add(section, predicates.enum['is-section-of'], program);
+	relations.add(nested, predicates.enum['is-part-of'], section);
+	await containers.persist();
+	await relations.persist();
 
 	const adopted = await getAdoptedContainerGuids([adopter.guid])(connection);
 	expect(adopted.toSorted()).toEqual(
@@ -2041,52 +2006,30 @@ test('getAdoptedContainerGuids: adopted programs and their contents', async ({
 });
 
 test('getAdoptedContainerGuids: several adopters of one program are deduplicated', async ({
-	connection
-}: Fixtures) => {
-	const adopter = await createContainer(
-		initializeNewContainer(
-			{ name: 'Lorem ipsum', type: payloadTypes.enum.organizational_unit } as Partial<AnyPayload> &
-				Pick<AnyPayload, 'type'>,
-			[]
-		)
-	)(connection);
-	const anotherAdopter = await createContainer(
-		initializeNewContainer(
-			{
-				name: 'Dolor sit amet',
-				type: payloadTypes.enum.organizational_unit
-			} as Partial<AnyPayload> & Pick<AnyPayload, 'type'>,
-			[]
-		)
-	)(connection);
-	const program = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.program), [
-			{ object: adopter.guid, position: 0, predicate: predicates.enum['is-adopted-by'] },
-			{ object: anotherAdopter.guid, position: 0, predicate: predicates.enum['is-adopted-by'] }
-		])
-	)(connection);
+	connection,
+	containers,
+	relations
+}) => {
+	const adopter = containers.add({ type: payloadTypes.enum.organizational_unit });
+	const anotherAdopter = containers.add({ type: payloadTypes.enum.organizational_unit });
+	const program = containers.add({ type: payloadTypes.enum.program });
+	relations.add(program, predicates.enum['is-adopted-by'], adopter);
+	relations.add(program, predicates.enum['is-adopted-by'], anotherAdopter);
+	await containers.persist();
+	await relations.persist();
 
 	const adopted = await getAdoptedContainerGuids([adopter.guid, anotherAdopter.guid])(connection);
 	expect(adopted).toEqual([program.guid]);
 });
 
 test('getManyContainers: includeGuids widens the organization scope', async ({
-	connection
-}: Fixtures) => {
-	const foreignOrganization = uuid();
-	const foreignRule = await createContainer(
-		newContainer.parse({
-			managed_by: foreignOrganization,
-			organization: foreignOrganization,
-			organizational_unit: null,
-			payload: simplePayload(payloadTypes.enum.rule),
-			realm,
-			relation: []
-		})
-	)(connection);
-	const ownRule = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.rule), [])
-	)(connection);
+	connection,
+	containers,
+	organization
+}) => {
+	const foreignRule = containers.add({ type: payloadTypes.enum.rule }, { organization: uuid() });
+	const ownRule = containers.add({ type: payloadTypes.enum.rule });
+	await containers.persist();
 
 	const withoutIncludeGuids = await getManyContainers(
 		[organization],
@@ -2106,19 +2049,16 @@ test('getManyContainers: includeGuids widens the organization scope', async ({
 });
 
 test('getManyContainers: includeGuids widens the organizational unit scope', async ({
-	connection
-}: Fixtures) => {
+	connection,
+	containers,
+	organization
+}) => {
 	const foreignOrganization = uuid();
-	const foreignUnitRule = await createContainer(
-		newContainer.parse({
-			managed_by: foreignOrganization,
-			organization: foreignOrganization,
-			organizational_unit: uuid(),
-			payload: simplePayload(payloadTypes.enum.rule),
-			realm,
-			relation: []
-		})
-	)(connection);
+	const foreignUnitRule = containers.add(
+		{ type: payloadTypes.enum.rule },
+		{ organization: foreignOrganization, organizational_unit: uuid() }
+	);
+	await containers.persist();
 
 	const withoutIncludeGuids = await getManyContainers(
 		[organization],
@@ -2140,35 +2080,21 @@ test('getManyContainers: includeGuids widens the organizational unit scope', asy
 });
 
 test('getManyOrganizationalUnitContainers: includeGuids widens the organization scope', async ({
-	connection
-}: Fixtures) => {
+	connection,
+	containers,
+	organization
+}) => {
 	const foreignOrganization = uuid();
-	const organizationalUnitPayload = (name: string) =>
-		({ name, type: payloadTypes.enum.organizational_unit }) as Partial<AnyPayload> &
-			Pick<AnyPayload, 'type'>;
-	const ownUnit = await createContainer(
-		initializeNewContainer(organizationalUnitPayload('Lorem ipsum'), [])
-	)(connection);
-	const managedForeignUnit = await createContainer(
-		newContainer.parse({
-			managed_by: foreignOrganization,
-			organization: foreignOrganization,
-			organizational_unit: null,
-			payload: organizationalUnitPayload('Dolor sit amet'),
-			realm,
-			relation: []
-		})
-	)(connection);
-	const otherForeignUnit = await createContainer(
-		newContainer.parse({
-			managed_by: foreignOrganization,
-			organization: foreignOrganization,
-			organizational_unit: null,
-			payload: organizationalUnitPayload('Consetetur sadipscing'),
-			realm,
-			relation: []
-		})
-	)(connection);
+	const ownUnit = containers.add({ type: payloadTypes.enum.organizational_unit });
+	const managedForeignUnit = containers.add(
+		{ type: payloadTypes.enum.organizational_unit },
+		{ organization: foreignOrganization }
+	);
+	const otherForeignUnit = containers.add(
+		{ type: payloadTypes.enum.organizational_unit },
+		{ organization: foreignOrganization }
+	);
+	await containers.persist();
 
 	const withoutGuidFilter = await getManyOrganizationalUnitContainers({
 		include: { organization: [organization] }
@@ -2197,37 +2123,24 @@ test('getManyOrganizationalUnitContainers: includeGuids widens the organization 
 });
 
 test('derives grants from the member roles, the strongest role per container', async ({
-	connection
-}: Fixtures) => {
-	const member = uuid();
-	await createOrUpdateUser({ family_name: '', given_name: '', guid: member, realm, settings: {} })(
-		connection
-	);
-	const headedMeasure = await createContainer(
-		newContainer.parse({
-			managed_by: organization,
-			organization,
-			organizational_unit: null,
-			payload: { title: 'Lorem ipsum', type: payloadTypes.enum.measure },
-			realm,
-			relation: [],
+	connection,
+	containers
+}) => {
+	const member = await createTestUser(connection);
+	const headedMeasure = containers.add(
+		{ type: payloadTypes.enum.measure },
+		{
 			user: [
 				{ predicate: predicates.enum['is-head-of'], subject: member },
 				{ predicate: predicates.enum['is-member-of'], subject: member }
 			]
-		})
-	)(connection);
-	const observedProgram = await createContainer(
-		newContainer.parse({
-			managed_by: organization,
-			organization,
-			organizational_unit: null,
-			payload: { title: 'Lorem ipsum', type: payloadTypes.enum.program },
-			realm,
-			relation: [],
-			user: [{ predicate: predicates.enum['is-member-of'], subject: member }]
-		})
-	)(connection);
+		}
+	);
+	const observedProgram = containers.add(
+		{ type: payloadTypes.enum.program },
+		{ user: team(member) }
+	);
+	await containers.persist();
 
 	const grants = await getAllGrantsOfUserFromMemberRoles(member)(connection);
 
@@ -2243,11 +2156,13 @@ test('derives grants from the member roles, the strongest role per container', a
 });
 
 test('updates fail if the expected revision is no longer current', async ({
-	connection
-}: Fixtures) => {
-	const goal = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [])
-	)(connection);
+	connection,
+	containers
+}) => {
+	const { guid } = containers.add({ type: payloadTypes.enum.goal });
+	await containers.persist();
+
+	const goal = await getContainerByGuid(guid)(connection);
 	const renamed = (title: string) =>
 		modifiedContainer.parse({ ...goal, payload: { ...goal.payload, title } });
 
