@@ -50,18 +50,38 @@ import { computeManagedBy } from '$lib/server/computeManagedBy';
 import { computeUserGrants } from '$lib/server/computeUserGrants';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 
-const test = base.extend('programWithParts', async ({ containers, relations }) => {
-	const program = containers.add({ type: payloadTypes.enum.program });
-	const goal = containers.add({ type: payloadTypes.enum.goal });
-	const measure = containers.add({ type: payloadTypes.enum.measure });
-	const relationsOfProgram = [
-		relations.add(goal, predicates.enum['is-part-of-program'], program),
-		relations.add(measure, predicates.enum['is-part-of-program'], program)
-	];
-	await containers.persist();
-	await relations.persist();
-	return { goal, measure, program, relationsOfProgram };
-});
+const test = base
+	.extend('programWithParts', async ({ containers, relations }) => {
+		const program = containers.add({ type: payloadTypes.enum.program });
+		const goal = containers.add({ type: payloadTypes.enum.goal });
+		const measure = containers.add({ type: payloadTypes.enum.measure });
+		const relationsOfProgram = [
+			relations.add(goal, predicates.enum['is-part-of-program'], program),
+			relations.add(measure, predicates.enum['is-part-of-program'], program)
+		];
+		await containers.persist();
+		await relations.persist();
+		return { goal, measure, program, relationsOfProgram };
+	})
+	.extend('programPair', async ({ containers, relations }) => {
+		const firstProgram = containers.add({
+			title: 'First program',
+			type: payloadTypes.enum.program
+		});
+		const secondProgram = containers.add({
+			title: 'Second program',
+			type: payloadTypes.enum.program
+		});
+		const sharedGoal = containers.add({ type: payloadTypes.enum.goal });
+		const childOfShared = containers.add({ type: payloadTypes.enum.measure });
+		relations.add(sharedGoal, predicates.enum['is-part-of-program'], firstProgram);
+		relations.add(sharedGoal, predicates.enum['is-part-of-program'], secondProgram);
+		relations.add(childOfShared, predicates.enum['is-part-of'], sharedGoal);
+		relations.add(childOfShared, predicates.enum['is-part-of-program'], firstProgram);
+		await containers.persist();
+		await relations.persist();
+		return { childOfShared, firstProgram, secondProgram, sharedGoal };
+	});
 
 // For the containers created with createContainer() rather than as fixtures: in the
 // tests of createContainer() itself, which assigns the GUID and completes the
@@ -126,43 +146,33 @@ test('containers can be related to each other', async ({
 	);
 });
 
-test('template queries separate organization and program availability', async ({ connection }) => {
-	const programA = await createContainer(
-		initializeNewContainer({ title: 'Program A', type: payloadTypes.enum.program }, [])
-	)(connection);
-	const programB = await createContainer(
-		initializeNewContainer({ title: 'Program B', type: payloadTypes.enum.program }, [])
-	)(connection);
-	const globalTemplate = await createContainer(
-		initializeNewContainer(
-			{ template: true, title: 'Global template', type: payloadTypes.enum.report },
-			[]
-		)
-	)(connection);
-	const programATemplate = await createContainer(
-		initializeNewContainer(
-			{ template: true, title: 'Program A template', type: payloadTypes.enum.report },
-			[
-				{
-					object: programA.guid,
-					position: 0,
-					predicate: predicates.enum['is-available-in']
-				}
-			]
-		)
-	)(connection);
-	await createContainer(
-		initializeNewContainer(
-			{ template: true, title: 'Program B template', type: payloadTypes.enum.report },
-			[
-				{
-					object: programB.guid,
-					position: 0,
-					predicate: predicates.enum['is-available-in']
-				}
-			]
-		)
-	)(connection);
+test('template queries separate organization and program availability', async ({
+	connection,
+	containers,
+	organization,
+	relations
+}) => {
+	const programA = containers.add({ title: 'Program A', type: payloadTypes.enum.program });
+	const programB = containers.add({ title: 'Program B', type: payloadTypes.enum.program });
+	const globalTemplate = containers.add({
+		template: true,
+		title: 'Global template',
+		type: payloadTypes.enum.report
+	});
+	const programATemplate = containers.add({
+		template: true,
+		title: 'Program A template',
+		type: payloadTypes.enum.report
+	});
+	const programBTemplate = containers.add({
+		template: true,
+		title: 'Program B template',
+		type: payloadTypes.enum.report
+	});
+	relations.add(programATemplate, predicates.enum['is-available-in'], programA);
+	relations.add(programBTemplate, predicates.enum['is-available-in'], programB);
+	await containers.persist();
+	await relations.persist();
 
 	const organizationTemplates = await getManyContainers(
 		[organization],
@@ -180,44 +190,34 @@ test('template queries separate organization and program availability', async ({
 });
 
 for (const type of ['program', 'measure', 'simple_measure'] as const) {
-	test(`deleting a ${type} deletes exclusively scoped templates`, async ({ connection }) => {
-		const deletedProgram = await createContainer(
-			initializeNewContainer({ title: 'Deleted scope', type }, [])
-		)(connection);
-		const remainingProgram = await createContainer(
-			initializeNewContainer({ title: 'Remaining program', type: payloadTypes.enum.program }, [])
-		)(connection);
-		const exclusiveTemplate = await createContainer(
-			initializeNewContainer(
-				{ template: true, title: 'Exclusive template', type: payloadTypes.enum.report },
-				[
-					{
-						object: deletedProgram.guid,
-						position: 0,
-						predicate: predicates.enum['is-available-in']
-					}
-				]
-			)
-		)(connection);
-		const sharedTemplate = await createContainer(
-			initializeNewContainer(
-				{ template: true, title: 'Shared template', type: payloadTypes.enum.report },
-				[
-					{
-						object: deletedProgram.guid,
-						position: 0,
-						predicate: predicates.enum['is-available-in']
-					},
-					{
-						object: remainingProgram.guid,
-						position: 0,
-						predicate: predicates.enum['is-available-in']
-					}
-				]
-			)
-		)(connection);
+	test(`deleting a ${type} deletes exclusively scoped templates`, async ({
+		connection,
+		containers,
+		organization,
+		relations
+	}) => {
+		const deletedScope = containers.add({ title: 'Deleted scope', type });
+		const remainingProgram = containers.add({
+			title: 'Remaining program',
+			type: payloadTypes.enum.program
+		});
+		const exclusiveTemplate = containers.add({
+			template: true,
+			title: 'Exclusive template',
+			type: payloadTypes.enum.report
+		});
+		const sharedTemplate = containers.add({
+			template: true,
+			title: 'Shared template',
+			type: payloadTypes.enum.report
+		});
+		relations.add(exclusiveTemplate, predicates.enum['is-available-in'], deletedScope);
+		relations.add(sharedTemplate, predicates.enum['is-available-in'], deletedScope);
+		relations.add(sharedTemplate, predicates.enum['is-available-in'], remainingProgram);
+		await containers.persist();
+		await relations.persist();
 
-		await deleteContainer(deletedProgram)(connection);
+		await deleteContainer(await getContainerByGuid(deletedScope.guid)(connection))(connection);
 
 		const remainingTemplates = await getManyContainers(
 			[organization],
@@ -241,39 +241,37 @@ for (const type of ['program', 'measure', 'simple_measure'] as const) {
 }
 
 test('nested measure template scopes are discovered when copying a program', async ({
-	connection
+	connection,
+	containers,
+	relations
 }) => {
-	const program = await createContainer(
-		initializeNewContainer({ type: 'program', title: 'Program' }, [])
-	)(connection);
-	const measure = await createContainer(
-		initializeNewContainer({ type: 'measure', title: 'Measure' }, [
-			{ object: program.guid, predicate: 'is-part-of-program', position: 0 }
-		])
-	)(connection);
-	const nested = await createContainer(
-		initializeNewContainer({ type: 'measure', title: 'Nested', template: true }, [
-			{ object: measure.guid, predicate: 'is-available-in', position: 0 }
-		])
-	)(connection);
-	const task = await createContainer(
-		initializeNewContainer({ type: 'goal', title: 'Goal', template: true }, [
-			{ object: nested.guid, predicate: 'is-available-in', position: 0 }
-		])
-	)(connection);
+	const program = containers.add({ title: 'Program', type: payloadTypes.enum.program });
+	const measure = containers.add({ title: 'Measure', type: payloadTypes.enum.measure });
+	const nested = containers.add({
+		template: true,
+		title: 'Nested',
+		type: payloadTypes.enum.measure
+	});
+	const goal = containers.add({ template: true, title: 'Goal', type: payloadTypes.enum.goal });
+	relations.add(measure, predicates.enum['is-part-of-program'], program);
+	relations.add(nested, predicates.enum['is-available-in'], measure);
+	relations.add(goal, predicates.enum['is-available-in'], nested);
+	await containers.persist();
+	await relations.persist();
+
 	const result = await getContainerCopyGraph(program.guid)(connection);
 	expect(result.containers.map(({ guid }) => guid)).toEqual(
-		expect.arrayContaining([program.guid, measure.guid, nested.guid, task.guid])
+		expect.arrayContaining([program.guid, measure.guid, nested.guid, goal.guid])
 	);
 	const measureResult = await getContainerCopyGraph(measure.guid)(connection);
 	expect(measureResult.containers.map(({ guid }) => guid)).toEqual(
-		expect.arrayContaining([measure.guid, nested.guid, task.guid])
+		expect.arrayContaining([measure.guid, nested.guid, goal.guid])
 	);
-	await deleteContainer(measure)(connection);
+	await deleteContainer(await getContainerByGuid(measure.guid)(connection))(connection);
 	expect(
 		await getManyContainers(
 			[],
-			{ guid: [measure.guid, nested.guid, task.guid] },
+			{ guid: [measure.guid, nested.guid, goal.guid] },
 			'alpha'
 		)(connection)
 	).toEqual([]);
@@ -607,30 +605,17 @@ function newManagedByContainer(
 }
 
 test('a container in several programs appears among the members of each', async ({
-	connection
-}: Fixtures) => {
-	const firstProgram = await createContainer(newManagedByContainer(payloadTypes.enum.program))(
-		connection
-	);
-	const secondProgram = await createContainer(newManagedByContainer(payloadTypes.enum.program))(
-		connection
-	);
-	const measure = await createContainer(
-		newManagedByContainer(payloadTypes.enum.measure, {
-			relation: [
-				{
-					object: firstProgram.guid,
-					position: 0,
-					predicate: predicates.enum['is-part-of-program']
-				},
-				{
-					object: secondProgram.guid,
-					position: 0,
-					predicate: predicates.enum['is-part-of-program']
-				}
-			]
-		})
-	)(connection);
+	connection,
+	containers,
+	relations
+}) => {
+	const firstProgram = containers.add({ type: payloadTypes.enum.program });
+	const secondProgram = containers.add({ type: payloadTypes.enum.program });
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	relations.add(measure, predicates.enum['is-part-of-program'], firstProgram);
+	relations.add(measure, predicates.enum['is-part-of-program'], secondProgram);
+	await containers.persist();
+	await relations.persist();
 
 	const relatedToFirst = await getAllContainersRelatedToProgram(firstProgram.guid, {})(connection);
 	const relatedToSecond = await getAllContainersRelatedToProgram(
@@ -642,39 +627,28 @@ test('a container in several programs appears among the members of each', async 
 });
 
 test('deleting a program keeps members of other programs together with their children', async ({
-	connection
-}: Fixtures) => {
-	const deletedProgram = await createContainer(
-		initializeNewContainer({ title: 'Deleted program', type: payloadTypes.enum.program }, [])
-	)(connection);
-	const remainingProgram = await createContainer(
-		initializeNewContainer({ title: 'Remaining program', type: payloadTypes.enum.program }, [])
-	)(connection);
-	const sharedGoal = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [
-			{
-				object: deletedProgram.guid,
-				position: 0,
-				predicate: predicates.enum['is-part-of-program']
-			},
-			{
-				object: remainingProgram.guid,
-				position: 0,
-				predicate: predicates.enum['is-part-of-program']
-			}
-		])
-	)(connection);
-	const exclusiveGoal = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [
-			{ object: deletedProgram.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
-		])
-	)(connection);
-	const exclusiveMeasure = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.measure), [
-			{ object: sharedGoal.guid, position: 0, predicate: predicates.enum['is-part-of'] },
-			{ object: deletedProgram.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
-		])
-	)(connection);
+	connection,
+	containers,
+	relations
+}) => {
+	const deletedProgram = containers.add({
+		title: 'Deleted program',
+		type: payloadTypes.enum.program
+	});
+	const remainingProgram = containers.add({
+		title: 'Remaining program',
+		type: payloadTypes.enum.program
+	});
+	const sharedGoal = containers.add({ type: payloadTypes.enum.goal });
+	const exclusiveGoal = containers.add({ type: payloadTypes.enum.goal });
+	const exclusiveMeasure = containers.add({ type: payloadTypes.enum.measure });
+	relations.add(sharedGoal, predicates.enum['is-part-of-program'], deletedProgram);
+	relations.add(sharedGoal, predicates.enum['is-part-of-program'], remainingProgram);
+	relations.add(exclusiveGoal, predicates.enum['is-part-of-program'], deletedProgram);
+	relations.add(exclusiveMeasure, predicates.enum['is-part-of'], sharedGoal);
+	relations.add(exclusiveMeasure, predicates.enum['is-part-of-program'], deletedProgram);
+	await containers.persist();
+	await relations.persist();
 
 	await deleteContainerRecursively(await getContainerByGuid(deletedProgram.guid)(connection))(
 		connection
@@ -718,10 +692,10 @@ async function createProgramPair(connection: Fixtures['connection']) {
 }
 
 test('deleting a shared goal itself takes its children along and leaves both programs', async ({
-	connection
-}: Fixtures) => {
-	const { childOfShared, firstProgram, secondProgram, sharedGoal } =
-		await createProgramPair(connection);
+	connection,
+	programPair
+}) => {
+	const { childOfShared, firstProgram, secondProgram, sharedGoal } = programPair;
 
 	await deleteContainerRecursively(await getContainerByGuid(sharedGoal.guid)(connection))(
 		connection
@@ -736,10 +710,10 @@ test('deleting a shared goal itself takes its children along and leaves both pro
 });
 
 test('deleting both programs one after the other removes the shared goal with the last one', async ({
-	connection
-}: Fixtures) => {
-	const { childOfShared, firstProgram, secondProgram, sharedGoal } =
-		await createProgramPair(connection);
+	connection,
+	programPair
+}) => {
+	const { childOfShared, firstProgram, secondProgram, sharedGoal } = programPair;
 
 	await deleteContainerRecursively(await getContainerByGuid(firstProgram.guid)(connection))(
 		connection
@@ -755,21 +729,20 @@ test('deleting both programs one after the other removes the shared goal with th
 });
 
 test('a measure in two programs survives one program but not its own goal', async ({
-	connection
-}: Fixtures) => {
-	const { firstProgram, secondProgram } = await createProgramPair(connection);
-	const goal = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [
-			{ object: firstProgram.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
-		])
-	)(connection);
-	const measure = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.measure), [
-			{ object: goal.guid, position: 0, predicate: predicates.enum['is-part-of'] },
-			{ object: firstProgram.guid, position: 0, predicate: predicates.enum['is-part-of-program'] },
-			{ object: secondProgram.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
-		])
-	)(connection);
+	connection,
+	containers,
+	programPair,
+	relations
+}) => {
+	const { firstProgram, secondProgram } = programPair;
+	const goal = containers.add({ type: payloadTypes.enum.goal });
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	relations.add(goal, predicates.enum['is-part-of-program'], firstProgram);
+	relations.add(measure, predicates.enum['is-part-of'], goal);
+	relations.add(measure, predicates.enum['is-part-of-program'], firstProgram);
+	relations.add(measure, predicates.enum['is-part-of-program'], secondProgram);
+	await containers.persist();
+	await relations.persist();
 
 	await deleteContainerRecursively(await getContainerByGuid(firstProgram.guid)(connection))(
 		connection
@@ -780,11 +753,11 @@ test('a measure in two programs survives one program but not its own goal', asyn
 		[predicates.enum['is-part-of-program'], secondProgram.guid]
 	]);
 
-	const otherGoal = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [
-			{ object: secondProgram.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
-		])
-	)(connection);
+	const otherGoal = containers.add({ type: payloadTypes.enum.goal });
+	relations.add(otherGoal, predicates.enum['is-part-of-program'], secondProgram);
+	await containers.persist();
+	await relations.persist();
+
 	await updateContainer(
 		modifiedContainer.parse({
 			...survivingMeasure,
@@ -1196,46 +1169,29 @@ test('restoring a program reattaches the shared goal that survived its deletion'
 });
 
 test('omitting the template filter returns a complete mixed program hierarchy', async ({
-	connection
-}: Fixtures) => {
-	const program = await createContainer(
-		initializeNewContainer(
-			{
-				template: true,
-				title: 'Program template',
-				type: payloadTypes.enum.program
-			},
-			[]
-		)
-	)(connection);
-	const measure = await createContainer(
-		initializeNewContainer(
-			{
-				template: true,
-				title: 'Measure template',
-				type: payloadTypes.enum.measure
-			},
-			[
-				{
-					object: program.guid,
-					position: 0,
-					predicate: predicates.enum['is-part-of-program']
-				}
-			]
-		)
-	)(connection);
-	const section = await createContainer(
-		initializeNewContainer(
-			{ body: 'Section body', title: 'Section', type: payloadTypes.enum.text },
-			[
-				{
-					object: measure.guid,
-					position: 0,
-					predicate: predicates.enum['is-section-of']
-				}
-			]
-		)
-	)(connection);
+	connection,
+	containers,
+	relations
+}) => {
+	const program = containers.add({
+		template: true,
+		title: 'Program template',
+		type: payloadTypes.enum.program
+	});
+	const measure = containers.add({
+		template: true,
+		title: 'Measure template',
+		type: payloadTypes.enum.measure
+	});
+	const section = containers.add({
+		body: 'Section body',
+		title: 'Section',
+		type: payloadTypes.enum.text
+	});
+	relations.add(measure, predicates.enum['is-part-of-program'], program);
+	relations.add(section, predicates.enum['is-section-of'], measure);
+	await containers.persist();
+	await relations.persist();
 
 	const all = await getAllContainersRelatedToProgram(program.guid, {})(connection);
 	const templates = await getAllContainersRelatedToProgram(program.guid, { template: true })(
