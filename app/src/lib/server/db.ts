@@ -2560,18 +2560,6 @@ export function getAllContainersRelatedToMeasure(
 	};
 }
 
-// The teams (units marked as such) the user is a member of: everyone with a
-// role on the team's matrix.
-const teamsOfUser = (guid: string) => sql.fragment`
-	SELECT t.guid
-	FROM container_user cu
-	JOIN container t ON t.revision = cu.object
-		AND t.valid_currently AND NOT t.deleted
-		AND t.payload->>'type' = ${payloadTypes.enum.organizational_unit}
-		AND t.payload->>'organizationalUnitType' = ${organizationalUnitType.enum['organizational_unit_type.team']}
-	WHERE cu.subject = ${guid} AND cu.predicate = ${predicates.enum['is-member-of']}
-`;
-
 // Everything the user takes part in: the contents of the areas and the areas
 // the user has a role on, the containers granting rows to one of the user's
 // teams, and the tasks assigned to the user.
@@ -2581,7 +2569,13 @@ export function getAllContainersRelatedToUser(guid: string) {
 			WITH subjects AS (
 				SELECT ${guid}::uuid AS guid
 				UNION
-				${teamsOfUser(guid)}
+				SELECT t.guid
+				FROM container_user cu
+				JOIN container t ON t.revision = cu.object
+					AND t.valid_currently AND NOT t.deleted
+					AND t.payload->>'type' = ${payloadTypes.enum.organizational_unit}
+					AND t.payload->>'organizationalUnitType' = ${organizationalUnitType.enum['organizational_unit_type.team']}
+				WHERE cu.subject = ${guid} AND cu.predicate = ${predicates.enum['is-member-of']}
 			)
 			SELECT c.* FROM container c
 			JOIN container m ON c.managed_by = m.guid
