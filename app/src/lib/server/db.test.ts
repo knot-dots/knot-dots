@@ -83,12 +83,11 @@ test('containers can be related to each other', async ({ connection }: Fixtures)
 	const partOfProgramTypes = [payloadTypes.enum.goal, payloadTypes.enum.measure];
 
 	for (const payloadType of partOfProgramTypes) {
-		const i = partOfProgramTypes.indexOf(payloadType);
 		const partOfProgram = await createContainer(
 			initializeNewContainer(simplePayload(payloadType), [
 				{
 					object: program.guid,
-					position: i,
+					position: 0,
 					predicate: predicates.enum['is-part-of-program']
 				}
 			])
@@ -97,7 +96,7 @@ test('containers can be related to each other', async ({ connection }: Fixtures)
 	}
 
 	const programWithRelations = await getContainerByGuid(program.guid)(connection);
-	expect(programWithRelations.relation).toEqual(expectedRelations);
+	expect.assert.sameDeepMembers(programWithRelations.relation, expectedRelations);
 });
 
 test('template queries separate organization and program availability', async ({ connection }) => {
@@ -266,20 +265,20 @@ test('relation positions can be updated', async ({ connection }: Fixtures) => {
 		)
 	)(connection);
 
-	const partOfProgramTypes = [payloadTypes.enum.goal, payloadTypes.enum.measure];
+	const sectionOfProgramTypes = [payloadTypes.enum.goal, payloadTypes.enum.measure];
 
-	for (const payloadType of partOfProgramTypes) {
-		const i = partOfProgramTypes.indexOf(payloadType);
-		const partOfProgram = await createContainer(
+	for (const payloadType of sectionOfProgramTypes) {
+		const i = sectionOfProgramTypes.indexOf(payloadType);
+		const sectionOfProgram = await createContainer(
 			initializeNewContainer(simplePayload(payloadType), [
 				{
 					object: program.guid,
 					position: i,
-					predicate: predicates.enum['is-part-of-program']
+					predicate: predicates.enum['is-section-of']
 				}
 			])
 		)(connection);
-		expectedRelationsOfProgram.push(...partOfProgram.relation);
+		expectedRelationsOfProgram.push(...sectionOfProgram.relation);
 	}
 
 	const programWithRelations = await getContainerByGuid(program.guid)(connection);
@@ -370,12 +369,11 @@ test('relations are added or removed when updating a container', async ({
 	const partOfProgramTypes = [payloadTypes.enum.goal, payloadTypes.enum.measure];
 
 	for (const payloadType of partOfProgramTypes) {
-		const i = partOfProgramTypes.indexOf(payloadType);
 		const partOfProgram = await createContainer(
 			initializeNewContainer(simplePayload(payloadType), [
 				{
 					object: program.guid,
-					position: i,
+					position: 0,
 					predicate: predicates.enum['is-part-of-program']
 				}
 			])
@@ -384,8 +382,9 @@ test('relations are added or removed when updating a container', async ({
 	}
 
 	const programWithRelations = await getContainerByGuid(program.guid)(connection);
-	expect(programWithRelations.relation).toEqual(expectedRelationsOfProgram);
+	expect.assert.sameDeepMembers(programWithRelations.relation, expectedRelationsOfProgram);
 
+	const [replacedRelation, ...keptRelations] = programWithRelations.relation;
 	const anotherContainer = await createContainer(
 		initializeNewContainer(
 			{ title: 'Lorem ipsum', type: payloadTypes.enum.measure } as MeasurePayload,
@@ -403,23 +402,21 @@ test('relations are added or removed when updating a container', async ({
 	await updateContainer(
 		modifiedContainer.parse({
 			...programWithRelations,
-			relation: [newRelation, ...programWithRelations.relation.slice(1)]
+			relation: [newRelation, ...keptRelations]
 		})
 	)(connection);
 
 	const programWithModifiedRelations = await getContainerByGuid(program.guid)(connection);
-	expect(programWithModifiedRelations.relation).toEqual([
+	expect.assert.sameDeepMembers(programWithModifiedRelations.relation, [
 		newRelation,
-		...expectedRelationsOfProgram.slice(1)
+		...keptRelations
 	]);
 
 	const anotherContainerWitRelations = await getContainerByGuid(anotherContainer.guid)(connection);
 	expect(anotherContainerWitRelations.relation).toEqual([newRelation]);
 
-	const formerFirstPartOfProgram = await getContainerByGuid(expectedRelationsOfProgram[0].subject)(
-		connection
-	);
-	expect(formerFirstPartOfProgram.relation).toEqual([]);
+	const formerPartOfProgram = await getContainerByGuid(replacedRelation.subject)(connection);
+	expect(formerPartOfProgram.relation).toEqual([]);
 });
 
 test('adding more relations does not interfere with existing relations', async ({
@@ -440,12 +437,11 @@ test('adding more relations does not interfere with existing relations', async (
 	const partOfProgramTypes = [payloadTypes.enum.goal, payloadTypes.enum.measure];
 
 	for (const payloadType of partOfProgramTypes) {
-		const i = partOfProgramTypes.indexOf(payloadType);
 		const partOfProgram = await createContainer(
 			initializeNewContainer(simplePayload(payloadType), [
 				{
 					object: program.guid,
-					position: i,
+					position: 0,
 					predicate: predicates.enum['is-part-of-program']
 				}
 			])
@@ -462,7 +458,7 @@ test('adding more relations does not interfere with existing relations', async (
 			}
 		])
 	)(connection);
-	expect(task.relation).toEqual([
+	expect.assert.sameDeepMembers(task.relation, [
 		{
 			object: expectedRelationsOfProgram[1].subject,
 			position: 0,
@@ -472,7 +468,7 @@ test('adding more relations does not interfere with existing relations', async (
 	]);
 
 	const programWithRelations = await getContainerByGuid(program.guid)(connection);
-	expect(programWithRelations.relation).toEqual(expectedRelationsOfProgram);
+	expect.assert.sameDeepMembers(programWithRelations.relation, expectedRelationsOfProgram);
 });
 
 type Test = {
@@ -723,13 +719,13 @@ test('deleting a program keeps members of other programs together with their chi
 	)(connection);
 	const exclusiveGoal = await createContainer(
 		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [
-			{ object: deletedProgram.guid, position: 1, predicate: predicates.enum['is-part-of-program'] }
+			{ object: deletedProgram.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
 		])
 	)(connection);
 	const exclusiveMeasure = await createContainer(
 		initializeNewContainer(simplePayload(payloadTypes.enum.measure), [
 			{ object: sharedGoal.guid, position: 0, predicate: predicates.enum['is-part-of'] },
-			{ object: deletedProgram.guid, position: 1, predicate: predicates.enum['is-part-of-program'] }
+			{ object: deletedProgram.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
 		])
 	)(connection);
 
@@ -768,7 +764,7 @@ async function createProgramPair(connection: Fixtures['connection']) {
 	const childOfShared = await createContainer(
 		initializeNewContainer(simplePayload(payloadTypes.enum.measure), [
 			{ object: sharedGoal.guid, position: 0, predicate: predicates.enum['is-part-of'] },
-			{ object: firstProgram.guid, position: 1, predicate: predicates.enum['is-part-of-program'] }
+			{ object: firstProgram.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
 		])
 	)(connection);
 	return { childOfShared, firstProgram, secondProgram, sharedGoal };
@@ -817,14 +813,14 @@ test('a measure in two programs survives one program but not its own goal', asyn
 	const { firstProgram, secondProgram } = await createProgramPair(connection);
 	const goal = await createContainer(
 		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [
-			{ object: firstProgram.guid, position: 1, predicate: predicates.enum['is-part-of-program'] }
+			{ object: firstProgram.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
 		])
 	)(connection);
 	const measure = await createContainer(
 		initializeNewContainer(simplePayload(payloadTypes.enum.measure), [
 			{ object: goal.guid, position: 0, predicate: predicates.enum['is-part-of'] },
-			{ object: firstProgram.guid, position: 2, predicate: predicates.enum['is-part-of-program'] },
-			{ object: secondProgram.guid, position: 1, predicate: predicates.enum['is-part-of-program'] }
+			{ object: firstProgram.guid, position: 0, predicate: predicates.enum['is-part-of-program'] },
+			{ object: secondProgram.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
 		])
 	)(connection);
 
@@ -839,7 +835,7 @@ test('a measure in two programs survives one program but not its own goal', asyn
 
 	const otherGoal = await createContainer(
 		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [
-			{ object: secondProgram.guid, position: 2, predicate: predicates.enum['is-part-of-program'] }
+			{ object: secondProgram.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
 		])
 	)(connection);
 	await updateContainer(
@@ -928,7 +924,8 @@ test('restoring a deleted container restores the relations deleted along with it
 	)(connection);
 	const goal = await createContainer(
 		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [
-			{ object: program.guid, position: 3, predicate: predicates.enum['is-part-of-program'] }
+			{ object: program.guid, position: 0, predicate: predicates.enum['is-part-of-program'] },
+			{ object: program.guid, position: 3, predicate: predicates.enum['is-section-of'] }
 		])
 	)(connection);
 	const before = await getContainerByGuid(goal.guid)(connection);
@@ -1124,7 +1121,7 @@ test('restoring a program brings back the objects deleted along with it', async 
 	const measure = await createContainer(
 		initializeNewContainer(simplePayload(payloadTypes.enum.measure), [
 			{ object: goal.guid, position: 0, predicate: predicates.enum['is-part-of'] },
-			{ object: program.guid, position: 1, predicate: predicates.enum['is-part-of-program'] }
+			{ object: program.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
 		])
 	)(connection);
 	const before = await snapshot(connection, [program.guid, goal.guid, measure.guid]);
@@ -1152,7 +1149,7 @@ test('restoring a program leaves a goal deleted that was deleted on its own befo
 	)(connection);
 	const goal = await createContainer(
 		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [
-			{ object: program.guid, position: 1, predicate: predicates.enum['is-part-of-program'] }
+			{ object: program.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
 		])
 	)(connection);
 
