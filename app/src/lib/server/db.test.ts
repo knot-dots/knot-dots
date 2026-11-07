@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import { expect } from 'vitest';
 import { z } from 'zod';
-import { type Fixtures, test } from '$lib/fixtures';
+import { test, type ContainerFixtureOptions, type Fixtures, realm } from '$lib/fixtures';
 import {
 	type AnyPayload,
 	type Container,
@@ -48,7 +48,6 @@ import { computeUserGrants } from '$lib/server/computeUserGrants';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 
 const organization = uuid();
-const realm = 'test';
 
 function initializeNewContainer(
 	payload: Partial<AnyPayload> & Pick<AnyPayload, 'type'>,
@@ -1315,66 +1314,59 @@ test('omitting the template filter returns a complete mixed program hierarchy', 
 // measured by it, an objective (created by createObjective for a goal) is an objective
 // for it, or actual data names it in its payload.
 test('getIndicatorGuidsInUse returns the indicators measured or reported on within scope', async ({
-	connection
+	connection,
+	containers,
+	organization,
+	relations
 }) => {
 	const otherOrganization = uuid();
 	const organizationalUnit = uuid();
-	const create = (
-		payload: Partial<AnyPayload> & Pick<AnyPayload, 'type'>,
-		relation: PartialRelation[],
-		scope: { organization?: string; organizationalUnit?: string } = {}
-	) =>
-		createContainer(
-			newContainer.parse({
-				managed_by: scope.organization ?? organization,
-				organization: scope.organization ?? organization,
-				organizational_unit: scope.organizationalUnit ?? null,
-				payload,
-				realm,
-				relation
-			})
-		)(connection);
 	const indicator = (title: string) =>
-		create({ title, type: payloadTypes.enum.indicator, unit: 'unit.percent' }, []);
-	const effectOf = (measure: string, indicator: string): PartialRelation[] => [
-		{ object: indicator, position: 0, predicate: predicates.enum['is-measured-by'] },
-		{ object: measure, position: 0, predicate: predicates.enum['is-part-of'] }
-	];
-	const objectiveOf = (goal: string, indicator: string): PartialRelation[] => [
-		{ object: indicator, position: 0, predicate: predicates.enum['is-objective-for'] },
-		{ object: goal, position: 0, predicate: predicates.enum['is-part-of'] }
-	];
-	const actualData = (indicator: string) =>
-		({
-			indicator,
-			title: 'Actual data',
-			type: payloadTypes.enum.actual_data
-		}) as Partial<AnyPayload> & Pick<AnyPayload, 'type'>;
+		containers.add({ title, type: payloadTypes.enum.indicator, unit: 'unit.percent' });
+	const actualData = (indicator: string, options: ContainerFixtureOptions = {}) =>
+		containers.add(
+			{ indicator, title: 'Actual data', type: payloadTypes.enum.actual_data },
+			options
+		);
 
-	const measured = await indicator('Measured by an effect');
-	const objective = await indicator('Objective of a goal');
-	const reported = await indicator('Reported on by actual data');
-	const reportedInUnit = await indicator('Reported on by actual data of a unit');
-	const measuredElsewhere = await indicator('Measured by an effect of another organization');
-	const reportedElsewhere = await indicator('Reported on by actual data of another organization');
-	const unused = await indicator('Unused');
+	const measured = indicator('Measured by an effect');
+	const objective = indicator('Objective of a goal');
+	const reported = indicator('Reported on by actual data');
+	const reportedInUnit = indicator('Reported on by actual data of a unit');
+	const measuredElsewhere = indicator('Measured by an effect of another organization');
+	const reportedElsewhere = indicator('Reported on by actual data of another organization');
+	const unused = indicator('Unused');
 
-	const measure = await create(simplePayload(payloadTypes.enum.measure), []);
-	await create(simplePayload(payloadTypes.enum.effect), effectOf(measure.guid, measured.guid));
-	const goal = await create(simplePayload(payloadTypes.enum.goal), []);
-	await create(simplePayload(payloadTypes.enum.objective), objectiveOf(goal.guid, objective.guid));
-	await create(actualData(reported.guid), []);
-	await create(actualData(reportedInUnit.guid), [], { organizationalUnit });
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	const effect = containers.add({ type: payloadTypes.enum.effect });
+	relations.add(effect, predicates.enum['is-part-of'], measure);
+	relations.add(effect, predicates.enum['is-measured-by'], measured);
 
-	const otherMeasure = await create(simplePayload(payloadTypes.enum.measure), [], {
-		organization: otherOrganization
-	});
-	await create(
-		simplePayload(payloadTypes.enum.effect),
-		effectOf(otherMeasure.guid, measuredElsewhere.guid),
+	const goal = containers.add({ type: payloadTypes.enum.goal });
+	const goalObjective = containers.add({ type: payloadTypes.enum.objective });
+	relations.add(goalObjective, predicates.enum['is-part-of'], goal);
+	relations.add(goalObjective, predicates.enum['is-objective-for'], objective);
+
+	actualData(reported.guid);
+	actualData(reportedInUnit.guid, { organizational_unit: organizationalUnit });
+
+	const otherMeasure = containers.add(
+		{ type: payloadTypes.enum.measure },
 		{ organization: otherOrganization }
 	);
-	await create(actualData(reportedElsewhere.guid), [], { organization: otherOrganization });
+	const otherEffect = containers.add(
+		{ type: payloadTypes.enum.effect },
+		{ organization: otherOrganization }
+	);
+	relations.add(otherEffect, predicates.enum['is-part-of'], otherMeasure);
+	relations.add(otherEffect, predicates.enum['is-measured-by'], measuredElsewhere);
+
+	actualData(reportedElsewhere.guid, {
+		organization: otherOrganization
+	});
+
+	await containers.persist();
+	await relations.persist();
 
 	const inOrganization = await getIndicatorGuidsInUse(
 		{ organizations: [organization] },
