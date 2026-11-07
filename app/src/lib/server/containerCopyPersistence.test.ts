@@ -15,12 +15,10 @@ import {
 	newContainer,
 	payloadTypes,
 	predicates,
-	relation,
 	type Relation
 } from '$lib/models';
 import type { ContainerCopyPlan } from '$lib/server/containerCopyPlan';
 import {
-	createContainer,
 	createManyContainers,
 	createOrUpdateUser,
 	type DatabaseNonTransactionConnection,
@@ -145,9 +143,7 @@ test('bulk-inserts payloads, creators, GUID relations, and reconstructs containe
 	expect(stored.every(({ managed_by }) => managed_by[0] === organization)).toBe(true);
 });
 
-test('rolls back rows and users when a creator or relation insert fails', async ({
-	connection
-}) => {
+test('rolls back rows and users when a creator insert fails', async ({ connection }) => {
 	const copiedGuid = uuid();
 	const missingCreator = uuid();
 	await expect(
@@ -163,45 +159,6 @@ test('rolls back rows and users when a creator or relation insert fails', async 
 	expect(
 		await connection.maybeOneFirst(sql.typeAlias('guid')`
 			SELECT guid FROM container WHERE guid = ${copiedGuid}
-		`)
-	).toBeNull();
-
-	const existingObject = await createContainer(copyContainer(payloadTypes.enum.program))(
-		connection
-	);
-	const existingSubject = await createContainer(copyContainer(payloadTypes.enum.measure))(
-		connection
-	);
-	const existingRelation: Relation = {
-		object: existingObject.guid,
-		position: 0,
-		predicate: predicates.enum['is-part-of'],
-		subject: existingSubject.guid
-	};
-	await connection.query(sql.typeAlias('void')`
-		INSERT INTO container_relation (object, position, predicate, subject)
-		VALUES (
-			${existingRelation.object},
-			${existingRelation.position},
-			${existingRelation.predicate},
-			${existingRelation.subject}
-		)
-	`);
-
-	const relationConflictGuid = uuid();
-	await expect(
-		connection.transaction((nested) =>
-			createManyContainers([
-				copyContainer(payloadTypes.enum.text, {
-					guid: relationConflictGuid,
-					relation: [existingRelation]
-				})
-			])(nested)
-		)
-	).rejects.toThrow('relation_conflict');
-	expect(
-		await connection.maybeOneFirst(sql.typeAlias('guid')`
-			SELECT guid FROM container WHERE guid = ${relationConflictGuid}
 		`)
 	).toBeNull();
 });

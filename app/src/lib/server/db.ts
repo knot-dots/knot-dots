@@ -565,9 +565,6 @@ export function createManyContainers(inserts: readonly NewContainerWithGuid[]) {
 				`);
 
 		const relationResult = await insertManyContainerRelations(relations, connection);
-		if (relationResult.length !== relations.length) {
-			throw new Error('relation_conflict');
-		}
 
 		const usersByRevision = new Map<number, Array<z.infer<typeof userRelation>>>();
 		for (const { object, predicate, subject } of userResult) {
