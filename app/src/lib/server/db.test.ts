@@ -1,22 +1,25 @@
 import { v4 as uuid } from 'uuid';
 import { expect } from 'vitest';
 import { z } from 'zod';
-import { test, type ContainerFixtureOptions, type Fixtures, realm } from '$lib/fixtures';
+import {
+	test as base,
+	type ContainerFixtureOptions,
+	type Fixtures,
+	type PayloadFixture,
+	realm
+} from '$lib/fixtures';
 import {
 	type AnyPayload,
 	type Container,
 	grantSetForRole,
-	type MeasurePayload,
 	memberRoles,
 	modifiedContainer,
-	type NewContainer,
 	newContainer,
 	type OrganizationalUnitPayload,
 	type PartialRelation,
 	type PayloadType,
 	payloadTypes,
 	predicates,
-	type ProgramPayload,
 	resourceDataTypes,
 	type Relation,
 	visibility
@@ -47,6 +50,37 @@ import { computeManagedBy } from '$lib/server/computeManagedBy';
 import { computeUserGrants } from '$lib/server/computeUserGrants';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 
+const test = base.extend('programWithParts', async ({ containers, relations }) => {
+	const program = containers.add({ type: payloadTypes.enum.program });
+	const goal = containers.add({ type: payloadTypes.enum.goal });
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	const relationsOfProgram = [
+		relations.add(goal, predicates.enum['is-part-of-program'], program),
+		relations.add(measure, predicates.enum['is-part-of-program'], program)
+	];
+	await containers.persist();
+	await relations.persist();
+	return { goal, measure, program, relationsOfProgram };
+});
+
+// For the containers created with createContainer() rather than as fixtures: in the
+// tests of createContainer() itself, which assigns the GUID and completes the
+// relations, and where createManyContainers() does not write a column, e.g. own_matrix.
+function newContainerInput(
+	organization: string,
+	payload: PayloadFixture,
+	relation: PartialRelation[]
+) {
+	return newContainer.parse({
+		managed_by: organization,
+		organization,
+		organizational_unit: null,
+		payload: { title: 'Lorem ipsum', ...payload },
+		realm,
+		relation
+	});
+}
+
 const organization = uuid();
 
 function initializeNewContainer(
@@ -66,36 +100,30 @@ function initializeNewContainer(
 const simplePayload = (type: AnyPayload['type']) =>
 	({ title: 'Lorem ipsum', type }) as Partial<AnyPayload> & Pick<AnyPayload, 'type'>;
 
-test('containers can be related to each other', async ({ connection }: Fixtures) => {
-	const expectedRelations: Relation[] = [];
+test('containers can be related to each other', async ({
+	connection,
+	containers,
+	organization
+}) => {
+	const program = containers.add({ type: payloadTypes.enum.program });
+	await containers.persist();
 
-	const program = await createContainer(
-		initializeNewContainer(
-			{
-				title: 'Lorem ipsum',
-				type: payloadTypes.enum.program
-			} as ProgramPayload,
-			[]
-		)
-	)(connection);
-
-	const partOfProgramTypes = [payloadTypes.enum.goal, payloadTypes.enum.measure];
-
-	for (const payloadType of partOfProgramTypes) {
-		const partOfProgram = await createContainer(
-			initializeNewContainer(simplePayload(payloadType), [
-				{
-					object: program.guid,
-					position: 0,
-					predicate: predicates.enum['is-part-of-program']
-				}
-			])
-		)(connection);
-		expectedRelations.push(...partOfProgram.relation);
+	const parts = [];
+	for (const type of [payloadTypes.enum.goal, payloadTypes.enum.measure]) {
+		parts.push(
+			await createContainer(
+				newContainerInput(organization, { type }, [
+					{ object: program.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
+				])
+			)(connection)
+		);
 	}
 
 	const programWithRelations = await getContainerByGuid(program.guid)(connection);
-	expect.assert.sameDeepMembers(programWithRelations.relation, expectedRelations);
+	expect.assert.sameDeepMembers(
+		programWithRelations.relation,
+		parts.flatMap(({ relation }) => relation)
+	);
 });
 
 test('template queries separate organization and program availability', async ({ connection }) => {
@@ -251,62 +279,37 @@ test('nested measure template scopes are discovered when copying a program', asy
 	).toEqual([]);
 });
 
-test('relation positions can be updated', async ({ connection }: Fixtures) => {
-	const expectedRelationsOfProgram: Relation[] = [];
-
-	const program = await createContainer(
-		initializeNewContainer(
-			{
-				title: 'Lorem ipsum',
-				type: payloadTypes.enum.program
-			} as ProgramPayload,
-			[]
-		)
-	)(connection);
-
-	const sectionOfProgramTypes = [payloadTypes.enum.goal, payloadTypes.enum.measure];
-
-	for (const payloadType of sectionOfProgramTypes) {
-		const i = sectionOfProgramTypes.indexOf(payloadType);
-		const sectionOfProgram = await createContainer(
-			initializeNewContainer(simplePayload(payloadType), [
-				{
-					object: program.guid,
-					position: i,
-					predicate: predicates.enum['is-section-of']
-				}
-			])
-		)(connection);
-		expectedRelationsOfProgram.push(...sectionOfProgram.relation);
-	}
+test('relation positions can be updated', async ({ connection, containers, relations }) => {
+	const program = containers.add({ type: payloadTypes.enum.program });
+	const goal = containers.add({ type: payloadTypes.enum.goal });
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	const sections = [
+		relations.add(goal, predicates.enum['is-section-of'], program),
+		relations.add(measure, predicates.enum['is-section-of'], program)
+	];
+	await containers.persist();
+	await relations.persist();
 
 	const programWithRelations = await getContainerByGuid(program.guid)(connection);
-	expect(programWithRelations.relation).toEqual(expectedRelationsOfProgram);
+	expect.assert.sameDeepMembers(programWithRelations.relation, sections);
 
-	await updateManyContainerRelations(
-		[...programWithRelations.relation.slice(1), programWithRelations.relation[0]].map(
-			(r, index) => ({ ...r, position: index })
-		)
-	)(connection);
+	const reordered = [
+		...programWithRelations.relation.slice(1),
+		programWithRelations.relation[0]
+	].map((r, index) => ({ ...r, position: index }));
+	await updateManyContainerRelations(reordered)(connection);
 
 	const programWithModifiedRelations = await getContainerByGuid(program.guid)(connection);
-	expect(programWithModifiedRelations.relation).toEqual(
-		[...expectedRelationsOfProgram.slice(1), expectedRelationsOfProgram[0]].map((r, index) => ({
-			...r,
-			position: index
-		}))
-	);
+	expect(programWithModifiedRelations.relation).toEqual(reordered);
 });
 
 test('relation changes commit together with afterChange or not at all', async ({
-	connection
-}: Fixtures) => {
-	const subject = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [])
-	)(connection);
-	const object = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [])
-	)(connection);
+	connection,
+	containers
+}) => {
+	const subject = containers.add({ type: payloadTypes.enum.goal });
+	const object = containers.add({ type: payloadTypes.enum.goal });
+	await containers.persist();
 	const relationWith = (predicate: string): Relation => ({
 		object: object.guid,
 		position: 0,
@@ -351,51 +354,23 @@ test('relation changes commit together with afterChange or not at all', async ({
 });
 
 test('relations are added or removed when updating a container', async ({
-	connection
-}: Fixtures) => {
-	const expectedRelationsOfProgram: Relation[] = [];
-
-	const program = await createContainer(
-		initializeNewContainer(
-			{
-				title: 'Lorem ipsum',
-				type: payloadTypes.enum.program
-			} as ProgramPayload,
-			[]
-		)
-	)(connection);
-
-	const partOfProgramTypes = [payloadTypes.enum.goal, payloadTypes.enum.measure];
-
-	for (const payloadType of partOfProgramTypes) {
-		const partOfProgram = await createContainer(
-			initializeNewContainer(simplePayload(payloadType), [
-				{
-					object: program.guid,
-					position: 0,
-					predicate: predicates.enum['is-part-of-program']
-				}
-			])
-		)(connection);
-		expectedRelationsOfProgram.push(...partOfProgram.relation);
-	}
+	connection,
+	containers,
+	programWithParts
+}) => {
+	const { program, relationsOfProgram } = programWithParts;
+	const anotherMeasure = containers.add({ type: payloadTypes.enum.measure });
+	await containers.persist();
 
 	const programWithRelations = await getContainerByGuid(program.guid)(connection);
-	expect.assert.sameDeepMembers(programWithRelations.relation, expectedRelationsOfProgram);
+	expect.assert.sameDeepMembers(programWithRelations.relation, relationsOfProgram);
 
 	const [replacedRelation, ...keptRelations] = programWithRelations.relation;
-	const anotherContainer = await createContainer(
-		initializeNewContainer(
-			{ title: 'Lorem ipsum', type: payloadTypes.enum.measure } as MeasurePayload,
-			[]
-		)
-	)(connection);
-
 	const newRelation = {
 		object: program.guid,
 		position: 0,
 		predicate: predicates.enum['is-part-of-program'],
-		subject: anotherContainer.guid
+		subject: anotherMeasure.guid
 	};
 
 	await updateContainer(
@@ -411,55 +386,28 @@ test('relations are added or removed when updating a container', async ({
 		...keptRelations
 	]);
 
-	const anotherContainerWitRelations = await getContainerByGuid(anotherContainer.guid)(connection);
-	expect(anotherContainerWitRelations.relation).toEqual([newRelation]);
+	const anotherMeasureWithRelations = await getContainerByGuid(anotherMeasure.guid)(connection);
+	expect(anotherMeasureWithRelations.relation).toEqual([newRelation]);
 
 	const formerPartOfProgram = await getContainerByGuid(replacedRelation.subject)(connection);
 	expect(formerPartOfProgram.relation).toEqual([]);
 });
 
 test('adding more relations does not interfere with existing relations', async ({
-	connection
-}: Fixtures) => {
-	const expectedRelationsOfProgram: Relation[] = [];
-
-	const program = await createContainer(
-		initializeNewContainer(
-			{
-				title: 'Lorem ipsum',
-				type: payloadTypes.enum.program
-			} as NewContainer & Container<ProgramPayload>['payload'],
-			[]
-		)
-	)(connection);
-
-	const partOfProgramTypes = [payloadTypes.enum.goal, payloadTypes.enum.measure];
-
-	for (const payloadType of partOfProgramTypes) {
-		const partOfProgram = await createContainer(
-			initializeNewContainer(simplePayload(payloadType), [
-				{
-					object: program.guid,
-					position: 0,
-					predicate: predicates.enum['is-part-of-program']
-				}
-			])
-		)(connection);
-		expectedRelationsOfProgram.push(...partOfProgram.relation);
-	}
+	connection,
+	organization,
+	programWithParts
+}) => {
+	const { measure, program, relationsOfProgram } = programWithParts;
 
 	const task = await createContainer(
-		initializeNewContainer(simplePayload(payloadTypes.enum.task), [
-			{
-				object: expectedRelationsOfProgram[1].subject,
-				position: 0,
-				predicate: predicates.enum['is-part-of']
-			}
+		newContainerInput(organization, { type: payloadTypes.enum.task }, [
+			{ object: measure.guid, position: 0, predicate: predicates.enum['is-part-of'] }
 		])
 	)(connection);
 	expect.assert.sameDeepMembers(task.relation, [
 		{
-			object: expectedRelationsOfProgram[1].subject,
+			object: measure.guid,
 			position: 0,
 			predicate: predicates.enum['is-part-of'],
 			subject: task.guid
@@ -467,7 +415,7 @@ test('adding more relations does not interfere with existing relations', async (
 	]);
 
 	const programWithRelations = await getContainerByGuid(program.guid)(connection);
-	expect.assert.sameDeepMembers(programWithRelations.relation, expectedRelationsOfProgram);
+	expect.assert.sameDeepMembers(programWithRelations.relation, relationsOfProgram);
 });
 
 type Test = {
