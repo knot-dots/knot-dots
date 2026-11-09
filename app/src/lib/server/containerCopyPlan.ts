@@ -32,7 +32,11 @@ export const referenceCopyPredicates = [
 
 const referencePredicateSet = new Set<string>(referenceCopyPredicates);
 const uuid = z.uuid();
-const newContainerWithGuid = newContainer.extend({ guid: z.uuid(), relation: z.array(relation) });
+const newContainerWithGuid = newContainer.extend({
+	guid: z.uuid(),
+	own_matrix: z.boolean().optional(),
+	relation: z.array(relation)
+});
 
 export type NewContainerWithGuid = z.infer<typeof newContainerWithGuid>;
 

@@ -180,6 +180,18 @@ test('handles empty input and keeps organizations outside the generic writer', a
 	});
 });
 
+test('writes whether a container has a matrix of its own', async ({ connection }) => {
+	const decoupled = { ...copyContainer(payloadTypes.enum.program), own_matrix: true };
+	const inheriting = copyContainer(payloadTypes.enum.program);
+
+	const { containers } = await createManyContainers([decoupled, inheriting])(connection);
+
+	expect(containers.map(({ guid, own_matrix }) => [guid, own_matrix])).toEqual([
+		[decoupled.guid, true],
+		[inheriting.guid, false]
+	]);
+});
+
 test('persists the plan mapping and queues deduplicated events after the transaction resolves', async ({
 	connection
 }) => {
