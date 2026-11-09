@@ -408,13 +408,20 @@ test('advertises tools without requiring their scopes', async () => {
 	});
 });
 
+// Categories are identified by the GUID of their category container and
+// their values by the GUID of their term container.
+const sdg = {
+	climateAction: '00000000-0000-4000-8000-0000000000c2',
+	key: '00000000-0000-4000-8000-0000000000c1'
+};
+
 test('lists container categories using the read scope', async () => {
 	const organizationGuid = '00000000-0000-4000-8000-000000000003';
 	const output = {
 		categories: [
 			{
 				applicableTypes: ['indicator'],
-				key: 'sdg',
+				key: sdg.key,
 				label: 'Sustainable Development Goal',
 				valueCount: 186
 			}
@@ -442,16 +449,16 @@ test('lists container categories using the read scope', async () => {
 test('lists a bounded page of category values using the read scope', async () => {
 	const organizationGuid = '00000000-0000-4000-8000-000000000003';
 	const output = {
-		category: { key: 'sdg', label: 'Sustainable Development Goal' },
+		category: { key: sdg.key, label: 'Sustainable Development Goal' },
 		nextOffset: null,
-		values: [{ label: 'Climate action', parentValue: null, value: '13' }]
+		values: [{ label: 'Climate action', parentValue: null, value: sdg.climateAction }]
 	};
 	listContainerCategoryValues.mockResolvedValue(output);
 
 	const response = await toolHandler.fetch(
 		modernRequest('tools/call', {
 			arguments: {
-				categoryKey: 'sdg',
+				categoryKey: sdg.key,
 				organizationGuid,
 				terms: 'climate',
 				types: ['indicator']
@@ -462,7 +469,7 @@ test('lists a bounded page of category values using the read scope', async () =>
 	);
 
 	expect(listContainerCategoryValues).toHaveBeenCalledExactlyOnceWith(userId, {
-		categoryKey: 'sdg',
+		categoryKey: sdg.key,
 		limit: 50,
 		offset: 0,
 		organizationGuid,
@@ -754,7 +761,7 @@ const customCollectionSectionView = {
 	additionalFilters: {},
 	allowSearch: false,
 	allowSort: false,
-	categories: { sdg: ['13'] },
+	categories: { [sdg.key]: [sdg.climateAction] },
 	description: null,
 	guid: '00000000-0000-4000-8000-000000000004',
 	items: [],
@@ -772,7 +779,7 @@ const customCollectionSectionView = {
 test('adds a custom collection section with categories using the write scope', async () => {
 	const parentGuid = '00000000-0000-4000-8000-000000000003';
 	const input = {
-		categories: { sdg: ['13'] },
+		categories: { [sdg.key]: [sdg.climateAction] },
 		parentGuid,
 		title: 'Objekte einbinden',
 		types: ['indicator']
