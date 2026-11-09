@@ -1064,6 +1064,19 @@ test('serves each curated payload as a direct JSON Schema', async () => {
 	}
 });
 
+test.each([
+	['category', 'key'],
+	['term', 'value']
+])('leaves the legacy slug out of the %s payload schema', async (type, field) => {
+	const uri = `${payloadSchemaCatalogUri}/${type}`;
+	const response = await toolHandler.fetch(modernRequest('resources/read', { uri }), { authInfo });
+
+	const schema = JSON.parse((await response.json()).result.contents[0].text);
+	expect(schema.properties).toHaveProperty('title');
+	expect(schema.properties).not.toHaveProperty(field);
+	expect(schema.required ?? []).not.toContain(field);
+});
+
 test.each(['html', 'not_a_payload'])('does not expose the %s payload schema', async (type) => {
 	const uri = `${payloadSchemaCatalogUri}/${type}`;
 	const response = await toolHandler.fetch(modernRequest('resources/read', { uri }), { authInfo });

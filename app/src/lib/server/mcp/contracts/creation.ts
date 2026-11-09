@@ -34,6 +34,7 @@ export const mcpSectionParentTypes = [
 
 export const mcpParentRelationPredicates = z.enum([
 	predicates.enum['is-part-of'],
+	predicates.enum['is-part-of-category'],
 	predicates.enum['is-part-of-program'],
 	predicates.enum['is-part-of-measure'],
 	predicates.enum['is-section-of']
@@ -42,7 +43,7 @@ export const mcpParentRelationPredicates = z.enum([
 export type McpParentRelationPredicate = z.infer<typeof mcpParentRelationPredicates>;
 
 const parentRelationPredicate = mcpParentRelationPredicates.describe(
-	`Structural relation from the new container to the parent. is-part-of-program makes a goal, measure, simple measure, knowledge or rule part of a program, and also a section of it, which shows it in the program; other types cannot be part of a program. is-part-of-measure needs a measure or simple measure. is-part-of places a goal below a goal, a measure, simple measure or task below a goal or measure, knowledge below knowledge, an effect below a measure or simple measure, and an objective below a goal. is-section-of adds a text section to a container of type ${mcpSectionParentTypes.join(', ')}; a section of an organizational unit belongs to that unit. The server assigns the position, which is the sort order among the children of the parent.`
+	`Structural relation from the new container to the parent. is-part-of-program makes a goal, measure, simple measure, knowledge or rule part of a program, and also a section of it, which shows it in the program; other types cannot be part of a program. is-part-of-measure needs a measure or simple measure. is-part-of places a goal below a goal, a measure, simple measure or task below a goal or measure, knowledge below knowledge, an effect below a measure or simple measure, and an objective below a goal. A term, a value of a category, is either part of a category (is-part-of-category) or below a term that is (is-part-of); categories take no parent. is-section-of adds a text section to a container of type ${mcpSectionParentTypes.join(', ')}; a section of an organizational unit belongs to that unit. The server assigns the position, which is the sort order among the children of the parent.`
 );
 
 function uniqueBy<T>(key: (value: T) => string, message: string) {

@@ -295,3 +295,16 @@ test.each([
 		);
 	}
 );
+
+test('keeps the legacy slug of a term', async () => {
+	mocks.containers.set(guid, container({ title: 'Cycling', type: 'term', value: 'Cycling' }));
+
+	await update({ title: 'Walking', value: 'sdg.13' });
+
+	expect(mocks.updateContainer).toHaveBeenCalledWith(
+		expect.objectContaining({
+			payload: expect.objectContaining({ title: 'Walking', value: 'Cycling' })
+		}),
+		expect.anything()
+	);
+});

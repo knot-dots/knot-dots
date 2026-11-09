@@ -145,11 +145,13 @@ const payloadCases = [
 	['effect', { title: 'Created effect', type: 'effect' }],
 	['objective', { title: 'Created objective', type: 'objective' }],
 	['rule', { title: 'Created rule', type: 'rule' }],
-	['text', { body: 'Created text', title: 'Created text', type: 'text' }]
+	['text', { body: 'Created text', title: 'Created text', type: 'text' }],
+	['category', { title: 'Created category', type: 'category' }]
 ] as const;
 
+// A term needs a parent, so it has tests of its own.
 test('covers every resource-backed payload type with a creation fixture', () => {
-	expect(payloadCases.map(([type]) => type)).toEqual(mcpPayloadTypeValues);
+	expect([...payloadCases.map(([type]) => type), 'term']).toEqual(mcpPayloadTypeValues);
 });
 
 test.each(payloadCases)(
@@ -739,4 +741,117 @@ test.each([
 	['no containers', []]
 ])('rejects %s in the contract', (_, containers) => {
 	expect(createContainersInput.safeParse({ containers, organizationGuid }).success).toBe(false);
+});
+
+const categoryGuid = '00000000-0000-4000-8000-000000000012';
+const termGuid = '00000000-0000-4000-8000-000000000013';
+const subtermGuid = '00000000-0000-4000-8000-000000000014';
+
+function setCategoryWithTerms() {
+	mocks.containers.set(
+		categoryGuid,
+		container(
+			categoryGuid,
+			{ title: 'Mobility', type: 'category' },
+			{
+				relation: [
+					{ object: categoryGuid, position: 0, predicate: 'is-part-of-category', subject: termGuid }
+				]
+			}
+		)
+	);
+	mocks.containers.set(
+		termGuid,
+		container(
+			termGuid,
+			{ title: 'Cycling', type: 'term' },
+			{
+				relation: [
+					{
+						object: categoryGuid,
+						position: 0,
+						predicate: 'is-part-of-category',
+						subject: termGuid
+					},
+					{ object: termGuid, position: 0, predicate: 'is-part-of', subject: subtermGuid }
+				]
+			}
+		)
+	);
+	mocks.containers.set(
+		subtermGuid,
+		container(
+			subtermGuid,
+			{ title: 'Bike lanes', type: 'term' },
+			{
+				relation: [{ object: termGuid, position: 0, predicate: 'is-part-of', subject: subtermGuid }]
+			}
+		)
+	);
+}
+
+test.each([
+	['a term to its category', categoryGuid, 'is-part-of-category', 1],
+	['a term below a term', termGuid, 'is-part-of', 1]
+])('appends %s', async (_, parent, predicate, position) => {
+	setCategoryWithTerms();
+
+	await createWith({ title: 'Walking', type: 'term' }, [{ parentGuid: parent, predicate }]);
+
+	expect(mocks.createAuthorizedContainer.mock.calls[0][0].data.relation).toEqual([
+		{ object: parent, position, predicate }
+	]);
+});
+
+test.each([
+	[
+		'a term without a parent',
+		{ title: 'Walking', type: 'term' },
+		[],
+		'A term needs exactly one parent: its category (is-part-of-category) or the term it is below (is-part-of).'
+	],
+	[
+		'a term in a category and below a term',
+		{ title: 'Walking', type: 'term' },
+		[
+			{ parentGuid: categoryGuid, predicate: 'is-part-of-category' },
+			{ parentGuid: termGuid, predicate: 'is-part-of' }
+		],
+		'A term needs exactly one parent: its category (is-part-of-category) or the term it is below (is-part-of).'
+	],
+	[
+		'a term below a term that is below a term',
+		{ title: 'Painted lanes', type: 'term' },
+		[{ parentGuid: subtermGuid, predicate: 'is-part-of' }],
+		'A term can only be below a term that is part of a category.'
+	],
+	[
+		'a term in a page',
+		{ title: 'Walking', type: 'term' },
+		[{ parentGuid: pageGuid, predicate: 'is-part-of-category' }],
+		'A page cannot be the is-part-of-category parent of a term.'
+	],
+	[
+		'a goal in a category',
+		{ title: 'Less traffic', type: 'goal' },
+		[{ parentGuid: categoryGuid, predicate: 'is-part-of-category' }],
+		'A category cannot be the is-part-of-category parent of a goal.'
+	],
+	[
+		'a category with a parent',
+		{ title: 'Mobility', type: 'category' },
+		[{ parentGuid: pageGuid, predicate: 'is-section-of' }],
+		'A page cannot be the is-section-of parent of a category.'
+	]
+])('rejects %s', async (_, payload, parentRelations, message) => {
+	setCategoryWithTerms();
+
+	await expect(createWith(payload, parentRelations)).rejects.toThrow(message);
+	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
+});
+
+test('derives the legacy slug of a category from its title instead of taking it', async () => {
+	await createWith({ key: 'sdg', title: 'Mobility', type: 'category' });
+
+	expect(createdPayload()).toMatchObject({ key: 'Mobility', title: 'Mobility' });
 });

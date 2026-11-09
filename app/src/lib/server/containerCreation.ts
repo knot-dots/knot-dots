@@ -79,6 +79,15 @@ export function containerCreationHttpError(caught: unknown): never {
 	throw caught;
 }
 
+// Relations to the parent whose grants decide whether a container may be
+// created. Without one, the area of the container decides.
+export const hierarchyPredicates: readonly string[] = [
+	predicates.enum['is-part-of'],
+	predicates.enum['is-part-of-program'],
+	predicates.enum['is-part-of-measure'],
+	predicates.enum['is-section-of']
+];
+
 // Validates a new container and checks that the user may create it. The
 // returned container carries its creator and is ready to be persisted, either
 // alone by createAuthorizedContainer or with others by createManyContainers.
@@ -162,12 +171,6 @@ export function authorizeNewContainer({
 		// Creating happens within a parent, whose computed grants decide: the
 		// container the new one is part of, otherwise its area. Only sysadmins
 		// create containers without a parent, such as organizations.
-		const hierarchyPredicates: string[] = [
-			predicates.enum['is-part-of'],
-			predicates.enum['is-part-of-program'],
-			predicates.enum['is-part-of-measure'],
-			predicates.enum['is-section-of']
-		];
 		const parentGuid =
 			parseResult.data.relation.find(
 				({ object, predicate }) => object !== undefined && hierarchyPredicates.includes(predicate)
