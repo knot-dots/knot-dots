@@ -135,7 +135,8 @@
 	}
 </script>
 
-<div class="members">
+<!-- wide: the matrix spans the details, not just the reading width -->
+<div class="members wide">
 	{#if showViewSwitch}
 		<nav class="segmented-button view-switch">
 			<label class="button">
