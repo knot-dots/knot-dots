@@ -3,7 +3,13 @@ import {
 	UniqueIntegrityConstraintViolationError,
 	type DatabaseConnection
 } from 'slonik';
-import { getPayloadSchema, predicates, type AnyPayload, type Container } from '$lib/models';
+import {
+	getPayloadSchema,
+	isCustomCollectionContainer,
+	predicates,
+	type AnyPayload,
+	type Container
+} from '$lib/models';
 import { applyComputedManagedBy } from '$lib/server/computeManagedBy';
 import { authorizeContainerUpdate, ContainerUpdateError } from '$lib/server/containerUpdate';
 import {
@@ -21,6 +27,7 @@ import {
 import { findVisibleContainer, payloadValidationMessage } from '$lib/server/mcp/creation';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
 import { runAsRequestUser } from '$lib/server/requestUser';
+import type { User } from '$lib/stores';
 
 export class McpUpdateError extends Error {
 	constructor(message: string) {
@@ -31,7 +38,7 @@ export class McpUpdateError extends Error {
 
 const notFound = 'Container not found or inaccessible.';
 
-function conflict(revision: number) {
+export function conflict(revision: number) {
 	return new McpUpdateError(
 		`The container changed since revision ${revision}. Read it again with get_container and retry.`
 	);
@@ -58,6 +65,11 @@ export function updateMcpContainer(input: UpdateContainerInput & McpAuth) {
 		runAsRequestUser(input.userId, async () => {
 			const user = await loadMcpUserContext(connection, input.userId);
 			const current = await findVisibleContainer(connection, user, input.guid);
+			if (current && isCustomCollectionContainer(current)) {
+				throw new McpUpdateError(
+					'Change custom collection sections with update_custom_collection_section.'
+				);
+			}
 			if (!current || !mcpPayloadTypes.safeParse(current.payload.type).success) {
 				throw new McpUpdateError(notFound);
 			}
@@ -95,75 +107,101 @@ export function updateMcpContainer(input: UpdateContainerInput & McpAuth) {
 				}
 			}
 
-			let payload: AnyPayload;
-			try {
-				payload = authorizeContainerUpdate({
-					current,
-					next: { ...current, payload: payloadResult.data },
-					user
-				});
-			} catch (error) {
-				if (error instanceof ContainerUpdateError) {
-					throw new McpUpdateError(
-						error.kind === 'forbidden'
-							? 'You are not allowed to update this container.'
-							: 'This change is not allowed for this container.'
-					);
-				}
-				throw error;
-			}
-			// The shared update checks lower the AI contribution when a person edits
-			// AI-generated content. An edit through MCP is made by an AI agent, so the
-			// content is at least AI-assisted afterwards and AI-generated content
-			// stays AI-generated; the patch cannot change the contribution.
-			if ('aiContribution' in current.payload && 'aiContribution' in payload) {
-				payload.aiContribution = Math.max(current.payload.aiContribution, 0.5);
-			}
-
-			let updated: Container<AnyPayload>;
-			try {
-				// Like a web revision: everything but the payload is carried over as
-				// loaded, and the editor becomes the creator of the new revision.
-				updated = await updateContainer(
-					{
-						...current,
-						payload,
-						user: [
-							...current.user.filter(
-								({ predicate }) => predicate !== predicates.enum['is-creator-of']
-							),
-							{ predicate: predicates.enum['is-creator-of'], subject: user.guid }
-						]
-					},
-					{
-						afterUpdate: (container, txConnection) =>
-							recordMcpWriteEvent({
-								containerGuid: container.guid,
-								revision: container.revision,
-								tokenId: input.tokenId,
-								tool: updateContainerToolName,
-								userId: input.userId
-							})(txConnection),
-						expectedRevision: input.expectedRevision
-					}
-				)(connection);
-			} catch (error) {
-				if (error instanceof ContainerRevisionConflictError) {
-					throw conflict(input.expectedRevision);
-				}
-				if (
-					error instanceof UniqueIntegrityConstraintViolationError &&
-					(error.constraint === 'container_payload_organization_slug_key' ||
-						error.constraint === 'container_payload_organizational_unit_slug_key')
-				) {
-					throw new McpUpdateError('The slug is already used by another container.');
-				}
-				if (error instanceof NotFoundError) throw new McpUpdateError(notFound);
-				throw error;
-			}
-
-			// Match the view get_container returns.
-			const [withComputed] = await applyComputedManagedBy(connection, [updated]);
-			return withComputed;
+			return writeMcpRevision({
+				auth: input,
+				current,
+				payload: payloadResult.data,
+				tool: updateContainerToolName,
+				user
+			})(connection);
 		});
+}
+
+// Writes a new revision of the container with the payload, authorized like an
+// edit in the web application and recorded as a write through the token.
+export function writeMcpRevision({
+	auth: { tokenId, userId },
+	current,
+	payload: next,
+	tool,
+	user
+}: {
+	auth: McpAuth;
+	current: Container<AnyPayload>;
+	payload: AnyPayload;
+	tool: string;
+	user: User;
+}) {
+	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>> => {
+		let payload: AnyPayload;
+		try {
+			payload = authorizeContainerUpdate({
+				current,
+				next: { ...current, payload: next },
+				user
+			});
+		} catch (error) {
+			if (error instanceof ContainerUpdateError) {
+				throw new McpUpdateError(
+					error.kind === 'forbidden'
+						? 'You are not allowed to update this container.'
+						: 'This change is not allowed for this container.'
+				);
+			}
+			throw error;
+		}
+		// The shared update checks lower the AI contribution when a person edits
+		// AI-generated content. An edit through MCP is made by an AI agent, so the
+		// content is at least AI-assisted afterwards and AI-generated content
+		// stays AI-generated; the patch cannot change the contribution.
+		if ('aiContribution' in current.payload && 'aiContribution' in payload) {
+			payload.aiContribution = Math.max(current.payload.aiContribution, 0.5);
+		}
+
+		let updated: Container<AnyPayload>;
+		try {
+			// Like a web revision: everything but the payload is carried over as
+			// loaded, and the editor becomes the creator of the new revision.
+			updated = await updateContainer(
+				{
+					...current,
+					payload,
+					user: [
+						...current.user.filter(
+							({ predicate }) => predicate !== predicates.enum['is-creator-of']
+						),
+						{ predicate: predicates.enum['is-creator-of'], subject: user.guid }
+					]
+				},
+				{
+					afterUpdate: (container, txConnection) =>
+						recordMcpWriteEvent({
+							containerGuid: container.guid,
+							revision: container.revision,
+							tokenId,
+							tool,
+							userId
+						})(txConnection),
+					expectedRevision: current.revision
+				}
+			)(connection);
+		} catch (error) {
+			if (error instanceof ContainerRevisionConflictError) {
+				throw conflict(current.revision);
+			}
+			if (
+				error instanceof UniqueIntegrityConstraintViolationError &&
+				(error.constraint === 'container_payload_organization_slug_key' ||
+					error.constraint === 'container_payload_organizational_unit_slug_key')
+			) {
+				throw new McpUpdateError('The slug is already used by another container.');
+			}
+			if (error instanceof NotFoundError) throw new McpUpdateError(notFound);
+			throw error;
+		}
+
+		// Match the view get_container returns.
+		const [withComputed] = await applyComputedManagedBy(connection, [updated]);
+		return withComputed;
+	};
 }

@@ -1,12 +1,27 @@
 import { z } from 'zod';
-import { payloadTypes, predicates } from '$lib/models';
+import { payloadTypes, predicates, type PayloadType } from '$lib/models';
 import { getContainerOutput } from '$lib/server/mcp/contracts/containers';
 import { mcpPayloadTypes } from '$lib/server/mcp/contracts/payloads';
 
 export const createContainerToolName = 'create_container';
-export const addCustomCollectionSectionToolName = 'add_custom_collection_section';
 
-const title = z.string().trim().min(1).describe('Non-empty title of the new container.');
+// Containers whose detail view in the web application shows sections, where
+// sections can be added through MCP as well.
+export const mcpSectionParentTypes = [
+	payloadTypes.enum.binary_indicator,
+	payloadTypes.enum.effect,
+	payloadTypes.enum.goal,
+	payloadTypes.enum.indicator,
+	payloadTypes.enum.knowledge,
+	payloadTypes.enum.measure,
+	payloadTypes.enum.objective,
+	payloadTypes.enum.page,
+	payloadTypes.enum.program,
+	payloadTypes.enum.resource_v2,
+	payloadTypes.enum.rule,
+	payloadTypes.enum.simple_measure,
+	payloadTypes.enum.task
+] as const satisfies readonly PayloadType[];
 
 export const mcpParentRelationPredicates = z.enum([
 	predicates.enum['is-part-of'],
@@ -24,7 +39,7 @@ const parentRelation = z.strictObject({
 			'GUID of an existing parent container that is visible to you in the same organization.'
 		),
 	predicate: mcpParentRelationPredicates.describe(
-		'Structural relation from the new container to the parent. is-part-of-program makes a goal, measure, simple measure, knowledge or rule part of a program, and also a section of it, which shows it in the program; other types cannot be part of a program. is-part-of-measure needs a measure or simple measure. is-part-of places a goal below a goal, a measure, simple measure or task below a goal or measure, knowledge below knowledge, an effect below a measure or simple measure, and an objective below a goal. is-section-of adds a text section to a page, program, goal, measure, simple measure, task, knowledge, rule, effect, objective, indicator, binary indicator or resource. The server assigns the position, which is the sort order among the children of the parent.'
+		`Structural relation from the new container to the parent. is-part-of-program makes a goal, measure, simple measure, knowledge or rule part of a program, and also a section of it, which shows it in the program; other types cannot be part of a program. is-part-of-measure needs a measure or simple measure. is-part-of places a goal below a goal, a measure, simple measure or task below a goal or measure, knowledge below knowledge, an effect below a measure or simple measure, and an objective below a goal. is-section-of adds a text section to a container of type ${mcpSectionParentTypes.join(', ')}. The server assigns the position, which is the sort order among the children of the parent.`
 	)
 });
 
@@ -67,45 +82,3 @@ export type CreateContainerInput = z.infer<typeof createContainerInput>;
 export const createContainerOutput = getContainerOutput;
 
 export type CreateContainerOutput = z.infer<typeof createContainerOutput>;
-
-const uniqueStrings = z
-	.array(z.string().trim().min(1))
-	.min(1)
-	.transform((values) => [...new Set(values)]);
-
-export const addCustomCollectionSectionInput = z.strictObject({
-	categories: z
-		.record(z.string().trim().min(1), uniqueStrings)
-		.default({})
-		.describe(
-			'Category keys from list_container_categories and values from list_container_category_values.'
-		),
-	includeSubordinateOrganizationalUnits: z
-		.boolean()
-		.default(true)
-		.describe('Whether the collection should include subordinate organizational units.'),
-	pageGuid: z.uuid().describe('Page to which the section should be appended.'),
-	title,
-	types: z
-		.array(payloadTypes)
-		.min(1)
-		.transform((types) => [...new Set(types)])
-		.describe('Container types that the dynamic collection should display.')
-});
-
-export type AddCustomCollectionSectionInput = z.infer<typeof addCustomCollectionSectionInput>;
-
-const createdCustomCollectionSection = z.strictObject({
-	categories: z.record(z.string(), z.array(z.string())),
-	guid: z.uuid(),
-	includeSubordinateOrganizationalUnits: z.boolean(),
-	pageGuid: z.uuid(),
-	title: z.string(),
-	types: z.array(payloadTypes)
-});
-
-export const addCustomCollectionSectionOutput = z.strictObject({
-	section: createdCustomCollectionSection
-});
-
-export type AddCustomCollectionSectionOutput = z.infer<typeof addCustomCollectionSectionOutput>;
