@@ -67,9 +67,9 @@ vi.mock('$lib/server/mcp/userContext', () => ({
 	})
 }));
 
-import { createContainerInput } from '$lib/server/mcp/contracts/creation';
+import { createContainerInput, createContainersInput } from '$lib/server/mcp/contracts/creation';
 import { mcpPayloadTypeValues } from '$lib/server/mcp/contracts/payloads';
-import { createMcpContainer } from '$lib/server/mcp/creation';
+import { createMcpContainer, createMcpContainers } from '$lib/server/mcp/creation';
 
 const organizationGuid = '00000000-0000-4000-8000-000000000001';
 const pageGuid = '00000000-0000-4000-8000-000000000002';
@@ -663,4 +663,51 @@ test.each([
 		organizational_unit: unit,
 		relation: [{ object: areaGuid, position: 0, predicate: 'is-section-of' }]
 	});
+});
+
+const firstGuid = '00000000-0000-4000-8000-000000000010';
+const secondGuid = '00000000-0000-4000-8000-000000000011';
+
+function createMany(containers: Array<Record<string, unknown>>) {
+	return createMcpContainers({
+		...createContainersInput.parse({ containers, organizationGuid }),
+		tokenId,
+		userId
+	})({} as never);
+}
+
+function goalOf(guid: string, parentRelations: Array<Record<string, string>>) {
+	return { guid, parentRelations, payload: { title: 'Less traffic', type: 'goal' } };
+}
+
+const inProgram = { parentGuid, predicate: 'is-part-of-program' };
+
+test.each([
+	[
+		'whose parents are all created in the same call',
+		[
+			goalOf(firstGuid, [inProgram]),
+			goalOf(secondGuid, [{ parentGuid: firstGuid, predicate: 'is-part-of' }])
+		],
+		'containers[1]: At least one parent must exist already, since the container gets its permissions from it; create the parents in an earlier call.'
+	],
+	[
+		'listed before its parent',
+		[
+			goalOf(secondGuid, [inProgram, { parentGuid: firstGuid, predicate: 'is-part-of' }]),
+			goalOf(firstGuid, [inProgram])
+		],
+		'containers[0]: A parent created in the same call must be listed before its children.'
+	]
+])('rejects a container %s before writing', async (_, containers, message) => {
+	mocks.containers.set(parentGuid, container(parentGuid, { title: 'Climate', type: 'program' }));
+
+	await expect(createMany(containers)).rejects.toThrow(message);
+});
+
+test.each([
+	['the same GUID twice', [goalOf(firstGuid, []), goalOf(firstGuid, [])]],
+	['no containers', []]
+])('rejects %s in the contract', (_, containers) => {
+	expect(createContainersInput.safeParse({ containers, organizationGuid }).success).toBe(false);
 });
