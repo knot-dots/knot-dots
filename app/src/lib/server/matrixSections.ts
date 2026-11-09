@@ -10,6 +10,8 @@ import {
 	isOrganizationalUnitContainer,
 	matrixSectionScope,
 	memberRoles,
+	type PayloadType,
+	payloadTypes,
 	predicates,
 	type TeamWithMembers,
 	type User
@@ -105,6 +107,25 @@ export async function loadMatrixSections(
 	for (const guid of sectionGuids) {
 		sectionContainers.push(await getContainerByGuid(guid)(connection));
 	}
+
+	// A content inherits through the unit it belongs to: the unit itself takes
+	// the matrix of the nearest unit above with one of its own, or of the
+	// organization. Its section then carries the unit's name, so readers find
+	// the unit they are in, and names the matrix the rows come from.
+	const areaTypes: PayloadType[] = [
+		payloadTypes.enum.organization,
+		payloadTypes.enum.organizational_unit
+	];
+	const isAreaInPlaceOfUnit = (scope: Container<AnyPayload>) =>
+		!isOrganizationalUnitContainer(container) &&
+		container.organizational_unit !== null &&
+		container.organizational_unit !== scope.guid &&
+		areaTypes.includes(scope.payload.type);
+	const unit = sectionContainers.some(isAreaInPlaceOfUnit)
+		? matrixSectionScope(
+				await getContainerByGuid(container.organizational_unit as string)(connection)
+			)
+		: undefined;
 	const matrixGrants = await getAllGrantsByContainers(matrixGuids)(connection);
 	const matrixUsers = await getAllRelatedUsersByContainers(matrixGuids, userPredicates)(connection);
 	const teams = await loadTeams(connection, container.organization);
@@ -147,6 +168,7 @@ export async function loadMatrixSections(
 		return {
 			active: !dormantGuids.includes(scope.guid),
 			scope: matrixSectionScope(scope),
+			...(unit && isAreaInPlaceOfUnit(scope) ? { unit } : {}),
 			grants: sectionGrants,
 			teams: teams.filter(({ container }) => holdsRows(container.guid)),
 			users: matrixUsers.filter(({ guid }) => holdsRows(guid))

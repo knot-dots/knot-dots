@@ -656,9 +656,15 @@
 								>
 									{#if expanded}<ChevronDownIcon />{:else}<ChevronRightIcon />{/if}
 									<span class="section-title">
-										{$_('permission_matrix.inherited_from', {
-											values: { name: section.scope.title }
-										})}
+										{#if section.unit}
+											{$_('permission_matrix.inherited_from_via', {
+												values: { name: section.unit.title, source: section.scope.title }
+											})}
+										{:else}
+											{$_('permission_matrix.inherited_from', {
+												values: { name: section.scope.title }
+											})}
+										{/if}
 									</span>
 								</button>
 								<span class="badge section-badge">

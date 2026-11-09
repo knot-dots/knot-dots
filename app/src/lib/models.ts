@@ -776,11 +776,18 @@ export type UserGrants = z.infer<typeof userGrants>;
 // inherits.
 export type InheritedMatrixSection = {
 	active: boolean;
-	scope: { guid: string; title: string; type: PayloadType };
+	scope: MatrixSectionScope;
+	// the unit a content belongs to while the matrix of an area above governs
+	// it in that unit's place: the section then carries the unit's name
+	unit?: MatrixSectionScope;
 	grants: Grant[];
 	teams: TeamWithMembers[];
 	users: User[];
 };
+
+// A matrix as the sections name it: the container reduced to what readers of
+// the child may see of it.
+export type MatrixSectionScope = { guid: string; title: string; type: PayloadType };
 
 // A team as the matrices show it: the row names the team and opens its roster.
 export type TeamWithMembers = {
@@ -788,7 +795,7 @@ export type TeamWithMembers = {
 	members: User[];
 };
 
-export function matrixSectionScope(container: Container<AnyPayload>) {
+export function matrixSectionScope(container: Container<AnyPayload>): MatrixSectionScope {
 	return {
 		guid: container.guid,
 		title:

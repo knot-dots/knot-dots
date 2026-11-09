@@ -600,6 +600,7 @@
 		"individual_rights": "Individuelle Rechte",
 		"individual_rights_for": "Individuelle Rechte für {name}",
 		"inherited_from": "Vererbt von {name}",
+		"inherited_from_via": "Vererbt von {name} (über {source})",
 		"invite_by_email": "Neue Person per E-Mail einladen …",
 		"manage_in_organization": "In der Nutzerverwaltung ändern",
 		"manage_permissions": "Rechte Verwalten",
