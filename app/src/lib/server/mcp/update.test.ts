@@ -167,6 +167,15 @@ test.each([
 	expect(mocks.updateContainer).not.toHaveBeenCalled();
 });
 
+test('points to update_custom_collection_section for custom collections', async () => {
+	mocks.containers.set(guid, container({ title: 'Climate goals', type: 'custom_collection' }));
+
+	await expect(update({ title: 'Renamed' })).rejects.toThrow(
+		'Change custom collection sections with update_custom_collection_section.'
+	);
+	expect(mocks.updateContainer).not.toHaveBeenCalled();
+});
+
 test('rejects a stale expected revision before writing', async () => {
 	await expect(update({ title: 'Renamed' }, 1)).rejects.toThrow(
 		'The container changed since revision 1.'

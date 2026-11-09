@@ -52,6 +52,7 @@ const setActualData = vi.fn();
 const searchContainers = vi.fn();
 const searchOrganizationUsers = vi.fn();
 const updateContainer = vi.fn();
+const updateCustomCollectionSection = vi.fn();
 const toolHandler = createKnotDotsMcpHandler({
 	addContainerRelation,
 	addCustomCollectionSection,
@@ -67,7 +68,8 @@ const toolHandler = createKnotDotsMcpHandler({
 	setActualData,
 	searchContainers,
 	searchOrganizationUsers,
-	updateContainer
+	updateContainer,
+	updateCustomCollectionSection
 });
 
 const modernProtocolVersion = '2026-07-28';
@@ -122,6 +124,7 @@ beforeEach(() => {
 	attachIndicator.mockReset();
 	createContainer.mockReset();
 	updateContainer.mockReset();
+	updateCustomCollectionSection.mockReset();
 	getContainer.mockReset();
 	listContainerCategories.mockReset();
 	listContainerCategoryValues.mockReset();
@@ -351,6 +354,15 @@ test('advertises tools without requiring their scopes', async () => {
 				},
 				name: 'update_container',
 				title: 'Update container'
+			}),
+			expect.objectContaining({
+				annotations: {
+					idempotentHint: false,
+					openWorldHint: false,
+					readOnlyHint: false
+				},
+				name: 'update_custom_collection_section',
+				title: 'Update custom collection section'
 			})
 		])
 	);
@@ -369,7 +381,8 @@ test('advertises tools without requiring their scopes', async () => {
 		'search_containers',
 		'search_organization_users',
 		'set_actual_data',
-		'update_container'
+		'update_container',
+		'update_custom_collection_section'
 	]);
 	expect(
 		body.result.tools.find(({ name }: { name: string }) => name === 'search_containers')
@@ -711,37 +724,62 @@ test('updates a container using the write scope', async () => {
 	});
 });
 
+const customCollectionSectionView = {
+	additionalFilters: {},
+	allowSearch: false,
+	allowSort: false,
+	categories: { sdg: ['13'] },
+	description: null,
+	guid: '00000000-0000-4000-8000-000000000004',
+	items: [],
+	listType: 'wall',
+	mode: 'filter',
+	organizationScope: { includeSubordinateOrganizationalUnits: true, type: 'current' },
+	parentGuid: '00000000-0000-4000-8000-000000000003',
+	revision: 1,
+	showDescription: false,
+	sort: 'alpha',
+	title: 'Objekte einbinden',
+	types: ['indicator']
+};
+
 test('adds a custom collection section with categories using the write scope', async () => {
-	const pageGuid = '00000000-0000-4000-8000-000000000003';
+	const parentGuid = '00000000-0000-4000-8000-000000000003';
 	const input = {
 		categories: { sdg: ['13'] },
-		includeSubordinateOrganizationalUnits: true,
-		pageGuid,
+		parentGuid,
 		title: 'Objekte einbinden',
 		types: ['indicator']
 	};
-	const output = {
-		section: {
-			...input,
-			guid: '00000000-0000-4000-8000-000000000004'
-		}
-	};
+	const output = { section: customCollectionSectionView };
 	addCustomCollectionSection.mockResolvedValue(output);
 
 	const response = await toolHandler.fetch(
-		modernRequest('tools/call', {
-			arguments: {
-				categories: { sdg: ['13'] },
-				pageGuid,
-				title: 'Objekte einbinden',
-				types: ['indicator']
-			},
-			name: 'add_custom_collection_section'
-		}),
+		modernRequest('tools/call', { arguments: input, name: 'add_custom_collection_section' }),
 		{ authInfo: writeScopedAuthInfo }
 	);
 
 	expect(addCustomCollectionSection).toHaveBeenCalledExactlyOnceWith({ tokenId, userId }, input);
+	await expect(response.json()).resolves.toMatchObject({
+		result: { structuredContent: output }
+	});
+});
+
+test('updates a custom collection section using the write scope', async () => {
+	const input = {
+		expectedRevision: 1,
+		guid: customCollectionSectionView.guid,
+		listType: 'carousel'
+	};
+	const output = { section: { ...customCollectionSectionView, listType: 'carousel', revision: 2 } };
+	updateCustomCollectionSection.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', { arguments: input, name: 'update_custom_collection_section' }),
+		{ authInfo: writeScopedAuthInfo }
+	);
+
+	expect(updateCustomCollectionSection).toHaveBeenCalledExactlyOnceWith({ tokenId, userId }, input);
 	await expect(response.json()).resolves.toMatchObject({
 		result: { structuredContent: output }
 	});
@@ -872,9 +910,18 @@ test.each([
 		'add_custom_collection_section',
 		addCustomCollectionSection,
 		{
-			pageGuid: '00000000-0000-4000-8000-000000000003',
+			parentGuid: '00000000-0000-4000-8000-000000000003',
 			title: 'Objekte einbinden',
 			types: ['indicator']
+		}
+	],
+	[
+		'update_custom_collection_section',
+		updateCustomCollectionSection,
+		{
+			expectedRevision: 1,
+			guid: '00000000-0000-4000-8000-000000000003',
+			title: 'Renamed'
 		}
 	],
 	[

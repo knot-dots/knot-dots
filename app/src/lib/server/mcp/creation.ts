@@ -7,7 +7,6 @@ import {
 	isOrganizationContainer,
 	isOrganizationalUnitContainer,
 	isMeasureContainer,
-	isPageContainer,
 	isProgramContainer,
 	mayHaveStructuralParent,
 	payloadTypes,
@@ -15,31 +14,18 @@ import {
 	type PayloadType,
 	type AnyPayload,
 	type Container,
-	type CustomCollectionPayload,
 	type MeasurePayload,
 	type NewContainer
 } from '$lib/models';
-import { organizationScopeAsFilter } from '$lib/organizationScope';
 import { isMeasureTemplateScope } from '$lib/templateScopes';
 import { ContainerCreationError, createAuthorizedContainer } from '$lib/server/containerCreation';
-import {
-	getAllDirectContainerRelations,
-	getContainerByGuid,
-	getManyContainers,
-	recordMcpWriteEvent
-} from '$lib/server/db';
+import { getContainerByGuid, getManyContainers, recordMcpWriteEvent } from '$lib/server/db';
 import type { McpAuth } from '$lib/server/mcp/auth';
+import { findUnknownCategory, loadMcpCategoryContext } from '$lib/server/mcp/categories';
 import {
-	categoryValuesByKey,
-	findUnknownCategory,
-	loadMcpCategoryContext
-} from '$lib/server/mcp/categories';
-import {
-	addCustomCollectionSectionToolName,
 	createContainerToolName,
+	mcpSectionParentTypes,
 	type McpParentRelationPredicate,
-	type AddCustomCollectionSectionInput,
-	type AddCustomCollectionSectionOutput,
 	type CreateContainerInput
 } from '$lib/server/mcp/contracts/creation';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
@@ -144,22 +130,11 @@ const isPartOfParentTypes: Partial<Record<PayloadType, readonly PayloadType[]>> 
 
 // Section types MCP can create, and the containers whose detail view in the
 // web application shows sections.
-const sectionTypes: readonly PayloadType[] = [payloadTypes.enum.text];
-const sectionParentTypes: readonly PayloadType[] = [
-	payloadTypes.enum.binary_indicator,
-	payloadTypes.enum.effect,
-	payloadTypes.enum.goal,
-	payloadTypes.enum.indicator,
-	payloadTypes.enum.knowledge,
-	payloadTypes.enum.measure,
-	payloadTypes.enum.objective,
-	payloadTypes.enum.page,
-	payloadTypes.enum.program,
-	payloadTypes.enum.resource_v2,
-	payloadTypes.enum.rule,
-	payloadTypes.enum.simple_measure,
-	payloadTypes.enum.task
+const sectionTypes: readonly PayloadType[] = [
+	payloadTypes.enum.custom_collection,
+	payloadTypes.enum.text
 ];
+const sectionParentTypes: readonly PayloadType[] = mcpSectionParentTypes;
 
 // Types that can be part of a program, as in the web application. The
 // detail view of a program follows is-section-of only, so like the web
@@ -210,219 +185,164 @@ function isValidParent(
 	}
 }
 
+// The input of create_container for any payload type, so that the tools for
+// types without a payload schema resource create containers the same way.
+export type McpContainerCreation = Omit<CreateContainerInput, 'payload'> & {
+	payload: { type: PayloadType } & Record<string, unknown>;
+};
+
 export function createMcpContainer(input: CreateContainerInput & McpAuth) {
 	return (connection: DatabaseConnection): Promise<Container<AnyPayload>> =>
 		runAsRequestUser(input.userId, async () => {
 			const user = await loadMcpUserContext(connection, input.userId);
-			const organization = await findVisibleContainer(connection, user, input.organizationGuid);
-			if (!organization || !isOrganizationContainer(organization)) {
-				throw new McpCreationError(
-					'Organization or organizational unit not found or inaccessible.'
-				);
-			}
-
-			const payloadResult = getPayloadSchema(input.payload.type).safeParse(input.payload);
-			if (!payloadResult.success) {
-				throw new McpCreationError(payloadValidationMessage(payloadResult.error));
-			}
-			if ('template' in payloadResult.data && payloadResult.data.template === true) {
-				throw new McpCreationError(
-					'Containers marked as templates (template: true) cannot be created by this tool.'
-				);
-			}
-
-			const parentGuids = [...new Set(input.parentRelations.map(({ parentGuid }) => parentGuid))];
-			const parents =
-				parentGuids.length > 0
-					? await getManyContainers([], { guid: parentGuids }, 'alpha')(connection)
-					: [];
-			const ability = defineAbilityFor(user);
-			if (
-				parents.length !== parentGuids.length ||
-				parents.some(
-					(parent) => parent.organization !== organization.guid || ability.cannot('read', parent)
-				)
-			) {
-				throw new McpCreationError('Parent container not found or inaccessible.');
-			}
-			const parentsByGuid = new Map(parents.map((parent) => [parent.guid, parent]));
-			for (const { parentGuid, predicate } of input.parentRelations) {
-				const parent = parentsByGuid.get(parentGuid);
-				if (parent && !isValidParent(input.payload.type, predicate, parent)) {
-					throw new McpCreationError(
-						`A ${parent.payload.type} cannot be the ${predicate} parent of a ${input.payload.type}.`
-					);
-				}
-			}
-
-			// Like a container created within its parents in the web application,
-			// the container belongs to the organizational unit of its parents,
-			// whose grants authorize the creation.
-			const parentUnits = [...new Set(parents.map((parent) => parent.organizational_unit))];
-			if (parentUnits.length > 1) {
-				throw new McpCreationError('All parents must belong to the same organizational unit.');
-			}
-			if (
-				parents.length > 0 &&
-				input.organizationalUnitGuid !== null &&
-				input.organizationalUnitGuid !== parentUnits[0]
-			) {
-				throw new McpCreationError(
-					'The organizational unit must be the one of the parents; omit it to use theirs.'
-				);
-			}
-			const organizationalUnitGuid =
-				parents.length > 0 ? parentUnits[0] : input.organizationalUnitGuid;
-
-			let organizationalUnit: Container<AnyPayload> | null = null;
-			if (organizationalUnitGuid) {
-				organizationalUnit = await findVisibleContainer(connection, user, organizationalUnitGuid);
-				if (
-					!organizationalUnit ||
-					!isOrganizationalUnitContainer(organizationalUnit) ||
-					organizationalUnit.organization !== organization.guid
-				) {
-					throw new McpCreationError(
-						'Organization or organizational unit not found or inaccessible.'
-					);
-				}
-			}
-
-			if ('category' in payloadResult.data) {
-				const unknownCategory = await findUnknownCategory({
-					category: payloadResult.data.category,
-					loadContext: () =>
-						loadMcpCategoryContext({
-							connection,
-							organizationGuid: organization.guid,
-							types: [input.payload.type],
-							user
-						})
-				});
-				if (unknownCategory) {
-					throw new McpCreationError(unknownCategory);
-				}
-			}
-
-			const candidate = containerOfType(
-				input.payload.type,
-				organizationalUnit ?? organization
-			) as NewContainer;
-			candidate.payload = payloadResult.data;
-			candidate.relation = input.parentRelations.flatMap(({ parentGuid, predicate }) => {
-				const parent = parentsByGuid.get(parentGuid);
-				if (!parent) throw new McpCreationError('Parent container not found or inaccessible.');
-				const relation = {
-					object: parentGuid,
-					position: nextPosition(parent.relation, parentGuid, predicate),
-					predicate
-				};
-				if (predicate !== predicates.enum['is-part-of-program']) {
-					return [relation];
-				}
-				const section = predicates.enum['is-section-of'];
-				return [
-					relation,
-					{
-						object: parentGuid,
-						position: nextPosition(parent.relation, parentGuid, section),
-						predicate: section
-					}
-				];
-			});
-
-			// As in the web application, a measure below a measure is one level
-			// deeper; the level is derived rather than taken from the payload.
-			const parentMeasure = input.parentRelations
-				.filter(({ predicate }) => predicate === predicates.enum['is-part-of-measure'])
-				.map(({ parentGuid }) => parentsByGuid.get(parentGuid))
-				.find(
-					(parent): parent is Container<MeasurePayload> =>
-						parent !== undefined && isMeasureContainer(parent)
-				);
-			if (parentMeasure && isMeasureContainer(candidate)) {
-				const hierarchyLevel = parentMeasure.payload.hierarchyLevel + 1;
-				if (hierarchyLevel > maxHierarchyLevel) {
-					throw new McpCreationError(
-						`Measures can be nested at most ${maxHierarchyLevel} levels deep.`
-					);
-				}
-				candidate.payload.hierarchyLevel = hierarchyLevel;
-			}
-
-			return createAndRecordContainer({
-				auth: input,
-				data: candidate,
-				tool: createContainerToolName,
-				user
-			})(connection);
+			return createMcpContainerAs(connection, user, input, createContainerToolName);
 		});
 }
 
-export function addMcpCustomCollectionSection(input: AddCustomCollectionSectionInput & McpAuth) {
-	return (connection: DatabaseConnection): Promise<AddCustomCollectionSectionOutput> =>
-		runAsRequestUser(input.userId, async () => {
-			const user = await loadMcpUserContext(connection, input.userId);
-			const page = await findVisibleContainer(connection, user, input.pageGuid);
-			const ability = defineAbilityFor(user);
-			if (!page || !isPageContainer(page) || ability.cannot('update', page)) {
-				throw new McpCreationError('Page not found or inaccessible.');
-			}
+// Checks the container against its organization and parents and creates it
+// on behalf of the user, recording the write for the tool. Runs as the
+// request user.
+export async function createMcpContainerAs(
+	connection: DatabaseConnection,
+	user: User,
+	input: McpContainerCreation & McpAuth,
+	tool: string
+): Promise<Container<AnyPayload>> {
+	const organization = await findVisibleContainer(connection, user, input.organizationGuid);
+	if (!organization || !isOrganizationContainer(organization)) {
+		throw new McpCreationError('Organization or organizational unit not found or inaccessible.');
+	}
 
-			const categoryContext = await loadMcpCategoryContext({
-				connection,
-				organizationGuid: page.organization,
-				types: input.types,
-				user
-			});
-			const allowedCategories = categoryValuesByKey(categoryContext);
-			for (const [key, values] of Object.entries(input.categories)) {
-				const allowedValues = allowedCategories.get(key);
-				if (!allowedValues || values.some((value) => !allowedValues.has(value))) {
-					throw new McpCreationError(`Unknown category or category value: ${key}`);
-				}
-			}
+	const payloadResult = getPayloadSchema(input.payload.type).safeParse(input.payload);
+	if (!payloadResult.success) {
+		throw new McpCreationError(payloadValidationMessage(payloadResult.error));
+	}
+	if ('template' in payloadResult.data && payloadResult.data.template === true) {
+		throw new McpCreationError(
+			'Containers marked as templates (template: true) cannot be created by this tool.'
+		);
+	}
 
-			const relations = await getAllDirectContainerRelations(page.guid)(connection);
-			const position = nextPosition(relations, page.guid, predicates.enum['is-section-of']);
-			const section = containerOfType(
-				payloadTypes.enum.custom_collection,
-				page
-			) as NewContainer<CustomCollectionPayload>;
-			section.payload.title = input.title;
-			section.payload.item = [];
-			section.payload.filter = {
-				type: input.types,
-				...input.categories,
-				...organizationScopeAsFilter({
-					includeSubordinateOrganizationalUnits: input.includeSubordinateOrganizationalUnits,
-					type: 'current'
+	const parentGuids = [...new Set(input.parentRelations.map(({ parentGuid }) => parentGuid))];
+	const parents =
+		parentGuids.length > 0
+			? await getManyContainers([], { guid: parentGuids }, 'alpha')(connection)
+			: [];
+	const ability = defineAbilityFor(user);
+	if (
+		parents.length !== parentGuids.length ||
+		parents.some(
+			(parent) => parent.organization !== organization.guid || ability.cannot('read', parent)
+		)
+	) {
+		throw new McpCreationError('Parent container not found or inaccessible.');
+	}
+	const parentsByGuid = new Map(parents.map((parent) => [parent.guid, parent]));
+	for (const { parentGuid, predicate } of input.parentRelations) {
+		const parent = parentsByGuid.get(parentGuid);
+		if (parent && !isValidParent(input.payload.type, predicate, parent)) {
+			throw new McpCreationError(
+				`A ${parent.payload.type} cannot be the ${predicate} parent of a ${input.payload.type}.`
+			);
+		}
+	}
+
+	// Like a container created within its parents in the web application,
+	// the container belongs to the organizational unit of its parents,
+	// whose grants authorize the creation.
+	const parentUnits = [...new Set(parents.map((parent) => parent.organizational_unit))];
+	if (parentUnits.length > 1) {
+		throw new McpCreationError('All parents must belong to the same organizational unit.');
+	}
+	if (
+		parents.length > 0 &&
+		input.organizationalUnitGuid !== null &&
+		input.organizationalUnitGuid !== parentUnits[0]
+	) {
+		throw new McpCreationError(
+			'The organizational unit must be the one of the parents; omit it to use theirs.'
+		);
+	}
+	const organizationalUnitGuid = parents.length > 0 ? parentUnits[0] : input.organizationalUnitGuid;
+
+	let organizationalUnit: Container<AnyPayload> | null = null;
+	if (organizationalUnitGuid) {
+		organizationalUnit = await findVisibleContainer(connection, user, organizationalUnitGuid);
+		if (
+			!organizationalUnit ||
+			!isOrganizationalUnitContainer(organizationalUnit) ||
+			organizationalUnit.organization !== organization.guid
+		) {
+			throw new McpCreationError('Organization or organizational unit not found or inaccessible.');
+		}
+	}
+
+	if ('category' in payloadResult.data) {
+		const unknownCategory = await findUnknownCategory({
+			category: payloadResult.data.category,
+			loadContext: () =>
+				loadMcpCategoryContext({
+					connection,
+					organizationGuid: organization.guid,
+					types: [input.payload.type],
+					user
 				})
-			};
-			section.relation = [
-				{
-					object: page.guid,
-					position,
-					predicate: predicates.enum['is-section-of']
-				}
-			];
-
-			const created = await createAndRecordContainer({
-				auth: input,
-				data: section,
-				tool: addCustomCollectionSectionToolName,
-				user
-			})(connection);
-
-			return {
-				section: {
-					categories: input.categories,
-					guid: created.guid,
-					includeSubordinateOrganizationalUnits: input.includeSubordinateOrganizationalUnits,
-					pageGuid: page.guid,
-					title: input.title,
-					types: input.types
-				}
-			};
 		});
+		if (unknownCategory) {
+			throw new McpCreationError(unknownCategory);
+		}
+	}
+
+	const candidate = containerOfType(
+		input.payload.type,
+		organizationalUnit ?? organization
+	) as NewContainer;
+	candidate.payload = payloadResult.data;
+	candidate.relation = input.parentRelations.flatMap(({ parentGuid, predicate }) => {
+		const parent = parentsByGuid.get(parentGuid);
+		if (!parent) throw new McpCreationError('Parent container not found or inaccessible.');
+		const relation = {
+			object: parentGuid,
+			position: nextPosition(parent.relation, parentGuid, predicate),
+			predicate
+		};
+		if (predicate !== predicates.enum['is-part-of-program']) {
+			return [relation];
+		}
+		const section = predicates.enum['is-section-of'];
+		return [
+			relation,
+			{
+				object: parentGuid,
+				position: nextPosition(parent.relation, parentGuid, section),
+				predicate: section
+			}
+		];
+	});
+
+	// As in the web application, a measure below a measure is one level
+	// deeper; the level is derived rather than taken from the payload.
+	const parentMeasure = input.parentRelations
+		.filter(({ predicate }) => predicate === predicates.enum['is-part-of-measure'])
+		.map(({ parentGuid }) => parentsByGuid.get(parentGuid))
+		.find(
+			(parent): parent is Container<MeasurePayload> =>
+				parent !== undefined && isMeasureContainer(parent)
+		);
+	if (parentMeasure && isMeasureContainer(candidate)) {
+		const hierarchyLevel = parentMeasure.payload.hierarchyLevel + 1;
+		if (hierarchyLevel > maxHierarchyLevel) {
+			throw new McpCreationError(
+				`Measures can be nested at most ${maxHierarchyLevel} levels deep.`
+			);
+		}
+		candidate.payload.hierarchyLevel = hierarchyLevel;
+	}
+
+	return createAndRecordContainer({
+		auth: input,
+		data: candidate,
+		tool,
+		user
+	})(connection);
 }

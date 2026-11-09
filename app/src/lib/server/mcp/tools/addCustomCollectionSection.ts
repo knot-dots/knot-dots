@@ -4,11 +4,12 @@ import { isErrorLike, serializeError } from 'serialize-error';
 import type { McpAuth } from '$lib/server/mcp/auth';
 import {
 	addCustomCollectionSectionInput,
-	addCustomCollectionSectionOutput,
 	addCustomCollectionSectionToolName,
+	customCollectionSectionOutput,
 	type AddCustomCollectionSectionInput,
-	type AddCustomCollectionSectionOutput
-} from '$lib/server/mcp/contracts/creation';
+	type CustomCollectionSectionOutput
+} from '$lib/server/mcp/contracts/customCollections';
+import { mcpSectionParentTypes } from '$lib/server/mcp/contracts/creation';
 import { McpCreationError } from '$lib/server/mcp/creation';
 import { mcpScopes } from '$lib/server/mcp/scopes';
 import { authorizeMcpTool, toolError } from '$lib/server/mcp/toolAuthorization';
@@ -17,7 +18,7 @@ export interface AddCustomCollectionSectionDependencies {
 	addCustomCollectionSection(
 		auth: McpAuth,
 		input: AddCustomCollectionSectionInput
-	): Promise<AddCustomCollectionSectionOutput>;
+	): Promise<CustomCollectionSectionOutput>;
 }
 
 export function registerAddCustomCollectionSectionTool(
@@ -33,9 +34,9 @@ export function registerAddCustomCollectionSectionTool(
 				openWorldHint: false,
 				readOnlyHint: false
 			},
-			description: 'Append a dynamic Embed objects section to a page using discovered categories.',
+			description: `Append an Embed objects section (custom collection) after the existing sections of a container of type ${mcpSectionParentTypes.join(', ')}. The collection either follows a filter (types, optionally categories and includeSubordinateOrganizationalUnits) or shows a fixed selection of containers (items). Category keys come from list_container_categories and values from list_container_category_values; use the value, not the label. Change the section later with update_custom_collection_section, passing the returned revision.`,
 			inputSchema: addCustomCollectionSectionInput,
-			outputSchema: addCustomCollectionSectionOutput,
+			outputSchema: customCollectionSectionOutput,
 			title: 'Add custom collection section'
 		},
 		async (input) => {
