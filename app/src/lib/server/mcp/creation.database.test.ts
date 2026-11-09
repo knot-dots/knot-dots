@@ -422,6 +422,62 @@ test('creates goals and measures of an existing program in one call', async ({
 	);
 });
 
+test('measures an existing measure with a new indicator in one call', async ({
+	connection
+}: Fixtures) => {
+	const auth = await createTestAuth(connection);
+	const organization = await createOrganization(
+		connection,
+		auth.userId,
+		predicates.enum['is-collaborator-of']
+	);
+	const measure = await createMcpContainer({
+		...createContainerInput.parse({
+			organizationGuid: organization,
+			payload: { title: 'Bike lanes', type: payloadTypes.enum.measure }
+		}),
+		...auth
+	})(connection);
+	const indicatorGuid = uuid();
+	const effectGuid = uuid();
+
+	await createContainersFor(auth, {
+		containers: [
+			{
+				guid: effectGuid,
+				parentRelations: [{ parentGuid: measure.guid, predicate: predicates.enum['is-part-of'] }],
+				payload: { title: 'Cycling share', type: payloadTypes.enum.effect },
+				relations: [{ objectGuid: indicatorGuid, predicate: predicates.enum['is-measured-by'] }]
+			},
+			{
+				guid: indicatorGuid,
+				payload: { title: 'Cycling share', type: payloadTypes.enum.indicator, unit: '%' }
+			}
+		],
+		organizationGuid: organization
+	})(connection);
+
+	const effect = await getContainerByGuid(effectGuid)(connection);
+	expect(effect.relation).toEqual(
+		expect.arrayContaining([
+			expect.objectContaining({
+				object: measure.guid,
+				predicate: predicates.enum['is-part-of'],
+				subject: effectGuid
+			}),
+			expect.objectContaining({
+				object: indicatorGuid,
+				predicate: predicates.enum['is-measured-by'],
+				subject: effectGuid
+			})
+		])
+	);
+	await expect(getContainerByGuid(indicatorGuid)(connection)).resolves.toMatchObject({
+		organization,
+		payload: { type: payloadTypes.enum.indicator }
+	});
+});
+
 test('creates none of the containers if one of them cannot be created', async ({
 	connection
 }: Fixtures) => {
