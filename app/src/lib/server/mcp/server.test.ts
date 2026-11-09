@@ -41,6 +41,7 @@ const addContainerRelation = vi.fn();
 const addCustomCollectionSection = vi.fn();
 const attachIndicator = vi.fn();
 const createContainer = vi.fn();
+const createContainers = vi.fn();
 const getContainer = vi.fn();
 const listContainerCategories = vi.fn();
 const listContainerCategoryValues = vi.fn();
@@ -58,6 +59,7 @@ const toolHandler = createKnotDotsMcpHandler({
 	addCustomCollectionSection,
 	attachIndicator,
 	createContainer,
+	createContainers,
 	getContainer,
 	listContainerCategories,
 	listContainerCategoryValues,
@@ -123,6 +125,7 @@ beforeEach(() => {
 	addCustomCollectionSection.mockReset();
 	attachIndicator.mockReset();
 	createContainer.mockReset();
+	createContainers.mockReset();
 	updateContainer.mockReset();
 	updateCustomCollectionSection.mockReset();
 	getContainer.mockReset();
@@ -316,6 +319,15 @@ test('advertises tools without requiring their scopes', async () => {
 					openWorldHint: false,
 					readOnlyHint: false
 				},
+				name: 'create_containers',
+				title: 'Create containers'
+			}),
+			expect.objectContaining({
+				annotations: {
+					idempotentHint: false,
+					openWorldHint: false,
+					readOnlyHint: false
+				},
 				name: 'add_custom_collection_section',
 				title: 'Add custom collection section'
 			}),
@@ -371,6 +383,7 @@ test('advertises tools without requiring their scopes', async () => {
 		'add_custom_collection_section',
 		'attach_indicator',
 		'create_container',
+		'create_containers',
 		'get_container',
 		'list_container_categories',
 		'list_container_category_values',
@@ -635,6 +648,67 @@ test('creates a container using the write scope', async () => {
 	});
 });
 
+const createContainersArguments = {
+	containers: [
+		{
+			guid: '00000000-0000-4000-8000-000000000005',
+			parentRelations: [
+				{ parentGuid: '00000000-0000-4000-8000-000000000004', predicate: 'is-part-of-program' }
+			],
+			payload: { title: 'Less traffic', type: 'goal' }
+		},
+		{
+			guid: '00000000-0000-4000-8000-000000000006',
+			parentRelations: [
+				{ parentGuid: '00000000-0000-4000-8000-000000000005', predicate: 'is-part-of' },
+				{ parentGuid: '00000000-0000-4000-8000-000000000004', predicate: 'is-part-of-program' }
+			],
+			payload: { title: 'Bike lanes', type: 'measure' }
+		}
+	],
+	organizationGuid: '00000000-0000-4000-8000-000000000003'
+};
+
+test('creates several containers using the write scope', async () => {
+	const output = {
+		containers: createContainersArguments.containers.map(({ guid, payload }) => ({
+			assigneeGuids: [],
+			creatorGuids: [userId],
+			guid,
+			label: payload.title,
+			organizationGuid: createContainersArguments.organizationGuid,
+			organizationalUnitGuid: null,
+			revision: 1,
+			status: null,
+			summary: null,
+			type: payload.type
+		}))
+	};
+	createContainers.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: createContainersArguments,
+			name: 'create_containers'
+		}),
+		{ authInfo: writeScopedAuthInfo }
+	);
+
+	expect(createContainers).toHaveBeenCalledExactlyOnceWith(
+		{ tokenId, userId },
+		{
+			containers: createContainersArguments.containers.map((container) => ({
+				...container,
+				organizationalUnitGuid: null
+			})),
+			organizationGuid: createContainersArguments.organizationGuid
+		}
+	);
+	await expect(response.json()).resolves.toMatchObject({
+		result: { structuredContent: output }
+	});
+});
+
 test('updates a container using the write scope', async () => {
 	const organizationGuid = '00000000-0000-4000-8000-000000000003';
 	const guid = '00000000-0000-4000-8000-000000000004';
@@ -884,6 +958,7 @@ test.each([
 			payloadPatch: { title: 'Renamed' }
 		}
 	],
+	['create_containers', createContainers, createContainersArguments],
 	['add_container_relation', addContainerRelation, relationArguments],
 	['attach_indicator', attachIndicator, attachIndicatorArguments],
 	['set_actual_data', setActualData, setActualDataArguments],
