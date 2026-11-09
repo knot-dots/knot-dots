@@ -142,8 +142,7 @@ const isPartOfParentTypes: Partial<Record<PayloadType, readonly PayloadType[]>> 
 };
 
 // Section types MCP can create, and the containers whose detail view in the
-// web application shows sections. Programs show their parts instead of
-// sections, so text joins a program through is-part-of-program.
+// web application shows sections.
 const sectionTypes: readonly PayloadType[] = [payloadTypes.enum.text];
 const sectionParentTypes: readonly PayloadType[] = [
 	payloadTypes.enum.binary_indicator,
@@ -154,11 +153,39 @@ const sectionParentTypes: readonly PayloadType[] = [
 	payloadTypes.enum.measure,
 	payloadTypes.enum.objective,
 	payloadTypes.enum.page,
+	payloadTypes.enum.program,
 	payloadTypes.enum.resource_v2,
 	payloadTypes.enum.rule,
 	payloadTypes.enum.simple_measure,
 	payloadTypes.enum.task
 ];
+
+// Types that can be part of a program, as in the web application. The
+// detail view of a program follows is-section-of only, so like the web
+// application the server makes a part of a program a section of it as well.
+const programPartTypes: readonly PayloadType[] = [
+	payloadTypes.enum.goal,
+	payloadTypes.enum.knowledge,
+	payloadTypes.enum.measure,
+	payloadTypes.enum.rule,
+	payloadTypes.enum.simple_measure
+];
+
+// The position after the existing children of the parent.
+function nextPosition(
+	relations: ReadonlyArray<{ object: string; position: number; predicate: string }>,
+	parentGuid: string,
+	predicate: string
+) {
+	return (
+		Math.max(
+			-1,
+			...relations
+				.filter((relation) => relation.object === parentGuid && relation.predicate === predicate)
+				.map(({ position }) => position)
+		) + 1
+	);
+}
 
 // Structural relations drive hierarchy, grants and ownership, so the parent
 // must be of a type the relation is meant for.
@@ -172,7 +199,7 @@ function isValidParent(
 	}
 	switch (predicate) {
 		case predicates.enum['is-part-of-program']:
-			return isProgramContainer(parent);
+			return isProgramContainer(parent) && programPartTypes.includes(type);
 		case predicates.enum['is-part-of-measure']:
 			return isMeasureTemplateScope(parent);
 		case predicates.enum['is-part-of']:
@@ -281,19 +308,26 @@ export function createMcpContainer(input: CreateContainerInput & McpAuth) {
 				organizationalUnit ?? organization
 			) as NewContainer;
 			candidate.payload = payloadResult.data;
-			candidate.relation = input.parentRelations.map(({ parentGuid, predicate }) => {
+			candidate.relation = input.parentRelations.flatMap(({ parentGuid, predicate }) => {
 				const parent = parentsByGuid.get(parentGuid);
 				if (!parent) throw new McpCreationError('Parent container not found or inaccessible.');
-				const position =
-					Math.max(
-						-1,
-						...parent.relation
-							.filter(
-								(relation) => relation.object === parentGuid && relation.predicate === predicate
-							)
-							.map(({ position }) => position)
-					) + 1;
-				return { object: parentGuid, position, predicate };
+				const relation = {
+					object: parentGuid,
+					position: nextPosition(parent.relation, parentGuid, predicate),
+					predicate
+				};
+				if (predicate !== predicates.enum['is-part-of-program']) {
+					return [relation];
+				}
+				const section = predicates.enum['is-section-of'];
+				return [
+					relation,
+					{
+						object: parentGuid,
+						position: nextPosition(parent.relation, parentGuid, section),
+						predicate: section
+					}
+				];
 			});
 
 			// As in the web application, a measure below a measure is one level
@@ -349,16 +383,7 @@ export function addMcpCustomCollectionSection(input: AddCustomCollectionSectionI
 			}
 
 			const relations = await getAllDirectContainerRelations(page.guid)(connection);
-			const position =
-				Math.max(
-					-1,
-					...relations
-						.filter(
-							({ object, predicate }) =>
-								object === page.guid && predicate === predicates.enum['is-section-of']
-						)
-						.map(({ position }) => position)
-				) + 1;
+			const position = nextPosition(relations, page.guid, predicates.enum['is-section-of']);
 			const section = containerOfType(
 				payloadTypes.enum.custom_collection,
 				page
