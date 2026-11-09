@@ -19,8 +19,12 @@ import {
 	sql
 } from '$lib/server/db';
 import type { McpAuth } from '$lib/server/mcp/auth';
+import { listMcpContainerCategoryValues } from '$lib/server/mcp/categories';
+import { listContainerCategoryValuesInput } from '$lib/server/mcp/contracts/categories';
 import { createContainerInput, createContainersInput } from '$lib/server/mcp/contracts/creation';
+import { updateContainerInput } from '$lib/server/mcp/contracts/update';
 import { createMcpContainer, createMcpContainers } from '$lib/server/mcp/creation';
+import { updateMcpContainer } from '$lib/server/mcp/update';
 import { generateMcpToken } from '$lib/server/mcp/tokens';
 
 const realm = 'test';
@@ -533,4 +537,134 @@ test('names the container that the user may not create', async ({ connection }: 
 			organizationGuid: organization
 		})(connection)
 	).rejects.toThrow('containers[0]: You are not allowed to create content in this context.');
+});
+
+function createCategoryWithTerms(auth: McpAuth, organization: string) {
+	const [categoryGuid, cyclingGuid, walkingGuid] = [uuid(), uuid(), uuid()];
+	return {
+		categoryGuid,
+		create: createContainersFor(auth, {
+			containers: [
+				{
+					guid: categoryGuid,
+					payload: { objectTypes: ['goal'], title: 'Mobility', type: payloadTypes.enum.category }
+				},
+				...[
+					[cyclingGuid, 'Cycling'],
+					[walkingGuid, 'Walking']
+				].map(([guid, title]) => ({
+					guid,
+					parentRelations: [
+						{ parentGuid: categoryGuid, predicate: predicates.enum['is-part-of-category'] }
+					],
+					payload: { title, type: payloadTypes.enum.term }
+				}))
+			],
+			organizationGuid: organization
+		}),
+		cyclingGuid,
+		walkingGuid
+	};
+}
+
+function listValues(auth: McpAuth, organization: string, categoryKey: string) {
+	return listMcpContainerCategoryValues({
+		...listContainerCategoryValuesInput.parse({ categoryKey, organizationGuid: organization }),
+		userId: auth.userId
+	});
+}
+
+test('creates a category with its terms and sub-terms that content can use', async ({
+	connection
+}: Fixtures) => {
+	const auth = await createTestAuth(connection);
+	const organization = await createOrganization(
+		connection,
+		auth.userId,
+		predicates.enum['is-admin-of']
+	);
+	const { categoryGuid, create, cyclingGuid, walkingGuid } = createCategoryWithTerms(
+		auth,
+		organization
+	);
+
+	await create(connection);
+	const bikeLanes = await createMcpContainer({
+		...createContainerInput.parse({
+			organizationGuid: organization,
+			parentRelations: [{ parentGuid: cyclingGuid, predicate: predicates.enum['is-part-of'] }],
+			payload: { title: 'Bike lanes', type: payloadTypes.enum.term }
+		}),
+		...auth
+	})(connection);
+	const goal = await createMcpContainer({
+		...createContainerInput.parse({
+			organizationGuid: organization,
+			payload: {
+				category: { [categoryGuid]: [bikeLanes.guid] },
+				title: 'Safe cycling',
+				type: payloadTypes.enum.goal
+			}
+		}),
+		...auth
+	})(connection);
+
+	await expect(listValues(auth, organization, categoryGuid)(connection)).resolves.toMatchObject({
+		values: [
+			{ label: 'Cycling', parentValue: null, value: cyclingGuid },
+			{ label: 'Bike lanes', parentValue: cyclingGuid, value: bikeLanes.guid },
+			{ label: 'Walking', parentValue: null, value: walkingGuid }
+		]
+	});
+	expect(goal.payload).toMatchObject({ category: { [categoryGuid]: [bikeLanes.guid] } });
+	const walking = await getContainerByGuid(walkingGuid)(connection);
+	expect(walking.relation).toContainEqual(
+		expect.objectContaining({
+			object: categoryGuid,
+			position: 1,
+			predicate: predicates.enum['is-part-of-category'],
+			subject: walkingGuid
+		})
+	);
+});
+
+test('renames a term like any other container', async ({ connection }: Fixtures) => {
+	const auth = await createTestAuth(connection);
+	const organization = await createOrganization(
+		connection,
+		auth.userId,
+		predicates.enum['is-admin-of']
+	);
+	const { categoryGuid, create, walkingGuid } = createCategoryWithTerms(auth, organization);
+	const { containers } = await create(connection);
+
+	await updateMcpContainer({
+		...updateContainerInput.parse({
+			expectedRevision: containers[2].revision,
+			guid: walkingGuid,
+			payloadPatch: { title: 'Walking and running' }
+		}),
+		...auth
+	})(connection);
+
+	await expect(listValues(auth, organization, categoryGuid)(connection)).resolves.toMatchObject({
+		values: expect.arrayContaining([
+			{ label: 'Walking and running', parentValue: null, value: walkingGuid }
+		])
+	});
+});
+
+test('refuses categories to members who do not administer the organization', async ({
+	connection
+}: Fixtures) => {
+	const auth = await createTestAuth(connection);
+	const organization = await createOrganization(
+		connection,
+		auth.userId,
+		predicates.enum['is-collaborator-of']
+	);
+
+	await expect(createCategoryWithTerms(auth, organization).create(connection)).rejects.toThrow(
+		'containers[0]: You are not allowed to create content in this context.'
+	);
 });

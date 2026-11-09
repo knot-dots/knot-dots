@@ -23,7 +23,8 @@ import {
 import {
 	ContainerCreationError,
 	createAuthorizedContainer,
-	createAuthorizedContainers
+	createAuthorizedContainers,
+	hierarchyPredicates
 } from '$lib/server/containerCreation';
 import { getContainerByGuid, getManyContainers, recordMcpWriteEvent } from '$lib/server/db';
 import type { McpAuth } from '$lib/server/mcp/auth';
@@ -38,7 +39,7 @@ import {
 	type McpParentRelationPredicate,
 	type CreateContainerInput
 } from '$lib/server/mcp/contracts/creation';
-import { mcpPayloadTypes } from '$lib/server/mcp/contracts/payloads';
+import { isMcpRelatableType, withoutLegacyFields } from '$lib/server/mcp/contracts/payloads';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
 import { runAsRequestUser } from '$lib/server/requestUser';
 import type { User } from '$lib/stores';
@@ -196,10 +197,18 @@ function isValidParent(
 	predicate: McpParentRelationPredicate,
 	parentType: PayloadType
 ) {
-	if (!mayHaveStructuralParent(type)) {
+	if (!mayHaveStructuralParent(type) || type === payloadTypes.enum.category) {
 		return false;
 	}
+	// As in the web application, a term is part of a category or below a term.
+	if (type === payloadTypes.enum.term) {
+		return predicate === predicates.enum['is-part-of-category']
+			? parentType === payloadTypes.enum.category
+			: predicate === predicates.enum['is-part-of'] && parentType === payloadTypes.enum.term;
+	}
 	switch (predicate) {
+		case predicates.enum['is-part-of-category']:
+			return false;
 		case predicates.enum['is-part-of-program']:
 			return parentType === payloadTypes.enum.program && programPartTypes.includes(type);
 		case predicates.enum['is-part-of-measure']:
@@ -237,6 +246,31 @@ type McpCreationContext = {
 	user: User;
 };
 
+// The web application shows a term in its category and the terms below it,
+// one level deep, so a term needs exactly one parent.
+function checkTermParents(
+	parentRelations: McpContainerCreation['parentRelations'],
+	parentsByGuid: ReadonlyMap<string, McpRelatedContainer>
+) {
+	if (parentRelations.length !== 1) {
+		throw new McpCreationError(
+			'A term needs exactly one parent: its category (is-part-of-category) or the term it is below (is-part-of).'
+		);
+	}
+	const [{ parentGuid, predicate }] = parentRelations;
+	const parent = parentsByGuid.get(parentGuid);
+	if (
+		predicate === predicates.enum['is-part-of'] &&
+		parent?.relation.some(
+			(relation) =>
+				relation.predicate === predicates.enum['is-part-of'] &&
+				(relation.subject ?? parent.guid) === parent.guid
+		)
+	) {
+		throw new McpCreationError('A term can only be below a term that is part of a category.');
+	}
+}
+
 async function findMcpOrganization(connection: DatabaseConnection, user: User, guid: string) {
 	const organization = await findVisibleContainer(connection, user, guid);
 	if (!organization || !isOrganizationContainer(organization)) {
@@ -272,7 +306,9 @@ async function planMcpContainer(
 	input: Pick<McpContainerCreation, 'organizationalUnitGuid' | 'parentRelations' | 'payload'>
 ): Promise<NewContainer> {
 	const { connection, existing, organization, pending, planned, user } = context;
-	const payloadResult = getPayloadSchema(input.payload.type).safeParse(input.payload);
+	const payloadResult = getPayloadSchema(input.payload.type).safeParse(
+		withoutLegacyFields(input.payload.type, input.payload)
+	);
 	if (!payloadResult.success) {
 		throw new McpCreationError(payloadValidationMessage(payloadResult.error));
 	}
@@ -303,9 +339,16 @@ async function planMcpContainer(
 		}
 	}
 	const parents = [...parentsByGuid.values()];
+	if (input.payload.type === payloadTypes.enum.term) {
+		checkTermParents(input.parentRelations, parentsByGuid);
+	}
 	// As in the bulk creation of the web application, the permissions of a
-	// container derive from a parent that exists already.
-	if (parents.length > 0 && parents.every(({ guid }) => pending.has(guid))) {
+	// container derive from a parent that exists already, if any parent
+	// decides them.
+	const governingParentGuids = input.parentRelations
+		.filter(({ predicate }) => hierarchyPredicates.includes(predicate))
+		.map(({ parentGuid }) => parentGuid);
+	if (governingParentGuids.length > 0 && governingParentGuids.every((guid) => pending.has(guid))) {
 		throw new McpCreationError(
 			'At least one parent must exist already, since the container gets its permissions from it; create the parents in an earlier call.'
 		);
@@ -481,13 +524,18 @@ function checkRelationOfNewContainer(
 	subject: PlannedContainer,
 	{ objectGuid, predicate }: CreateContainersInput['containers'][number]['relations'][number]
 ) {
+	if (!isMcpRelatableType(subject.payload.type)) {
+		throw new McpCreationError(
+			`A ${subject.payload.type} classifies other containers and cannot be related to them; leave its relations empty.`
+		);
+	}
 	if (objectGuid === subject.guid) {
 		throw new McpCreationError('A container cannot be related to itself.');
 	}
 	const object = context.pending.has(objectGuid)
 		? context.planned.get(objectGuid)
 		: context.existing.get(objectGuid);
-	if (!object || !mcpPayloadTypes.safeParse(object.payload.type).success) {
+	if (!object || !isMcpRelatableType(object.payload.type)) {
 		throw new McpCreationError('Related container not found or inaccessible.');
 	}
 	if ('template' in object.payload && object.payload.template === true) {

@@ -10,7 +10,7 @@ vi.mock('$lib/server/db', () => ({ getContainerByGuid }));
 vi.mock('$lib/server/elasticsearch', () => ({ getManyContainersWithES: vi.fn() }));
 vi.mock('$lib/server/mcp/userContext', () => ({ loadMcpUserContext }));
 
-import { getMcpContainer } from '$lib/server/mcp/containers';
+import { getMcpContainer, serializeMcpContainer } from '$lib/server/mcp/containers';
 
 const organizationGuid = '00000000-0000-4000-8000-000000000001';
 const userGuid = '00000000-0000-4000-8000-000000000002';
@@ -104,4 +104,17 @@ test('returns null for a missing container', async () => {
 	await expect(
 		getMcpContainer({ guid: containerGuid, userId: userGuid })({} as never)
 	).resolves.toBeNull();
+});
+
+test('leaves the legacy slug of a term out of the output', () => {
+	const term = {
+		...goalContainer('public'),
+		payload: { title: 'Cycling', type: 'term', value: 'Cycling', visibility: 'public' }
+	} as Container<AnyPayload>;
+
+	expect(serializeMcpContainer(term).container.payload).toEqual({
+		title: 'Cycling',
+		type: 'term',
+		visibility: 'public'
+	});
 });
