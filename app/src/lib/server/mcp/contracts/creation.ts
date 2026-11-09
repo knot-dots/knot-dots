@@ -1,7 +1,11 @@
 import { z } from 'zod';
-import { payloadTypes, predicates, type PayloadType } from '$lib/models';
+import { payloadTypes, predicates, type PayloadType, type Predicate } from '$lib/models';
 import { containerSummary, getContainerOutput } from '$lib/server/mcp/contracts/containers';
 import { mcpPayloadTypes } from '$lib/server/mcp/contracts/payloads';
+import {
+	mcpRelationPredicateMeanings,
+	mcpRelationPredicateValues
+} from '$lib/server/mcp/contracts/relations';
 
 export const createContainerToolName = 'create_container';
 
@@ -104,6 +108,38 @@ export const createContainersToolName = 'create_containers';
 // request.
 export const maxContainersPerCall = 20;
 
+const indicatorLinkPredicateValues = [
+	predicates.enum['is-measured-by'],
+	predicates.enum['is-objective-for']
+] as const satisfies readonly Predicate[];
+
+export const mcpNewContainerRelationPredicates = z.enum(
+	[...mcpRelationPredicateValues, ...indicatorLinkPredicateValues],
+	{
+		error: ({ input }) =>
+			typeof input === 'string' && mcpParentRelationPredicates.safeParse(input).success
+				? `${input} is a structural relation; set it with parentRelations.`
+				: `Only these relations can be set here: ${[...mcpRelationPredicateValues, ...indicatorLinkPredicateValues].join(', ')}.`
+	}
+);
+
+const newContainerRelation = z.strictObject({
+	objectGuid: z
+		.uuid()
+		.describe(
+			'Container the relation points to: an existing container visible to you in the organization, or another container of this call.'
+		),
+	predicate: mcpNewContainerRelationPredicates.describe(
+		[
+			'The relation reads as "new container predicate object":',
+			...mcpRelationPredicateMeanings,
+			'is-measured-by: the new effect is measured by an indicator or binary indicator created in this call;',
+			'is-objective-for: the new objective is the objective for such an indicator.',
+			'To link an existing indicator, use attach_indicator.'
+		].join(' ')
+	)
+});
+
 const newContainerOfCall = z.strictObject({
 	guid: z
 		.uuid()
@@ -114,7 +150,18 @@ const newContainerOfCall = z.strictObject({
 	parentRelations: parentRelationsOf(
 		'GUID of the parent: an existing container visible to you in the organization, or a container listed earlier in this call.'
 	),
-	payload
+	payload,
+	relations: z
+		.array(newContainerRelation)
+		.max(20)
+		.superRefine(
+			uniqueBy(
+				({ objectGuid, predicate }) => `${objectGuid}:${predicate}`,
+				'Relations must be unique.'
+			)
+		)
+		.default([])
+		.describe('Semantic relations from the new container to other containers.')
 });
 
 export const createContainersInput = z.strictObject({

@@ -698,15 +698,44 @@ test.each([
 			goalOf(firstGuid, [inProgram])
 		],
 		'containers[0]: A parent created in the same call must be listed before its children.'
+	],
+	[
+		'related to itself',
+		[
+			{
+				...goalOf(firstGuid, [inProgram]),
+				relations: [{ objectGuid: firstGuid, predicate: 'contributes-to' }]
+			}
+		],
+		'containers[0]: A container cannot be related to itself.'
+	],
+	[
+		'measured by an existing indicator',
+		[
+			{
+				guid: firstGuid,
+				payload: { title: 'Cycling share', type: 'effect' },
+				relations: [{ objectGuid: pageGuid, predicate: 'is-measured-by' }]
+			}
+		],
+		'containers[0]: is-measured-by links a new effect to an indicator or binary indicator created in the same call; to link an existing indicator, use attach_indicator.'
 	]
 ])('rejects a container %s before writing', async (_, containers, message) => {
 	mocks.containers.set(parentGuid, container(parentGuid, { title: 'Climate', type: 'program' }));
+	mocks.containers.set(
+		pageGuid,
+		container(pageGuid, { title: 'Cycling share', type: 'indicator', unit: '%' })
+	);
 
 	await expect(createMany(containers)).rejects.toThrow(message);
 });
 
 test.each([
 	['the same GUID twice', [goalOf(firstGuid, []), goalOf(firstGuid, [])]],
+	[
+		'a structural relation among the relations',
+		[{ ...goalOf(firstGuid, []), relations: [{ objectGuid: parentGuid, predicate: 'is-part-of' }] }]
+	],
 	['no containers', []]
 ])('rejects %s in the contract', (_, containers) => {
 	expect(createContainersInput.safeParse({ containers, organizationGuid }).success).toBe(false);

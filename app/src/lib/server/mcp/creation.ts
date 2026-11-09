@@ -38,6 +38,7 @@ import {
 	type McpParentRelationPredicate,
 	type CreateContainerInput
 } from '$lib/server/mcp/contracts/creation';
+import { mcpPayloadTypes } from '$lib/server/mcp/contracts/payloads';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
 import { runAsRequestUser } from '$lib/server/requestUser';
 import type { User } from '$lib/stores';
@@ -461,6 +462,51 @@ export async function createMcpContainerAs(
 	})(connection);
 }
 
+// An indicator measures a new effect, or is the objective of a new
+// objective, through these relations. attach_indicator links existing
+// indicators, avoiding duplicates.
+const indicatorLinks: Partial<Record<string, PayloadType>> = {
+	[predicates.enum['is-measured-by']]: payloadTypes.enum.effect,
+	[predicates.enum['is-objective-for']]: payloadTypes.enum.objective
+};
+
+const indicatorTypes: readonly PayloadType[] = [
+	payloadTypes.enum.binary_indicator,
+	payloadTypes.enum.indicator
+];
+
+function checkRelationOfNewContainer(
+	context: McpCreationContext,
+	subject: PlannedContainer,
+	{ objectGuid, predicate }: CreateContainersInput['containers'][number]['relations'][number]
+) {
+	if (objectGuid === subject.guid) {
+		throw new McpCreationError('A container cannot be related to itself.');
+	}
+	const object = context.pending.has(objectGuid)
+		? context.planned.get(objectGuid)
+		: context.existing.get(objectGuid);
+	if (!object || !mcpPayloadTypes.safeParse(object.payload.type).success) {
+		throw new McpCreationError('Related container not found or inaccessible.');
+	}
+	if ('template' in object.payload && object.payload.template === true) {
+		throw new McpCreationError(
+			'Containers marked as templates (template: true) cannot be related by this tool.'
+		);
+	}
+	const linkedType = indicatorLinks[predicate];
+	if (
+		linkedType !== undefined &&
+		(subject.payload.type !== linkedType ||
+			!context.pending.has(objectGuid) ||
+			!indicatorTypes.includes(object.payload.type))
+	) {
+		throw new McpCreationError(
+			`${predicate} links a new ${linkedType} to an indicator or binary indicator created in the same call; to link an existing indicator, use attach_indicator.`
+		);
+	}
+}
+
 // Names the container of the call that a check failed for.
 async function forContainer<T>(index: number, check: () => Promise<T> | T): Promise<T> {
 	try {
@@ -505,7 +551,10 @@ export function createMcpContainers(input: CreateContainersInput & McpAuth) {
 				user,
 				organization,
 				input.containers
-					.flatMap(({ parentRelations }) => parentRelations.map(({ parentGuid }) => parentGuid))
+					.flatMap(({ parentRelations, relations }) => [
+						...parentRelations.map(({ parentGuid }) => parentGuid),
+						...relations.map(({ objectGuid }) => objectGuid)
+					])
 					.filter((guid) => !pending.has(guid))
 			);
 			const planned = new Map<string, PlannedContainer>();
@@ -528,6 +577,18 @@ export function createMcpContainers(input: CreateContainersInput & McpAuth) {
 			for (const [index, { guid, ...container }] of input.containers.entries()) {
 				const candidate = await forContainer(index, () => planMcpContainer(context, container));
 				planned.set(guid, markAsAiGenerated({ ...candidate, guid }));
+			}
+			// Relations may point to containers listed later.
+			for (const [index, { guid, relations }] of input.containers.entries()) {
+				const subject = planned.get(guid)!;
+				for (const relation of relations) {
+					await forContainer(index, () => checkRelationOfNewContainer(context, subject, relation));
+					subject.relation.push({
+						object: relation.objectGuid,
+						position: 0,
+						predicate: relation.predicate
+					});
+				}
 			}
 
 			let created: Container<AnyPayload>[];
