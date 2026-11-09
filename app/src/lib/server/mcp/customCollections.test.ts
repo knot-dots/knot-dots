@@ -267,11 +267,29 @@ test('rejects category values the organization does not offer', async () => {
 	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
 });
 
-test('rejects a parent that cannot take sections, like a text section', async () => {
-	await expect(add({ parentGuid: organizationGuid, types: ['goal'] })).rejects.toThrow(
-		'A organization cannot be the is-section-of parent of a custom_collection.'
+test('rejects a parent whose detail view shows no sections, like a text section', async () => {
+	mocks.containers.set(goalGuid, container(goalGuid, { title: 'Less traffic', type: 'effect' }));
+
+	await expect(add({ parentGuid: goalGuid, types: ['goal'] })).rejects.toThrow(
+		'A effect cannot be the is-section-of parent of a custom_collection.'
 	);
 	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
+});
+
+test('appends a collection to an organizational unit within the unit', async () => {
+	mocks.containers.set(
+		unitGuid,
+		container(unitGuid, { name: 'Climate office', type: 'organizational_unit' })
+	);
+
+	const { section } = await add({ parentGuid: unitGuid, types: ['goal'] });
+
+	expect(createdData()).toMatchObject({
+		managed_by: [unitGuid],
+		organizational_unit: unitGuid,
+		relation: [{ object: unitGuid, position: 0, predicate: 'is-section-of' }]
+	});
+	expect(section.parentGuid).toBe(unitGuid);
 });
 
 test.each([
