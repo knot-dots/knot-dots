@@ -53,12 +53,13 @@ test.describe('Object members matrix', () => {
 		await expect(overlay.getByRole('button', { name: 'Add item' })).toHaveCount(0);
 
 		// Turning on individual rights copies nothing: the own matrix starts
-		// empty while the inherited section keeps applying beside it.
+		// empty while the inherited section keeps applying beside it. Below a
+		// program the own rows add to its matrix, so the switch says so.
 		await page.getByRole('checkbox', { name: 'Edit mode' }).check();
 		const decoupleResponse = page.waitForResponse(
 			(r) => r.url().includes('/grant-inheritance') && r.request().method() === 'POST'
 		);
-		await overlay.getByRole('checkbox', { name: 'Individual rights' }).check();
+		await overlay.getByRole('checkbox', { name: 'Additional rights' }).check();
 		await decoupleResponse;
 
 		await expect(ownBob).toHaveCount(0);
@@ -116,7 +117,7 @@ test.describe('Object members matrix', () => {
 		const inheritResponse = page.waitForResponse(
 			(r) => r.url().includes('/grant-inheritance') && r.request().method() === 'POST'
 		);
-		await overlay.getByRole('checkbox', { name: 'Individual rights' }).uncheck();
+		await overlay.getByRole('checkbox', { name: 'Additional rights' }).uncheck();
 		await inheritResponse;
 		await expect(inheritedBob).toHaveCount(1);
 		await expect(overlay.getByRole('button', { name: 'Add item' })).toHaveCount(0);

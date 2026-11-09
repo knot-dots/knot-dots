@@ -148,6 +148,13 @@
 		toast({ heading: $_('permission_matrix.error_saving'), status: 'error' });
 	}
 
+	// a read-only cell names its state, since the icon alone does not
+	function cellLabel(kind: GrantKind, groupLabel: string, checked: boolean) {
+		return `${$_(`permission.${kind}`)} (${$_(`permission_matrix.${groupLabel}`)}): ${$_(
+			checked ? 'permission_matrix.granted' : 'permission_matrix.not_granted'
+		)}`;
+	}
+
 	async function save(subject: string, set: GrantSet) {
 		const hadPrevious = setOverrides.has(subject);
 		const previous = setOverrides.get(subject);
@@ -311,11 +318,15 @@
 					</td>
 					{#each columnGroups as group (group.target)}
 						{#each group.kinds as kind (kind)}
+							{@const checked = set[group.target].includes(kind)}
+							{@const cellState = editable && !self ? 'editable' : 'readonly'}
 							<td class="col-grant" class:locked>
 								<PermissionCheckbox
-									ariaLabel={`${$_(`permission.${kind}`)} (${$_(`permission_matrix.${group.label}`)})`}
-									checked={set[group.target].includes(kind)}
-									state={editable && !self ? 'editable' : 'readonly'}
+									ariaLabel={cellState === 'editable'
+										? `${$_(`permission.${kind}`)} (${$_(`permission_matrix.${group.label}`)})`
+										: cellLabel(kind, group.label, checked)}
+									{checked}
+									state={cellState}
 									tooltip={editable && self ? $_('permission_matrix.tooltip_own_row') : undefined}
 									onchange={(value) => toggleKind(subject.guid, group.target, kind, value)}
 								/>

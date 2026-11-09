@@ -19,32 +19,30 @@ test.describe('Permission matrix', () => {
 		await expect(page.getByRole('columnheader', { name: 'This object' })).toBeVisible();
 		await expect(page.getByRole('columnheader', { name: 'Subordinate objects' })).toBeVisible();
 
-		// An observer may only read.
+		// Outside of edit mode the matrix is a read-only view: icons that name
+		// their state instead of checkboxes. An observer may only read.
 		const bobRow = page.getByRole('row', { name: 'Bob Bow' });
-		await expect(bobRow.getByRole('checkbox', { name: 'Read (This object)' })).toBeChecked();
-		await expect(bobRow.getByRole('checkbox', { name: 'Edit (This object)' })).not.toBeChecked();
+		await expect(bobRow.getByRole('img', { name: 'Read (This object): granted' })).toBeVisible();
 		await expect(
-			bobRow.getByRole('checkbox', { name: 'Read (Subordinate objects)' })
-		).toBeChecked();
+			bobRow.getByRole('img', { name: 'Edit (This object): not granted' })
+		).toBeVisible();
 		await expect(
-			bobRow.getByRole('checkbox', { name: 'Create (Subordinate objects)' })
-		).not.toBeChecked();
+			bobRow.getByRole('img', { name: 'Read (Subordinate objects): granted' })
+		).toBeVisible();
+		await expect(
+			bobRow.getByRole('img', { name: 'Create (Subordinate objects): not granted' })
+		).toBeVisible();
+		await expect(bobRow.getByRole('checkbox')).toHaveCount(0);
 
 		// An admin holds every grant.
 		const orlaRow = page.getByRole('row', { name: 'Orla Orchestra' });
-		await expect(orlaRow.getByRole('checkbox', { name: 'Read (This object)' })).toBeChecked();
+		await expect(orlaRow.getByRole('img', { name: 'Read (This object): granted' })).toBeVisible();
 		await expect(
-			orlaRow.getByRole('checkbox', { name: 'Manage users (This object)' })
-		).toBeChecked();
+			orlaRow.getByRole('img', { name: 'Manage users (This object): granted' })
+		).toBeVisible();
 		await expect(
-			orlaRow.getByRole('checkbox', { name: 'Delete (Subordinate objects)' })
-		).toBeChecked();
-
-		// outside of edit mode the matrix is a read-only view
-		await expect(bobRow.getByRole('checkbox', { name: 'Read (This object)' })).toBeDisabled();
-		await expect(
-			orlaRow.getByRole('checkbox', { name: 'Create (Subordinate objects)' })
-		).toBeDisabled();
+			orlaRow.getByRole('img', { name: 'Delete (Subordinate objects): granted' })
+		).toBeVisible();
 	});
 
 	test('shows the matrix as an alternative view on the members page', async ({
@@ -122,16 +120,12 @@ test.describe('Permission matrix', () => {
 			bobRow.getByRole('checkbox', { name: 'Edit (Subordinate objects)' })
 		).not.toBeChecked();
 
-		// administrator rows stay editable, but the endpoint protects the last
-		// administrator: the removal attempt fails and the row stays
-		const orlaRow = page.getByRole('row', { name: 'Orla Orchestra' });
-		await expect(orlaRow.getByRole('checkbox', { name: 'Edit (This object)' })).toBeEnabled();
-		const rejectedResponse = page.waitForResponse(
-			(r) => r.url().includes('/grant') && r.request().method() === 'POST'
-		);
-		await orlaRow.getByRole('button', { name: 'Remove' }).click();
-		expect((await rejectedResponse).status()).toBe(422);
-		await expect(orlaRow.getByRole('checkbox', { name: 'Edit (This object)' })).toBeChecked();
+		// one's own row is locked: it is marked, shows its grants read-only and
+		// offers no removal, so nobody takes rights from themselves by accident
+		const orlaRow = page.getByRole('row', { name: 'Orla Orchestra (you)' });
+		await expect(orlaRow.getByRole('img', { name: 'Edit (This object): granted' })).toBeVisible();
+		await expect(orlaRow.getByRole('checkbox')).toHaveCount(0);
+		await expect(orlaRow.getByRole('button', { name: 'Remove' })).toHaveCount(0);
 	});
 
 	test('removes a user from the matrix and invites with suggestions', async ({
