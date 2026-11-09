@@ -1,6 +1,15 @@
 import { beforeEach, expect, test, vi } from 'vitest';
 import { anyContainer, emptyGrantRecords, type AnyPayload, type Container } from '$lib/models';
 
+// Categories are identified by the GUID of their category container and
+// their values by the GUID of their term container.
+const sdg = {
+	climateAction: '00000000-0000-4000-8000-0000000000c2',
+	climateTarget: '00000000-0000-4000-8000-0000000000c3',
+	key: '00000000-0000-4000-8000-0000000000c1',
+	retired: '00000000-0000-4000-8000-0000000000c4'
+};
+
 const mocks = vi.hoisted(() => ({
 	containers: new Map<string, Container<AnyPayload>>(),
 	deniedUpdates: new Set<string>(),
@@ -101,12 +110,16 @@ beforeEach(() => {
 	mocks.recordMcpWriteEvent.mockReset();
 	mocks.loadMcpCategoryContext.mockReset();
 	mocks.loadMcpCategoryContext.mockResolvedValue({
-		keys: ['sdg'],
-		labels: new Map([['sdg', 'Sustainable Development Goal']]),
-		objectTypesPerKey: { sdg: ['goal'] },
+		keys: [sdg.key],
+		labels: new Map([[sdg.key, 'Sustainable Development Goal']]),
+		objectTypesPerKey: { [sdg.key]: ['goal'] },
 		options: {
-			sdg: [
-				{ label: 'Climate action', subOptions: [{ label: 'Target', value: '13.2' }], value: '13' }
+			[sdg.key]: [
+				{
+					label: 'Climate action',
+					subOptions: [{ label: 'Target', value: sdg.climateTarget }],
+					value: sdg.climateAction
+				}
 			]
 		}
 	});
@@ -243,17 +256,20 @@ test('rejects an empty patch in the MCP contract', () => {
 });
 
 test('accepts category values the organization offers, including sub-values', async () => {
-	await update({ category: { sdg: ['13.2'] } });
+	await update({ category: { [sdg.key]: [sdg.climateTarget] } });
 
 	expect(mocks.updateContainer).toHaveBeenCalledWith(
-		expect.objectContaining({ payload: expect.objectContaining({ category: { sdg: ['13.2'] } }) }),
+		expect.objectContaining({
+			payload: expect.objectContaining({ category: { [sdg.key]: [sdg.climateTarget] } })
+		}),
 		expect.anything()
 	);
 });
 
 test('rejects unknown category values', async () => {
-	await expect(update({ category: { sdg: ['sdg.13'] } })).rejects.toThrow(
-		'Unknown value of category sdg: sdg.13.'
+	// The slug that identified the value before its GUID did.
+	await expect(update({ category: { [sdg.key]: ['sdg.13'] } })).rejects.toThrow(
+		`Unknown value of category ${sdg.key}: sdg.13.`
 	);
 	expect(mocks.updateContainer).not.toHaveBeenCalled();
 });
@@ -261,11 +277,11 @@ test('rejects unknown category values', async () => {
 test('keeps stored category values the organization no longer offers', async () => {
 	mocks.containers.set(
 		guid,
-		container({ category: { sdg: ['legacy'] }, title: 'Climate goal', type: 'goal' })
+		container({ category: { [sdg.key]: [sdg.retired] }, title: 'Climate goal', type: 'goal' })
 	);
 
 	await update({ title: 'Renamed' });
-	await update({ category: { sdg: ['legacy', '13'] } });
+	await update({ category: { [sdg.key]: [sdg.retired, sdg.climateAction] } });
 
 	expect(mocks.updateContainer).toHaveBeenCalledTimes(2);
 });
