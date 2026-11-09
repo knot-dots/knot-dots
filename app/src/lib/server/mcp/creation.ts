@@ -520,18 +520,23 @@ async function forContainer<T>(index: number, check: () => Promise<T> | T): Prom
 }
 
 function mapBatchInsertError(error: unknown, guids: readonly string[]): never {
-	if (
-		error instanceof UniqueIntegrityConstraintViolationError &&
-		error.constraint === 'container_guid_key'
-	) {
-		// PostgreSQL names the GUID in its detail: Key (guid)=(…) already exists.
-		const detail = error.detail?.toLowerCase() ?? '';
-		const index = guids.findIndex((guid) => detail.includes(guid.toLowerCase()));
-		throw new McpCreationError(
-			index === -1
-				? 'A container with one of these GUIDs exists already; choose new GUIDs.'
-				: `containers[${index}]: A container with the GUID ${guids[index]} exists already; choose a new GUID.`
-		);
+	if (error instanceof UniqueIntegrityConstraintViolationError) {
+		if (error.constraint === 'container_guid_key') {
+			// PostgreSQL names the GUID in its detail: Key (guid)=(…) already exists.
+			const detail = error.detail?.toLowerCase() ?? '';
+			const index = guids.findIndex((guid) => detail.includes(guid.toLowerCase()));
+			throw new McpCreationError(
+				index === -1
+					? 'A container with one of these GUIDs exists already; choose new GUIDs.'
+					: `containers[${index}]: A container with the GUID ${guids[index]} exists already; choose a new GUID.`
+			);
+		}
+		if (
+			error.constraint === 'container_payload_organization_slug_key' ||
+			error.constraint === 'container_payload_organizational_unit_slug_key'
+		) {
+			throw new McpCreationError('The slug is already used by another container.');
+		}
 	}
 	mapCreationError(error);
 }
