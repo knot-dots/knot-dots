@@ -699,7 +699,8 @@ test('creates several containers using the write scope', async () => {
 		{
 			containers: createContainersArguments.containers.map((container) => ({
 				...container,
-				organizationalUnitGuid: null
+				organizationalUnitGuid: null,
+				relations: []
 			})),
 			organizationGuid: createContainersArguments.organizationGuid
 		}
