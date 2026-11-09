@@ -437,6 +437,27 @@ export function createContainerCopyPlan({
 		return opaqueRequiredDependencyError();
 	};
 
+	const resolveItemGuids = (itemGuids: string[]) =>
+		itemGuids.flatMap((itemGuid) => {
+			const copiedItemGuid = guidMap.get(itemGuid);
+			if (copiedItemGuid) {
+				return [copiedItemGuid];
+			}
+			const item = containersByGuid.get(itemGuid);
+			if (!item) {
+				// Deleted items are missing from the graph. Keep their reference like the
+				// original does: an empty selection would run a custom collection's filter as a rule.
+				return [itemGuid];
+			}
+			if (
+				item.payload.visibility === visibility.enum.public ||
+				(readPolicy.canReadSource(item) && readPolicy.canRetainCollectionItem(item, target))
+			) {
+				return [itemGuid];
+			}
+			return [];
+		});
+
 	const copies = orderedOriginalGuids.map((originalGuid) => {
 		const source = containersByGuid.get(originalGuid) as Container<AnyPayload>;
 		const copiedGuid = guidMap.get(originalGuid) as string;
@@ -489,25 +510,7 @@ export function createContainerCopyPlan({
 				copy.payload.resource = resolveReferenceGuid(copy.payload.resource);
 				break;
 			case payloadTypes.enum.custom_collection:
-				copy.payload.item = copy.payload.item.flatMap((itemGuid) => {
-					const copiedItemGuid = guidMap.get(itemGuid);
-					if (copiedItemGuid) {
-						return [copiedItemGuid];
-					}
-					const item = containersByGuid.get(itemGuid);
-					if (!item) {
-						// Deleted items are missing from the graph. Keep their reference like the
-						// original does: an empty selection would run the collection's filter as a rule.
-						return [itemGuid];
-					}
-					if (
-						item.payload.visibility === visibility.enum.public ||
-						(readPolicy.canReadSource(item) && readPolicy.canRetainCollectionItem(item, target))
-					) {
-						return [itemGuid];
-					}
-					return [];
-				});
+				copy.payload.item = resolveItemGuids(copy.payload.item);
 				copy.payload.newItemTemplate = copy.payload.newItemTemplate.filter(canUseNewItemTemplate);
 				break;
 			case payloadTypes.enum.relation_collection:
@@ -515,6 +518,9 @@ export function createContainerCopyPlan({
 					const copiedItemGuid = guidMap.get(itemGuid);
 					return copiedItemGuid ? [copiedItemGuid] : [];
 				});
+				break;
+			case payloadTypes.enum.indicator_dashboard:
+				copy.payload.item = resolveItemGuids(copy.payload.item);
 				break;
 			default:
 				break;

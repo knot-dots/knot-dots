@@ -10,6 +10,7 @@
 	} from 'svelte-dnd-action';
 	import Plus from '~icons/knotdots/plus';
 	import { browser } from '$app/environment';
+	import { invalidate } from '$app/navigation';
 	import { page } from '$app/state';
 	import createComparisonData from '$lib/client/createComparisonData.svelte';
 	import IndicatorPicker from '$lib/components/IndicatorPicker.svelte';
@@ -89,8 +90,25 @@
 
 	let parent = $derived(page.data.currentOrganizationalUnit ?? page.data.currentOrganization);
 
-	// svelte-ignore non_reactive_update
-	let dialog: HTMLDialogElement;
+	let dialog = $state<HTMLDialogElement>();
+
+	async function performImport(selected: string[]) {
+		const response = await fetch(
+			`/${(page.data.currentOrganizationalUnit ?? page.data.currentOrganization).guid}/import-actual-data`,
+			{
+				method: 'POST',
+				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+				body: new URLSearchParams(selected.map((guid) => ['indicator', guid]))
+			}
+		);
+		if (response.ok) {
+			await invalidate('containers');
+			dialog?.close();
+		} else {
+			alert($_('indicator_picker.import_failed'));
+			console.log(await response.json());
+		}
+	}
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
@@ -177,7 +195,7 @@
 			{#if $mayCreateContainer(payloadTypes.enum.actual_data, parent)}
 				<button
 					class="button button-xs button-primary system-primary"
-					onclick={() => dialog.showModal()}
+					onclick={() => dialog?.showModal()}
 					type="button"
 				>
 					{$_('indicators.activate_selected')}
@@ -270,7 +288,7 @@
 </div>
 
 {#if $mayCreateContainer(payloadTypes.enum.actual_data, parent)}
-	<IndicatorPicker bind:dialog />
+	<IndicatorPicker bind:dialog onconfirm={performImport} title={$_('indicator_picker.title')} />
 {/if}
 
 <style>

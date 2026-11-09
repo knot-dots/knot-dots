@@ -5,8 +5,10 @@ import { z } from 'zod';
 import { filterVisible } from '$lib/authorization';
 import {
 	type Container,
+	type IndicatorPayload,
 	isContainerWithEffect,
 	isIndicatorContainer,
+	isIndicatorDashboardContainer,
 	isProgramContainer,
 	type OrganizationalUnitPayload,
 	payloadTypes,
@@ -78,13 +80,31 @@ export const GET = (async ({ locals, params, url }) => {
 
 		let containers;
 
-		if (isIndicatorContainer(container)) {
-			if (parseResult.data.program.length > 0) {
+		if (isIndicatorContainer(container) || isIndicatorDashboardContainer(container)) {
+			// A dashboard yields its indicators along with the containers related to them, so that
+			// all of its cards are loaded with one request.
+			let indicators: Container<IndicatorPayload>[] = [];
+
+			if (isIndicatorContainer(container)) {
+				indicators = [container];
+			} else if (container.payload.item.length > 0) {
+				indicators = (
+					await locals.pool.connect(
+						getManyContainers(
+							[],
+							{ guid: container.payload.item, type: [payloadTypes.enum.indicator] },
+							''
+						)
+					)
+				).filter(isIndicatorContainer);
+			}
+
+			if (isIndicatorContainer(container) && parseResult.data.program.length > 0) {
 				const [containersRelatedToProgram, containersRelatedToIndicator] = await Promise.all([
 					locals.pool.connect(getAllContainersRelatedToProgram(parseResult.data.program[0], {})),
 					locals.pool.connect(
 						getAllContainersRelatedToIndicators(
-							[container],
+							indicators,
 							{
 								organizations: parseResult.data.organization,
 								organizationalUnits: parseResult.data.organizationalUnit
@@ -121,9 +141,9 @@ export const GET = (async ({ locals, params, url }) => {
 						.concat(currentOrganizationalUnit.guid);
 				}
 
-				containers = await locals.pool.connect(
+				const related = await locals.pool.connect(
 					getAllContainersRelatedToIndicators(
-						[container],
+						indicators,
 						{
 							organizations: parseResult.data.organization,
 							organizationalUnits: subordinateOrganizationalUnits
@@ -137,6 +157,8 @@ export const GET = (async ({ locals, params, url }) => {
 						}
 					)
 				);
+
+				containers = isIndicatorContainer(container) ? related : [...indicators, ...related];
 			}
 		} else if (
 			isProgramContainer(container) &&

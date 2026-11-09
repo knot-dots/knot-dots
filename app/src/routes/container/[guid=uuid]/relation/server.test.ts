@@ -1,4 +1,4 @@
-import { beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { locale } from 'svelte-i18n';
 
 const deleteManyContainerRelations = vi.hoisted(() => vi.fn());
@@ -10,6 +10,7 @@ const getAllRelatedOrganizationalUnitContainers = vi.hoisted(() => vi.fn());
 const getContainerByGuid = vi.hoisted(() => vi.fn());
 const getManyContainers = vi.hoisted(() => vi.fn());
 const getManyOrganizationContainers = vi.hoisted(() => vi.fn());
+const loadCategoryContext = vi.hoisted(() => vi.fn());
 const updateManyContainerRelations = vi.hoisted(() => vi.fn());
 
 vi.mock('$lib/server/db', () => ({
@@ -25,7 +26,9 @@ vi.mock('$lib/server/db', () => ({
 	updateManyContainerRelations
 }));
 
-import { POST } from './+server';
+vi.mock('$lib/server/categoryOptions', () => ({ loadCategoryContext }));
+
+import { GET, POST } from './+server';
 import {
 	composeUserGrants,
 	emptyGrantRecords,
@@ -536,3 +539,99 @@ test.each([
 		]);
 	}
 );
+
+const indicatorGuid = '00000000-0000-4000-8000-000000000008';
+const actualDataGuid = '00000000-0000-4000-8000-000000000009';
+
+function indicator() {
+	return {
+		...measure(indicatorGuid, organization),
+		organization,
+		payload: { title: 'Indicator', type: 'indicator', visibility: 'public' }
+	};
+}
+
+function actualData() {
+	return {
+		...measure(actualDataGuid, organization),
+		organization,
+		payload: {
+			indicator: indicatorGuid,
+			title: 'Actual data',
+			type: 'actual_data',
+			visibility: 'public'
+		}
+	};
+}
+
+function dashboard(item: string[]) {
+	return {
+		...measure(containerGuid, organization),
+		organization,
+		payload: { item, title: 'Dashboard', type: 'indicator_dashboard', visibility: 'public' }
+	};
+}
+
+function getRelated() {
+	return GET({
+		locals: {
+			pool: { connect: vi.fn().mockImplementation((callback) => callback({})) },
+			user
+		},
+		params: { guid: containerGuid },
+		url: new URL(
+			`http://localhost/container/${containerGuid}/relation?organization=${organization}`
+		)
+	} as never);
+}
+
+describe('GET', () => {
+	beforeEach(() => {
+		getManyOrganizationContainers.mockReturnValue(async () => []);
+		loadCategoryContext.mockResolvedValue({ keys: [] });
+		getAllContainersRelatedToIndicators.mockReturnValue(async () => [actualData()]);
+	});
+
+	test('an indicator dashboard yields its indicators along with the containers related to them', async () => {
+		getContainerByGuid.mockReturnValue(async () => dashboard([indicatorGuid]));
+		getManyContainers.mockReturnValue(async () => [indicator()]);
+
+		const response = await getRelated();
+
+		expect(getManyContainers).toHaveBeenCalledWith(
+			[],
+			{ guid: [indicatorGuid], type: ['indicator'] },
+			''
+		);
+		expect(getAllContainersRelatedToIndicators).toHaveBeenCalledWith(
+			[indicator()],
+			{ organizations: [organization], organizationalUnits: [] },
+			{ organizations: [organization], organizationalUnits: null }
+		);
+		expect((await response.json()).map(({ guid }: { guid: string }) => guid)).toEqual([
+			indicatorGuid,
+			actualDataGuid
+		]);
+	});
+
+	test('an empty indicator dashboard loads no indicators', async () => {
+		getContainerByGuid.mockReturnValue(async () => dashboard([]));
+		getAllContainersRelatedToIndicators.mockReturnValue(async () => []);
+
+		const response = await getRelated();
+
+		expect(getManyContainers).not.toHaveBeenCalled();
+		expect(await response.json()).toEqual([]);
+	});
+
+	test('an indicator yields only the containers related to it', async () => {
+		getContainerByGuid.mockReturnValue(async () => ({ ...indicator(), guid: containerGuid }));
+
+		const response = await getRelated();
+
+		expect(getManyContainers).not.toHaveBeenCalled();
+		expect((await response.json()).map(({ guid }: { guid: string }) => guid)).toEqual([
+			actualDataGuid
+		]);
+	});
+});
