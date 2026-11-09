@@ -462,6 +462,9 @@ test.each([
 	['text', 'is-part-of-program', 'program'],
 	['goal', 'is-section-of', 'page'],
 	['goal', 'is-section-of', 'program'],
+	['text', 'is-section-of', 'effect'],
+	['text', 'is-section-of', 'objective'],
+	['text', 'is-section-of', 'binary_indicator'],
 	['text', 'is-part-of', 'goal']
 ] as const)('rejects a %s %s a %s', async (type, predicate, parentType) => {
 	mocks.containers.set(
@@ -640,3 +643,24 @@ test.each(['goal', 'knowledge', 'measure', 'rule', 'simple_measure'] as const)(
 		]);
 	}
 );
+
+test.each([
+	['an organization', organizationGuid, null],
+	['an organizational unit', organizationalUnitGuid, organizationalUnitGuid]
+])('creates a text section of %s in its area', async (_, areaGuid, unit) => {
+	mocks.containers.set(
+		organizationalUnitGuid,
+		container(organizationalUnitGuid, { name: 'Climate office', type: 'organizational_unit' })
+	);
+
+	await createWith({ body: 'Welcome', title: 'Welcome', type: 'text' }, [
+		{ parentGuid: areaGuid, predicate: 'is-section-of' }
+	]);
+
+	expect(mocks.createAuthorizedContainer.mock.calls[0][0].data).toMatchObject({
+		managed_by: [areaGuid],
+		organization: organizationGuid,
+		organizational_unit: unit,
+		relation: [{ object: areaGuid, position: 0, predicate: 'is-section-of' }]
+	});
+});

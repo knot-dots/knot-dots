@@ -249,8 +249,15 @@ export async function createMcpContainerAs(
 
 	// Like a container created within its parents in the web application,
 	// the container belongs to the organizational unit of its parents,
-	// whose grants authorize the creation.
-	const parentUnits = [...new Set(parents.map((parent) => parent.organizational_unit))];
+	// whose grants authorize the creation. A section of an organizational
+	// unit belongs to the unit itself.
+	const parentUnits = [
+		...new Set(
+			parents.map((parent) =>
+				isOrganizationalUnitContainer(parent) ? parent.guid : parent.organizational_unit
+			)
+		)
+	];
 	if (parentUnits.length > 1) {
 		throw new McpCreationError('All parents must belong to the same organizational unit.');
 	}

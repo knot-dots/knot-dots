@@ -34,7 +34,7 @@ export function registerAddCustomCollectionSectionTool(
 				openWorldHint: false,
 				readOnlyHint: false
 			},
-			description: `Append an Embed objects section (custom collection) after the existing sections of a container of type ${mcpSectionParentTypes.join(', ')}. The collection either follows a filter (types, optionally categories and includeSubordinateOrganizationalUnits) or shows a fixed selection of containers (items). Category keys come from list_container_categories and values from list_container_category_values; use the value, not the label. Change the section later with update_custom_collection_section, passing the returned revision.`,
+			description: `Append an Embed objects section (custom collection) after the existing sections of a container of type ${mcpSectionParentTypes.join(', ')}; a section of an organizational unit belongs to that unit. The collection either follows a filter (types, optionally categories and includeSubordinateOrganizationalUnits) or shows a fixed selection of containers (items). Category keys come from list_container_categories and values from list_container_category_values; use the value, not the label. Change the section later with update_custom_collection_section, passing the returned revision.`,
 			inputSchema: addCustomCollectionSectionInput,
 			outputSchema: customCollectionSectionOutput,
 			title: 'Add custom collection section'
