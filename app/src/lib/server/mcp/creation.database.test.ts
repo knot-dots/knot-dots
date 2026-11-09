@@ -94,6 +94,32 @@ async function createProgram(connection: Fixtures['connection'], organization: s
 	)(connection);
 }
 
+async function createUnit(
+	connection: Fixtures['connection'],
+	organization: string,
+	member: string
+) {
+	const unit = await createContainer(
+		newContainer.parse({
+			managed_by: organization,
+			organization,
+			organizational_unit: null,
+			payload: { level: 1, name: 'Climate office', type: payloadTypes.enum.organizational_unit },
+			realm,
+			relation: [],
+			user: []
+		})
+	)(connection);
+	await connection.query(sql.typeAlias('void')`
+		INSERT INTO container_user (object, predicate, subject)
+		VALUES
+			(${unit.revision}, ${predicates.enum['is-member-of']}, ${member}),
+			(${unit.revision}, ${predicates.enum['is-collaborator-of']}, ${member})
+		ON CONFLICT DO NOTHING
+	`);
+	return unit;
+}
+
 function createGoalUnder(organizationGuid: string, parentGuid: string, auth: McpAuth) {
 	return createMcpContainer({
 		...createContainerInput.parse({
@@ -218,24 +244,7 @@ test('creates a container below a unit-scoped parent in that unit', async ({
 		auth.userId,
 		predicates.enum['is-collaborator-of']
 	);
-	const unit = await createContainer(
-		newContainer.parse({
-			managed_by: organization,
-			organization,
-			organizational_unit: null,
-			payload: { level: 1, name: 'Climate office', type: payloadTypes.enum.organizational_unit },
-			realm,
-			relation: [],
-			user: []
-		})
-	)(connection);
-	await connection.query(sql.typeAlias('void')`
-		INSERT INTO container_user (object, predicate, subject)
-		VALUES
-			(${unit.revision}, ${predicates.enum['is-member-of']}, ${auth.userId}),
-			(${unit.revision}, ${predicates.enum['is-collaborator-of']}, ${auth.userId})
-		ON CONFLICT DO NOTHING
-	`);
+	const unit = await createUnit(connection, organization, auth.userId);
 	const program = await createContainer(
 		newContainer.parse({
 			managed_by: unit.guid,
@@ -255,4 +264,34 @@ test('creates a container below a unit-scoped parent in that unit', async ({
 		organization,
 		organizational_unit: unit.guid
 	});
+});
+
+test('creates a text section of an organizational unit in that unit', async ({
+	connection
+}: Fixtures) => {
+	const auth = await createTestAuth(connection);
+	const organization = await createOrganization(
+		connection,
+		auth.userId,
+		predicates.enum['is-member-of']
+	);
+	const unit = await createUnit(connection, organization, auth.userId);
+
+	const section = await createMcpContainer({
+		...createContainerInput.parse({
+			organizationGuid: organization,
+			parentRelations: [{ parentGuid: unit.guid, predicate: predicates.enum['is-section-of'] }],
+			payload: { body: 'Welcome', title: 'Welcome', type: payloadTypes.enum.text }
+		}),
+		...auth
+	})(connection);
+
+	expect(section).toMatchObject({ organization, organizational_unit: unit.guid });
+	expect(section.relation).toContainEqual(
+		expect.objectContaining({
+			object: unit.guid,
+			predicate: predicates.enum['is-section-of'],
+			subject: section.guid
+		})
+	);
 });
