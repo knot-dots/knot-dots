@@ -228,7 +228,8 @@ test('appends structural parent relations using server-assigned positions', asyn
 			{ title: 'Climate program', type: 'program' },
 			{
 				relation: [
-					{ object: parentGuid, position: 4, predicate: 'is-part-of-program', subject: pageGuid }
+					{ object: parentGuid, position: 4, predicate: 'is-part-of-program', subject: pageGuid },
+					{ object: parentGuid, position: 6, predicate: 'is-section-of', subject: pageGuid }
 				]
 			}
 		)
@@ -261,6 +262,7 @@ test('appends structural parent relations using server-assigned positions', asyn
 		data: expect.objectContaining({
 			relation: [
 				{ object: parentGuid, position: 5, predicate: 'is-part-of-program' },
+				{ object: parentGuid, position: 7, predicate: 'is-section-of' },
 				{ object: parentGoalGuid, position: 3, predicate: 'is-part-of' }
 			]
 		}),
@@ -329,7 +331,10 @@ test('accepts a visible parent that the user cannot update', async () => {
 	expect(mocks.createAuthorizedContainer).toHaveBeenCalledWith(
 		expect.objectContaining({
 			data: expect.objectContaining({
-				relation: [{ object: parentGuid, position: 0, predicate: 'is-part-of-program' }]
+				relation: [
+					{ object: parentGuid, position: 0, predicate: 'is-part-of-program' },
+					{ object: parentGuid, position: 0, predicate: 'is-section-of' }
+				]
 			})
 		})
 	);
@@ -518,9 +523,13 @@ test.each([
 	['objective', 'is-part-of', 'measure'],
 	['binary_indicator', 'is-part-of', 'goal'],
 	['binary_indicator', 'is-part-of-program', 'program'],
+	['task', 'is-part-of-program', 'program'],
+	['effect', 'is-part-of-program', 'program'],
+	['page', 'is-part-of-program', 'program'],
 	['indicator', 'is-part-of-measure', 'measure'],
-	['text', 'is-section-of', 'program'],
+	['text', 'is-part-of-program', 'program'],
 	['goal', 'is-section-of', 'page'],
+	['goal', 'is-section-of', 'program'],
 	['text', 'is-part-of', 'goal']
 ] as const)('rejects a %s %s a %s', async (type, predicate, parentType) => {
 	mocks.containers.set(
@@ -558,7 +567,7 @@ test.each([
 	['objective', 'is-part-of', 'goal'],
 	['text', 'is-section-of', 'measure'],
 	['text', 'is-section-of', 'page'],
-	['text', 'is-part-of-program', 'program']
+	['text', 'is-section-of', 'program']
 ] as const)('accepts a %s %s a %s', async (type, predicate, parentType) => {
 	mocks.containers.set(
 		parentGuid,
@@ -673,3 +682,29 @@ test('appends a text section after the existing sections', async () => {
 		{ object: parentGuid, position: 2, predicate: 'is-section-of' }
 	]);
 });
+
+test.each(['goal', 'knowledge', 'measure', 'rule', 'simple_measure'] as const)(
+	'makes a %s that is part of a program a section of the program',
+	async (type) => {
+		mocks.containers.set(
+			parentGuid,
+			container(
+				parentGuid,
+				{ title: 'Climate program', type: 'program' },
+				{
+					relation: [
+						{ object: parentGuid, position: 0, predicate: 'is-section-of', subject: pageGuid },
+						{ object: parentGuid, position: 3, predicate: 'is-part-of-program', subject: pageGuid }
+					]
+				}
+			)
+		);
+
+		await createWith({ title: 'Part', type }, [{ parentGuid, predicate: 'is-part-of-program' }]);
+
+		expect(mocks.createAuthorizedContainer.mock.calls[0][0].data.relation).toEqual([
+			{ object: parentGuid, position: 4, predicate: 'is-part-of-program' },
+			{ object: parentGuid, position: 1, predicate: 'is-section-of' }
+		]);
+	}
+);

@@ -142,6 +142,23 @@ test('creates containers under a structural parent with appended positions', asy
 			subject: second.guid
 		})
 	);
+	// The program shows its parts as sections.
+	expect(first.relation).toContainEqual(
+		expect.objectContaining({
+			object: program.guid,
+			position: 0,
+			predicate: predicates.enum['is-section-of'],
+			subject: first.guid
+		})
+	);
+	expect(second.relation).toContainEqual(
+		expect.objectContaining({
+			object: program.guid,
+			position: 1,
+			predicate: predicates.enum['is-section-of'],
+			subject: second.guid
+		})
+	);
 	expect(first.user).toContainEqual({
 		predicate: predicates.enum['is-creator-of'],
 		subject: auth.userId
