@@ -31,7 +31,7 @@ export function registerListContainerCategoriesTool(
 				readOnlyHint: true
 			},
 			description:
-				'List category metadata available for container types in an organization. Use list_container_category_values to retrieve bounded value pages.',
+				'List category metadata available for container types in an organization. Use list_container_category_values to retrieve bounded value pages. The key of a category is the GUID of its category container, which update_container changes and which new terms become part of (is-part-of-category).',
 			inputSchema: listContainerCategoriesInput,
 			outputSchema: listContainerCategoriesOutput,
 			title: 'List container categories'

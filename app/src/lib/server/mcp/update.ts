@@ -19,7 +19,7 @@ import {
 } from '$lib/server/db';
 import type { McpAuth } from '$lib/server/mcp/auth';
 import { findUnknownCategory, loadMcpCategoryContext } from '$lib/server/mcp/categories';
-import { mcpPayloadTypes } from '$lib/server/mcp/contracts/payloads';
+import { mcpPayloadTypes, withoutLegacyFields } from '$lib/server/mcp/contracts/payloads';
 import {
 	updateContainerToolName,
 	type UpdateContainerInput
@@ -80,7 +80,10 @@ export function updateMcpContainer(input: UpdateContainerInput & McpAuth) {
 				throw conflict(input.expectedRevision);
 			}
 
-			const merged = mergePayloadPatch(current.payload, input.payloadPatch);
+			const merged = mergePayloadPatch(
+				current.payload,
+				withoutLegacyFields(current.payload.type, input.payloadPatch)
+			);
 			if (isTemplate(current.payload) || isTemplate(merged)) {
 				throw new McpUpdateError(
 					'Containers marked as templates (template: true) cannot be updated by this tool.'
