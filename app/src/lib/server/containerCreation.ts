@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import {
 	NotFoundError,
 	type DatabaseConnection,
+	type DatabaseTransactionConnection,
 	UniqueIntegrityConstraintViolationError
 } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
@@ -20,7 +21,14 @@ import {
 	type AnyPayload
 } from '$lib/models';
 import { isTemplateScope, requiresScopedTemplate } from '$lib/templateScopes';
-import { createContainer, getContainerByGuid, type AfterContainerCreated } from '$lib/server/db';
+import type { NewContainerWithGuid } from '$lib/server/containerCopyPlan';
+import {
+	createContainer,
+	createManyContainers,
+	getContainerByGuid,
+	type AfterContainerCreated
+} from '$lib/server/db';
+import { enqueueIndexingEvents } from '$lib/server/indexingQueue';
 import type { User } from '$lib/stores';
 
 export type ContainerCreationErrorKind =
@@ -29,7 +37,10 @@ export type ContainerCreationErrorKind =
 export class ContainerCreationError extends Error {
 	constructor(
 		public readonly kind: ContainerCreationErrorKind,
-		public readonly validationError?: z.ZodError
+		public readonly validationError?: z.ZodError,
+		// The position of the container that failed among several created
+		// together.
+		public readonly index?: number
 	) {
 		super(kind);
 		this.name = 'ContainerCreationError';
@@ -239,4 +250,75 @@ export function createAuthorizedContainer({
 
 	return async (connection: DatabaseConnection) =>
 		createContainer(await authorize(connection), { afterCreate })(connection);
+}
+
+// Relations without an end refer to the container itself, as with createContainer.
+function withGuid(container: NewContainer, guid: string): NewContainerWithGuid {
+	return {
+		...container,
+		guid,
+		relation: container.relation.map((r) => ({
+			...r,
+			object: r.object ?? guid,
+			subject: r.subject ?? guid
+		}))
+	};
+}
+
+// Creates several containers that may refer to each other by their guids, such
+// as an effect and the new indicator it is measured by. Each brings its own
+// guid. All of them are inserted in one transaction, together with the writes
+// of afterCreate, and only indexed once it has been committed. The created
+// containers are returned in the order they were given.
+export function createAuthorizedContainers({
+	afterCreate,
+	containers,
+	features,
+	user
+}: {
+	afterCreate?: (
+		created: Container<AnyPayload>[],
+		connection: DatabaseTransactionConnection
+	) => Promise<void>;
+	containers: ReadonlyArray<NewContainer & { guid: string }>;
+	features: string[];
+	user: User;
+}) {
+	const pending = new Set(containers.map(({ guid }) => guid));
+
+	return async (connection: DatabaseConnection) => {
+		const { affectedIndexingGuids, containers: created } = await connection.transaction(
+			async (txConnection) => {
+				const inserts: NewContainerWithGuid[] = [];
+				for (const [index, container] of containers.entries()) {
+					let authorized: NewContainer;
+					try {
+						authorized = await authorizeNewContainer({
+							data: container,
+							features,
+							pending,
+							user
+						})(txConnection);
+					} catch (error) {
+						if (error instanceof ContainerCreationError) {
+							throw new ContainerCreationError(error.kind, error.validationError, index);
+						}
+						throw error;
+					}
+					inserts.push(withGuid(authorized, container.guid));
+				}
+
+				const result = await createManyContainers(inserts)(txConnection);
+				await afterCreate?.(result.containers, txConnection);
+				return result;
+			}
+		);
+
+		const timestamp = new Date().toISOString();
+		await enqueueIndexingEvents(
+			affectedIndexingGuids.map((guid) => ({ action: 'upsert', guid, timestamp }))
+		);
+
+		return created;
+	};
 }

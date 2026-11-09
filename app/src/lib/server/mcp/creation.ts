@@ -21,18 +21,11 @@ import {
 	type NewContainer
 } from '$lib/models';
 import {
-	authorizeNewContainer,
 	ContainerCreationError,
-	createAuthorizedContainer
+	createAuthorizedContainer,
+	createAuthorizedContainers
 } from '$lib/server/containerCreation';
-import type { NewContainerWithGuid } from '$lib/server/containerCopyPlan';
-import {
-	createManyContainers,
-	getContainerByGuid,
-	getManyContainers,
-	recordMcpWriteEvent
-} from '$lib/server/db';
-import { enqueueIndexingEvents } from '$lib/server/indexingQueue';
+import { getContainerByGuid, getManyContainers, recordMcpWriteEvent } from '$lib/server/db';
 import type { McpAuth } from '$lib/server/mcp/auth';
 import { findUnknownCategory, loadMcpCategoryContext } from '$lib/server/mcp/categories';
 import { summarizeContainer } from '$lib/server/mcp/containers';
@@ -74,10 +67,14 @@ export async function findVisibleContainer(
 
 function mapCreationError(error: unknown): never {
 	if (error instanceof ContainerCreationError) {
-		if (error.kind === 'forbidden') {
-			throw new McpCreationError('You are not allowed to create content in this context.');
-		}
-		throw new McpCreationError('The container could not be created with the supplied data.');
+		const message =
+			error.kind === 'forbidden'
+				? 'You are not allowed to create content in this context.'
+				: 'The container could not be created with the supplied data.';
+		// Names the container that failed among several created together.
+		throw new McpCreationError(
+			error.index === undefined ? message : `containers[${error.index}]: ${message}`
+		);
 	}
 	throw error;
 }
@@ -491,7 +488,7 @@ function mapBatchInsertError(error: unknown, guids: readonly string[]): never {
 				: `containers[${index}]: A container with the GUID ${guids[index]} exists already; choose a new GUID.`
 		);
 	}
-	throw error;
+	mapCreationError(error);
 }
 
 // Creates the containers of one call together, like the bulk creation of the
@@ -534,48 +531,25 @@ export function createMcpContainers(input: CreateContainersInput & McpAuth) {
 				planned.set(guid, markAsAiGenerated({ ...candidate, guid }));
 			}
 
-			const features = getFeatures();
-			let created: Awaited<ReturnType<ReturnType<typeof createManyContainers>>>;
+			let created: Container<AnyPayload>[];
 			try {
-				created = await connection.transaction(async (txConnection) => {
-					const inserts: NewContainerWithGuid[] = [];
-					for (const [index, { guid }] of input.containers.entries()) {
-						const authorized = await forContainer(index, async () => {
-							try {
-								return await authorizeNewContainer({
-									data: planned.get(guid),
-									features,
-									pending,
-									user
-								})(txConnection);
-							} catch (error) {
-								mapCreationError(error);
-							}
-						});
-						inserts.push({
-							...authorized,
-							guid,
-							relation: authorized.relation.map((relation) => ({
-								...relation,
-								object: relation.object ?? guid,
-								subject: relation.subject ?? guid
-							}))
-						});
-					}
-
-					const result = await createManyContainers(inserts)(txConnection);
-					for (const container of result.containers) {
-						await recordMcpWriteEvent({
-							clientId: input.clientId,
-							containerGuid: container.guid,
-							revision: container.revision,
-							tokenId: input.tokenId,
-							tool: createContainersToolName,
-							userId: input.userId
-						})(txConnection);
-					}
-					return result;
-				});
+				created = await createAuthorizedContainers({
+					afterCreate: async (containers, txConnection) => {
+						for (const container of containers) {
+							await recordMcpWriteEvent({
+								clientId: input.clientId,
+								containerGuid: container.guid,
+								revision: container.revision,
+								tokenId: input.tokenId,
+								tool: createContainersToolName,
+								userId: input.userId
+							})(txConnection);
+						}
+					},
+					containers: input.containers.map(({ guid }) => planned.get(guid)!),
+					features: getFeatures(),
+					user
+				})(connection);
 			} catch (error) {
 				mapBatchInsertError(
 					error,
@@ -583,13 +557,8 @@ export function createMcpContainers(input: CreateContainersInput & McpAuth) {
 				);
 			}
 
-			const timestamp = new Date().toISOString();
-			await enqueueIndexingEvents(
-				created.affectedIndexingGuids.map((guid) => ({ action: 'upsert', guid, timestamp }))
-			);
-
 			return {
-				containers: created.containers.map((container) => ({
+				containers: created.map((container) => ({
 					...summarizeContainer(container),
 					revision: container.revision
 				}))
