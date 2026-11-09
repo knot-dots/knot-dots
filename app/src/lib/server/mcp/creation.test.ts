@@ -489,9 +489,20 @@ test.each([
 	});
 
 	await expect(createMcpContainer({ ...input, tokenId, userId })({} as never)).rejects.toThrow(
-		`A ${parentType} cannot be the ${predicate} parent of a ${type}.`
+		new RegExp(`^An? ${parentType} cannot be the ${predicate} parent of an? ${type}\\.$`)
 	);
 	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
+});
+
+test.each([
+	['text', 'is-section-of', 'effect', 'An effect cannot be the is-section-of parent of a text.'],
+	['effect', 'is-part-of', 'goal', 'A goal cannot be the is-part-of parent of an effect.']
+] as const)('names a %s %s %s with its article', async (type, predicate, parentType, message) => {
+	mocks.containers.set(parentGuid, container(parentGuid, { title: 'Parent', type: parentType }));
+
+	await expect(createWith({ title: 'Child', type }, [{ parentGuid, predicate }])).rejects.toThrow(
+		message
+	);
 });
 
 test.each([

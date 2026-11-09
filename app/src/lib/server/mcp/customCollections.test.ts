@@ -294,7 +294,7 @@ test('rejects a parent whose detail view shows no sections, like a text section'
 	mocks.containers.set(goalGuid, container(goalGuid, { title: 'Less traffic', type: 'effect' }));
 
 	await expect(add({ parentGuid: goalGuid, types: ['goal'] })).rejects.toThrow(
-		'A effect cannot be the is-section-of parent of a custom_collection.'
+		'An effect cannot be the is-section-of parent of a custom_collection.'
 	);
 	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
 });
