@@ -491,7 +491,7 @@
 	"mcp_tokens.empty": "Sie haben keine MCP-Zugriffstokens.",
 	"mcp_tokens.expired": "Abgelaufen",
 	"mcp_tokens.expires": "Läuft ab",
-	"mcp_tokens.expiry_hint": "Das Token läuft automatisch nach sieben Tagen ab.",
+	"mcp_tokens.expiry_hint": "Das Token läuft automatisch nach 30 Tagen ab.",
 	"mcp_tokens.existing": "Vorhandene Tokens",
 	"mcp_tokens.invalid_name": "Geben Sie einen Token-Namen mit 1 bis 100 Zeichen ein.",
 	"mcp_tokens.invalid_token": "Das Token konnte nicht widerrufen werden.",

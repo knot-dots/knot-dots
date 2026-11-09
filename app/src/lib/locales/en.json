@@ -491,7 +491,7 @@
 	"mcp_tokens.empty": "You have no MCP access tokens.",
 	"mcp_tokens.expired": "Expired",
 	"mcp_tokens.expires": "Expires",
-	"mcp_tokens.expiry_hint": "The token expires automatically after seven days.",
+	"mcp_tokens.expiry_hint": "The token expires automatically after 30 days.",
 	"mcp_tokens.existing": "Existing tokens",
 	"mcp_tokens.invalid_name": "Enter a token name between 1 and 100 characters.",
 	"mcp_tokens.invalid_token": "The token could not be revoked.",
