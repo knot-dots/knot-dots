@@ -11,10 +11,16 @@ vi.mock('$lib/server/indexingQueue', () => ({ enqueueIndexingEvent, enqueueIndex
 
 import { type Fixtures, test } from '$lib/fixtures';
 import { newContainer, payloadTypes, predicates, type Predicate } from '$lib/models';
-import { createContainer, createMcpToken, createOrUpdateUser, sql } from '$lib/server/db';
+import {
+	createContainer,
+	createMcpToken,
+	createOrUpdateUser,
+	getContainerByGuid,
+	sql
+} from '$lib/server/db';
 import type { McpAuth } from '$lib/server/mcp/auth';
-import { createContainerInput } from '$lib/server/mcp/contracts/creation';
-import { createMcpContainer } from '$lib/server/mcp/creation';
+import { createContainerInput, createContainersInput } from '$lib/server/mcp/contracts/creation';
+import { createMcpContainer, createMcpContainers } from '$lib/server/mcp/creation';
 import { generateMcpToken } from '$lib/server/mcp/tokens';
 
 const realm = 'test';
@@ -294,4 +300,152 @@ test('creates a text section of an organizational unit in that unit', async ({
 			subject: section.guid
 		})
 	);
+});
+
+function createContainersFor(auth: McpAuth, input: Record<string, unknown>) {
+	return createMcpContainers({ ...createContainersInput.parse(input), ...auth });
+}
+
+test('creates goals and measures of an existing program in one call', async ({
+	connection
+}: Fixtures) => {
+	const auth = await createTestAuth(connection);
+	const organization = await createOrganization(
+		connection,
+		auth.userId,
+		predicates.enum['is-collaborator-of']
+	);
+	const program = await createProgram(connection, organization);
+	await createGoalUnder(organization, program.guid, auth)(connection);
+	const goalGuid = uuid();
+	const measureGuid = uuid();
+	enqueueIndexingEvents.mockClear();
+
+	const { containers } = await createContainersFor(auth, {
+		containers: [
+			{
+				guid: goalGuid,
+				parentRelations: [
+					{ parentGuid: program.guid, predicate: predicates.enum['is-part-of-program'] }
+				],
+				payload: { title: 'Less traffic', type: payloadTypes.enum.goal }
+			},
+			{
+				guid: measureGuid,
+				// The program comes first, since the goal does not exist yet.
+				parentRelations: [
+					{ parentGuid: goalGuid, predicate: predicates.enum['is-part-of'] },
+					{ parentGuid: program.guid, predicate: predicates.enum['is-part-of-program'] }
+				],
+				payload: { title: 'Bike lanes', type: payloadTypes.enum.measure }
+			}
+		],
+		organizationGuid: organization
+	})(connection);
+
+	expect(containers).toMatchObject([
+		{ guid: goalGuid, label: 'Less traffic', type: payloadTypes.enum.goal },
+		{ guid: measureGuid, label: 'Bike lanes', type: payloadTypes.enum.measure }
+	]);
+	const measure = await getContainerByGuid(measureGuid)(connection);
+	expect(measure).toMatchObject({
+		organization,
+		organizational_unit: null,
+		payload: { aiContribution: 1 },
+		revision: containers[1].revision,
+		user: [{ predicate: predicates.enum['is-creator-of'], subject: auth.userId }]
+	});
+	expect(
+		measure.relation
+			.filter(({ subject }) => subject === measureGuid)
+			.map(({ object, position, predicate }) => ({ object, position, predicate }))
+	).toEqual(
+		expect.arrayContaining([
+			{ object: program.guid, position: 2, predicate: predicates.enum['is-part-of-program'] },
+			{ object: program.guid, position: 2, predicate: predicates.enum['is-section-of'] },
+			{ object: goalGuid, position: 0, predicate: predicates.enum['is-part-of'] }
+		])
+	);
+	const goal = await getContainerByGuid(goalGuid)(connection);
+	expect(goal.relation).toContainEqual(
+		expect.objectContaining({
+			object: program.guid,
+			position: 1,
+			predicate: predicates.enum['is-section-of'],
+			subject: goalGuid
+		})
+	);
+	const writeEvents = await findWriteEvents(connection, auth.tokenId);
+	expect(writeEvents.slice(1)).toEqual(
+		containers.map(({ guid, revision }) => ({
+			container_guid: guid,
+			revision,
+			tool: 'create_containers',
+			user_id: auth.userId
+		}))
+	);
+	expect(enqueueIndexingEvents).toHaveBeenCalledExactlyOnceWith(
+		expect.arrayContaining(
+			[goalGuid, measureGuid, program.guid].map((guid) =>
+				expect.objectContaining({ action: 'upsert', guid })
+			)
+		)
+	);
+});
+
+test('creates none of the containers if one of them cannot be created', async ({
+	connection
+}: Fixtures) => {
+	const auth = await createTestAuth(connection);
+	const organization = await createOrganization(
+		connection,
+		auth.userId,
+		predicates.enum['is-collaborator-of']
+	);
+	const program = await createProgram(connection, organization);
+	const taken = await createProgram(connection, organization);
+	const goalGuid = uuid();
+
+	await expect(
+		createContainersFor(auth, {
+			containers: [goalGuid, taken.guid].map((guid) => ({
+				guid,
+				parentRelations: [
+					{ parentGuid: program.guid, predicate: predicates.enum['is-part-of-program'] }
+				],
+				payload: { title: 'Less traffic', type: payloadTypes.enum.goal }
+			})),
+			organizationGuid: organization
+		})(connection)
+	).rejects.toThrow(
+		`containers[1]: A container with the GUID ${taken.guid} exists already; choose a new GUID.`
+	);
+
+	await expect(getContainerByGuid(goalGuid)(connection)).rejects.toThrow();
+	await expect(findWriteEvents(connection, auth.tokenId)).resolves.toEqual([]);
+});
+
+test('names the container that the user may not create', async ({ connection }: Fixtures) => {
+	const auth = await createTestAuth(connection);
+	const organization = await createOrganization(
+		connection,
+		auth.userId,
+		predicates.enum['is-member-of']
+	);
+	const program = await createProgram(connection, organization);
+
+	await expect(
+		createContainersFor(auth, {
+			containers: [
+				{
+					guid: uuid(),
+					parentRelations: [
+						{ parentGuid: program.guid, predicate: predicates.enum['is-part-of-program'] }
+					],
+					payload: { title: 'Less traffic', type: payloadTypes.enum.goal }
+				}
+			],
+			organizationGuid: organization
+		})(connection)
+	).rejects.toThrow('containers[0]: You are not allowed to create content in this context.');
 });

@@ -1,4 +1,8 @@
-import { NotFoundError, type DatabaseConnection } from 'slonik';
+import {
+	NotFoundError,
+	UniqueIntegrityConstraintViolationError,
+	type DatabaseConnection
+} from 'slonik';
 import defineAbilityFor from '$lib/authorization';
 import { getFeatures } from '$lib/server/features';
 import {
@@ -7,7 +11,6 @@ import {
 	isOrganizationContainer,
 	isOrganizationalUnitContainer,
 	isMeasureContainer,
-	isProgramContainer,
 	mayHaveStructuralParent,
 	payloadTypes,
 	predicates,
@@ -17,14 +20,28 @@ import {
 	type MeasurePayload,
 	type NewContainer
 } from '$lib/models';
-import { isMeasureTemplateScope } from '$lib/templateScopes';
-import { ContainerCreationError, createAuthorizedContainer } from '$lib/server/containerCreation';
-import { getContainerByGuid, getManyContainers, recordMcpWriteEvent } from '$lib/server/db';
+import {
+	authorizeNewContainer,
+	ContainerCreationError,
+	createAuthorizedContainer
+} from '$lib/server/containerCreation';
+import type { NewContainerWithGuid } from '$lib/server/containerCopyPlan';
+import {
+	createManyContainers,
+	getContainerByGuid,
+	getManyContainers,
+	recordMcpWriteEvent
+} from '$lib/server/db';
+import { enqueueIndexingEvents } from '$lib/server/indexingQueue';
 import type { McpAuth } from '$lib/server/mcp/auth';
 import { findUnknownCategory, loadMcpCategoryContext } from '$lib/server/mcp/categories';
+import { summarizeContainer } from '$lib/server/mcp/containers';
 import {
+	createContainersToolName,
 	createContainerToolName,
 	mcpSectionParentTypes,
+	type CreateContainersInput,
+	type CreateContainersOutput,
 	type McpParentRelationPredicate,
 	type CreateContainerInput
 } from '$lib/server/mcp/contracts/creation';
@@ -76,6 +93,16 @@ export function payloadValidationMessage(error: {
 		.join('; ');
 }
 
+// Content created through MCP is written by an AI agent, so it is marked as
+// AI-generated like the containers extracted by the AI endpoints, whatever
+// the payload says.
+function markAsAiGenerated<T extends NewContainer>(data: T) {
+	if ('aiContribution' in data.payload) {
+		data.payload.aiContribution = 1;
+	}
+	return data;
+}
+
 export function createAndRecordContainer({
 	auth: { tokenId, userId },
 	data,
@@ -87,12 +114,7 @@ export function createAndRecordContainer({
 	tool: string;
 	user: User;
 }) {
-	// Content created through MCP is written by an AI agent, so it is marked as
-	// AI-generated like the containers extracted by the AI endpoints, whatever
-	// the payload says.
-	if ('aiContribution' in data.payload) {
-		data.payload.aiContribution = 1;
-	}
+	markAsAiGenerated(data);
 
 	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>> => {
 		try {
@@ -146,9 +168,15 @@ const programPartTypes: readonly PayloadType[] = [
 	payloadTypes.enum.simple_measure
 ];
 
+// Containers that can scope the templates of measures, as isMeasureTemplateScope.
+const measureTemplateScopeTypes: readonly PayloadType[] = [
+	payloadTypes.enum.measure,
+	payloadTypes.enum.simple_measure
+];
+
 // The position after the existing children of the parent.
 function nextPosition(
-	relations: ReadonlyArray<{ object: string; position: number; predicate: string }>,
+	relations: ReadonlyArray<{ object?: string; position: number; predicate: string }>,
 	parentGuid: string,
 	predicate: string
 ) {
@@ -167,20 +195,20 @@ function nextPosition(
 function isValidParent(
 	type: PayloadType,
 	predicate: McpParentRelationPredicate,
-	parent: Container<AnyPayload>
+	parentType: PayloadType
 ) {
 	if (!mayHaveStructuralParent(type)) {
 		return false;
 	}
 	switch (predicate) {
 		case predicates.enum['is-part-of-program']:
-			return isProgramContainer(parent) && programPartTypes.includes(type);
+			return parentType === payloadTypes.enum.program && programPartTypes.includes(type);
 		case predicates.enum['is-part-of-measure']:
-			return isMeasureTemplateScope(parent);
+			return measureTemplateScopeTypes.includes(parentType);
 		case predicates.enum['is-part-of']:
-			return isPartOfParentTypes[type]?.includes(parent.payload.type) ?? false;
+			return isPartOfParentTypes[type]?.includes(parentType) ?? false;
 		case predicates.enum['is-section-of']:
-			return sectionTypes.includes(type) && sectionParentTypes.includes(parent.payload.type);
+			return sectionTypes.includes(type) && sectionParentTypes.includes(parentType);
 	}
 }
 
@@ -190,28 +218,61 @@ export type McpContainerCreation = Omit<CreateContainerInput, 'payload'> & {
 	payload: { type: PayloadType } & Record<string, unknown>;
 };
 
-export function createMcpContainer(input: CreateContainerInput & McpAuth) {
-	return (connection: DatabaseConnection): Promise<Container<AnyPayload>> =>
-		runAsRequestUser(input.userId, async () => {
-			const user = await loadMcpUserContext(connection, input.userId);
-			return createMcpContainerAs(connection, user, input, createContainerToolName);
-		});
-}
+type PlannedContainer = NewContainer & { guid: string };
 
-// Checks the container against its organization and parents and creates it
-// on behalf of the user, recording the write for the tool. Runs as the
-// request user.
-export async function createMcpContainerAs(
-	connection: DatabaseConnection,
-	user: User,
-	input: McpContainerCreation & McpAuth,
-	tool: string
-): Promise<Container<AnyPayload>> {
-	const organization = await findVisibleContainer(connection, user, input.organizationGuid);
+// A container a new one refers to: one that exists already, or one created
+// earlier in the same call.
+type McpRelatedContainer = Container<AnyPayload> | PlannedContainer;
+
+type McpCreationContext = {
+	connection: DatabaseConnection;
+	// Containers that exist already and that the new ones refer to, visible to
+	// the user and in the organization.
+	existing: ReadonlyMap<string, Container<AnyPayload>>;
+	loadCategoryContext: (type: PayloadType) => ReturnType<typeof loadMcpCategoryContext>;
+	organization: Container<AnyPayload>;
+	// The GUIDs of all containers created in the same call, and the ones
+	// checked so far.
+	pending: ReadonlySet<string>;
+	planned: ReadonlyMap<string, PlannedContainer>;
+	user: User;
+};
+
+async function findMcpOrganization(connection: DatabaseConnection, user: User, guid: string) {
+	const organization = await findVisibleContainer(connection, user, guid);
 	if (!organization || !isOrganizationContainer(organization)) {
 		throw new McpCreationError('Organization or organizational unit not found or inaccessible.');
 	}
+	return organization;
+}
 
+async function findReferencedContainers(
+	connection: DatabaseConnection,
+	user: User,
+	organization: Container<AnyPayload>,
+	guids: string[]
+) {
+	const unique = [...new Set(guids)];
+	if (unique.length === 0) {
+		return new Map<string, Container<AnyPayload>>();
+	}
+	const ability = defineAbilityFor(user);
+	const found = await getManyContainers([], { guid: unique }, 'alpha')(connection);
+	return new Map(
+		found
+			.filter((container) => container.organization === organization.guid)
+			.filter((container) => ability.can('read', container))
+			.map((container) => [container.guid, container])
+	);
+}
+
+// Checks a new container against its organization and parents and returns
+// it ready to be authorized.
+async function planMcpContainer(
+	context: McpCreationContext,
+	input: Pick<McpContainerCreation, 'organizationalUnitGuid' | 'parentRelations' | 'payload'>
+): Promise<NewContainer> {
+	const { connection, existing, organization, pending, planned, user } = context;
 	const payloadResult = getPayloadSchema(input.payload.type).safeParse(input.payload);
 	if (!payloadResult.success) {
 		throw new McpCreationError(payloadValidationMessage(payloadResult.error));
@@ -222,28 +283,33 @@ export async function createMcpContainerAs(
 		);
 	}
 
-	const parentGuids = [...new Set(input.parentRelations.map(({ parentGuid }) => parentGuid))];
-	const parents =
-		parentGuids.length > 0
-			? await getManyContainers([], { guid: parentGuids }, 'alpha')(connection)
-			: [];
-	const ability = defineAbilityFor(user);
-	if (
-		parents.length !== parentGuids.length ||
-		parents.some(
-			(parent) => parent.organization !== organization.guid || ability.cannot('read', parent)
-		)
-	) {
-		throw new McpCreationError('Parent container not found or inaccessible.');
+	const parentsByGuid = new Map<string, McpRelatedContainer>();
+	for (const { parentGuid } of input.parentRelations) {
+		const parent = pending.has(parentGuid) ? planned.get(parentGuid) : existing.get(parentGuid);
+		if (!parent) {
+			throw new McpCreationError(
+				pending.has(parentGuid)
+					? 'A parent created in the same call must be listed before its children.'
+					: 'Parent container not found or inaccessible.'
+			);
+		}
+		parentsByGuid.set(parentGuid, parent);
 	}
-	const parentsByGuid = new Map(parents.map((parent) => [parent.guid, parent]));
 	for (const { parentGuid, predicate } of input.parentRelations) {
 		const parent = parentsByGuid.get(parentGuid);
-		if (parent && !isValidParent(input.payload.type, predicate, parent)) {
+		if (parent && !isValidParent(input.payload.type, predicate, parent.payload.type)) {
 			throw new McpCreationError(
 				`A ${parent.payload.type} cannot be the ${predicate} parent of a ${input.payload.type}.`
 			);
 		}
+	}
+	const parents = [...parentsByGuid.values()];
+	// As in the bulk creation of the web application, the permissions of a
+	// container derive from a parent that exists already.
+	if (parents.length > 0 && parents.every(({ guid }) => pending.has(guid))) {
+		throw new McpCreationError(
+			'At least one parent must exist already, since the container gets its permissions from it; create the parents in an earlier call.'
+		);
 	}
 
 	// Like a container created within its parents in the web application,
@@ -286,13 +352,7 @@ export async function createMcpContainerAs(
 	if ('category' in payloadResult.data) {
 		const unknownCategory = await findUnknownCategory({
 			category: payloadResult.data.category,
-			loadContext: () =>
-				loadMcpCategoryContext({
-					connection,
-					organizationGuid: organization.guid,
-					types: [input.payload.type],
-					user
-				})
+			loadContext: () => context.loadCategoryContext(input.payload.type)
 		});
 		if (unknownCategory) {
 			throw new McpCreationError(unknownCategory);
@@ -304,27 +364,32 @@ export async function createMcpContainerAs(
 		organizationalUnit ?? organization
 	) as NewContainer;
 	candidate.payload = payloadResult.data;
-	candidate.relation = input.parentRelations.flatMap(({ parentGuid, predicate }) => {
-		const parent = parentsByGuid.get(parentGuid);
-		if (!parent) throw new McpCreationError('Parent container not found or inaccessible.');
-		const relation = {
-			object: parentGuid,
-			position: nextPosition(parent.relation, parentGuid, predicate),
+	// The container is appended after the children of each parent, including
+	// those created before it in the same call.
+	const plannedRelations = [...planned.values()].flatMap(({ relation }) => relation);
+	const position = (parentGuid: string, predicate: string) =>
+		nextPosition(
+			[...(existing.get(parentGuid)?.relation ?? []), ...plannedRelations],
+			parentGuid,
 			predicate
-		};
-		if (predicate !== predicates.enum['is-part-of-program']) {
-			return [relation];
-		}
-		const section = predicates.enum['is-section-of'];
-		return [
-			relation,
-			{
-				object: parentGuid,
-				position: nextPosition(parent.relation, parentGuid, section),
-				predicate: section
+		);
+	// The first parent decides the permissions, so existing parents go first.
+	candidate.relation = input.parentRelations
+		.toSorted(
+			(first, second) =>
+				Number(pending.has(first.parentGuid)) - Number(pending.has(second.parentGuid))
+		)
+		.flatMap(({ parentGuid, predicate }) => {
+			const relation = { object: parentGuid, position: position(parentGuid, predicate), predicate };
+			if (predicate !== predicates.enum['is-part-of-program']) {
+				return [relation];
 			}
-		];
-	});
+			const section = predicates.enum['is-section-of'];
+			return [
+				relation,
+				{ object: parentGuid, position: position(parentGuid, section), predicate: section }
+			];
+		});
 
 	// As in the web application, a measure below a measure is one level
 	// deeper; the level is derived rather than taken from the payload.
@@ -345,10 +410,187 @@ export async function createMcpContainerAs(
 		candidate.payload.hierarchyLevel = hierarchyLevel;
 	}
 
+	return candidate;
+}
+
+export function createMcpContainer(input: CreateContainerInput & McpAuth) {
+	return (connection: DatabaseConnection): Promise<Container<AnyPayload>> =>
+		runAsRequestUser(input.userId, async () => {
+			const user = await loadMcpUserContext(connection, input.userId);
+			return createMcpContainerAs(connection, user, input, createContainerToolName);
+		});
+}
+
+// Checks the container against its organization and parents and creates it
+// on behalf of the user, recording the write for the tool. Runs as the
+// request user.
+export async function createMcpContainerAs(
+	connection: DatabaseConnection,
+	user: User,
+	input: McpContainerCreation & McpAuth,
+	tool: string
+): Promise<Container<AnyPayload>> {
+	const organization = await findMcpOrganization(connection, user, input.organizationGuid);
+	const existing = await findReferencedContainers(
+		connection,
+		user,
+		organization,
+		input.parentRelations.map(({ parentGuid }) => parentGuid)
+	);
+	const candidate = await planMcpContainer(
+		{
+			connection,
+			existing,
+			loadCategoryContext: (type) =>
+				loadMcpCategoryContext({
+					connection,
+					organizationGuid: organization.guid,
+					types: [type],
+					user
+				}),
+			organization,
+			pending: new Set(),
+			planned: new Map(),
+			user
+		},
+		input
+	);
+
 	return createAndRecordContainer({
 		auth: input,
 		data: candidate,
 		tool,
 		user
 	})(connection);
+}
+
+// Names the container of the call that a check failed for.
+async function forContainer<T>(index: number, check: () => Promise<T> | T): Promise<T> {
+	try {
+		return await check();
+	} catch (error) {
+		if (error instanceof McpCreationError) {
+			throw new McpCreationError(`containers[${index}]: ${error.message}`);
+		}
+		throw error;
+	}
+}
+
+function mapBatchInsertError(error: unknown, guids: readonly string[]): never {
+	if (
+		error instanceof UniqueIntegrityConstraintViolationError &&
+		error.constraint === 'container_guid_key'
+	) {
+		// PostgreSQL names the GUID in its detail: Key (guid)=(…) already exists.
+		const detail = error.detail?.toLowerCase() ?? '';
+		const index = guids.findIndex((guid) => detail.includes(guid.toLowerCase()));
+		throw new McpCreationError(
+			index === -1
+				? 'A container with one of these GUIDs exists already; choose new GUIDs.'
+				: `containers[${index}]: A container with the GUID ${guids[index]} exists already; choose a new GUID.`
+		);
+	}
+	throw error;
+}
+
+// Creates the containers of one call together, like the bulk creation of the
+// web application: all of them or none. The agent chooses their GUIDs, so
+// that they can refer to each other. Each container is checked like one
+// created through create_container.
+export function createMcpContainers(input: CreateContainersInput & McpAuth) {
+	return (connection: DatabaseConnection): Promise<CreateContainersOutput> =>
+		runAsRequestUser(input.userId, async () => {
+			const user = await loadMcpUserContext(connection, input.userId);
+			const organization = await findMcpOrganization(connection, user, input.organizationGuid);
+			const pending = new Set(input.containers.map(({ guid }) => guid));
+			const existing = await findReferencedContainers(
+				connection,
+				user,
+				organization,
+				input.containers
+					.flatMap(({ parentRelations }) => parentRelations.map(({ parentGuid }) => parentGuid))
+					.filter((guid) => !pending.has(guid))
+			);
+			const planned = new Map<string, PlannedContainer>();
+			const context: McpCreationContext = {
+				connection,
+				existing,
+				loadCategoryContext: (type) =>
+					loadMcpCategoryContext({
+						connection,
+						organizationGuid: organization.guid,
+						types: [type],
+						user
+					}),
+				organization,
+				pending,
+				planned,
+				user
+			};
+
+			for (const [index, { guid, ...container }] of input.containers.entries()) {
+				const candidate = await forContainer(index, () => planMcpContainer(context, container));
+				planned.set(guid, markAsAiGenerated({ ...candidate, guid }));
+			}
+
+			const features = getFeatures();
+			let created: Awaited<ReturnType<ReturnType<typeof createManyContainers>>>;
+			try {
+				created = await connection.transaction(async (txConnection) => {
+					const inserts: NewContainerWithGuid[] = [];
+					for (const [index, { guid }] of input.containers.entries()) {
+						const authorized = await forContainer(index, async () => {
+							try {
+								return await authorizeNewContainer({
+									data: planned.get(guid),
+									features,
+									pending,
+									user
+								})(txConnection);
+							} catch (error) {
+								mapCreationError(error);
+							}
+						});
+						inserts.push({
+							...authorized,
+							guid,
+							relation: authorized.relation.map((relation) => ({
+								...relation,
+								object: relation.object ?? guid,
+								subject: relation.subject ?? guid
+							}))
+						});
+					}
+
+					const result = await createManyContainers(inserts)(txConnection);
+					for (const container of result.containers) {
+						await recordMcpWriteEvent({
+							containerGuid: container.guid,
+							revision: container.revision,
+							tokenId: input.tokenId,
+							tool: createContainersToolName,
+							userId: input.userId
+						})(txConnection);
+					}
+					return result;
+				});
+			} catch (error) {
+				mapBatchInsertError(
+					error,
+					input.containers.map(({ guid }) => guid)
+				);
+			}
+
+			const timestamp = new Date().toISOString();
+			await enqueueIndexingEvents(
+				created.affectedIndexingGuids.map((guid) => ({ action: 'upsert', guid, timestamp }))
+			);
+
+			return {
+				containers: created.containers.map((container) => ({
+					...summarizeContainer(container),
+					revision: container.revision
+				}))
+			};
+		});
 }
