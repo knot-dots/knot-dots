@@ -557,17 +557,23 @@ export function createMcpContainers(input: CreateContainersInput & McpAuth) {
 					])
 					.filter((guid) => !pending.has(guid))
 			);
+			const categoryContexts = new Map<PayloadType, ReturnType<typeof loadMcpCategoryContext>>();
 			const planned = new Map<string, PlannedContainer>();
 			const context: McpCreationContext = {
 				connection,
 				existing,
-				loadCategoryContext: (type) =>
-					loadMcpCategoryContext({
-						connection,
-						organizationGuid: organization.guid,
-						types: [type],
-						user
-					}),
+				loadCategoryContext: (type) => {
+					const categoryContext =
+						categoryContexts.get(type) ??
+						loadMcpCategoryContext({
+							connection,
+							organizationGuid: organization.guid,
+							types: [type],
+							user
+						});
+					categoryContexts.set(type, categoryContext);
+					return categoryContext;
+				},
 				organization,
 				pending,
 				planned,
