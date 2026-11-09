@@ -24,7 +24,7 @@ const parentRelation = z.strictObject({
 			'GUID of an existing parent container that is visible to you in the same organization.'
 		),
 	predicate: mcpParentRelationPredicates.describe(
-		'Structural relation from the new container to the parent. is-part-of-program needs a program, is-part-of-measure a measure or simple measure. is-part-of places a goal below a goal, a measure, simple measure or task below a goal or measure, knowledge below knowledge, an effect below a measure or simple measure, and an objective below a goal. is-section-of adds a text section to a page, goal, measure, simple measure, task, knowledge, rule, effect, objective, indicator, binary indicator or resource; programs take text as a part through is-part-of-program instead. The server assigns the position, which is the sort order among the children of the parent.'
+		'Structural relation from the new container to the parent. is-part-of-program makes a goal, measure, simple measure, knowledge or rule part of a program, and also a section of it, which shows it in the program; other types cannot be part of a program. is-part-of-measure needs a measure or simple measure. is-part-of places a goal below a goal, a measure, simple measure or task below a goal or measure, knowledge below knowledge, an effect below a measure or simple measure, and an objective below a goal. is-section-of adds a text section to a page, program, goal, measure, simple measure, task, knowledge, rule, effect, objective, indicator, binary indicator or resource. The server assigns the position, which is the sort order among the children of the parent.'
 	)
 });
 
