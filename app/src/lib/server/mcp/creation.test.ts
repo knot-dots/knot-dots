@@ -287,6 +287,30 @@ test('rejects invalid payloads and templates', async () => {
 	expect(mocks.recordMcpWriteEvent).not.toHaveBeenCalled();
 });
 
+test('refuses to make a new container public', async () => {
+	const input = createContainerInput.parse({
+		organizationGuid,
+		payload: { title: 'Public goal', type: 'goal', visibility: 'public' }
+	});
+
+	await expect(createMcpContainer({ ...input, tokenId, userId })({} as never)).rejects.toThrow(
+		'Agents cannot make content public; a person can change the visibility in the web application.'
+	);
+	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
+});
+
+test.each([
+	[{ title: 'Created category', type: 'category' }, 'organization'],
+	[{ title: 'Created resource', type: 'resource_v2' }, 'organization'],
+	[{ title: 'Created category', type: 'category', visibility: 'members' }, 'members']
+])('creates %j, public by default, for the organization', async (payload, visibility) => {
+	const input = createContainerInput.parse({ organizationGuid, payload });
+
+	await createMcpContainer({ ...input, tokenId, userId })({} as never);
+
+	expect(createdPayload()).toMatchObject({ visibility });
+});
+
 test.each(['hidden', 'other organization'])('rejects a %s parent', async (condition) => {
 	const parentOrganization =
 		condition === 'other organization' ? otherOrganizationGuid : organizationGuid;
@@ -816,6 +840,8 @@ test.each([
 	expect(mocks.createAuthorizedContainer.mock.calls[0][0].data.relation).toEqual([
 		{ object: parent, position, predicate }
 	]);
+	// Terms are public by default, but not when an agent creates them.
+	expect(createdPayload().visibility).toBe('organization');
 });
 
 test.each([

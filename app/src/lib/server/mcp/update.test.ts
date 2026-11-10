@@ -241,6 +241,29 @@ test.each([
 	expect(mocks.recordMcpWriteEvent).not.toHaveBeenCalled();
 });
 
+test('refuses to make a container public', async () => {
+	await expect(update({ visibility: 'public' })).rejects.toThrow(
+		'Agents cannot make content public; a person can change the visibility in the web application.'
+	);
+	expect(mocks.updateContainer).not.toHaveBeenCalled();
+});
+
+test('changes a container that is public already', async () => {
+	mocks.containers.set(
+		guid,
+		container({ title: 'Public goal', type: 'goal', visibility: 'public' })
+	);
+
+	await update({ title: 'Renamed' });
+
+	expect(mocks.updateContainer).toHaveBeenCalledWith(
+		expect.objectContaining({
+			payload: expect.objectContaining({ title: 'Renamed', visibility: 'public' })
+		}),
+		expect.anything()
+	);
+});
+
 test('rejects updating a template', async () => {
 	mocks.containers.set(guid, container({ template: true, title: 'Template', type: 'goal' }));
 

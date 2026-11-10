@@ -14,6 +14,7 @@ import {
 	mayHaveStructuralParent,
 	payloadTypes,
 	predicates,
+	visibility,
 	type PayloadType,
 	type AnyPayload,
 	type Container,
@@ -49,6 +50,11 @@ import { runAsRequestUser } from '$lib/server/requestUser';
 import type { User } from '$lib/stores';
 
 const maxHierarchyLevel = 6;
+
+// Whether content is public is for a person to decide in the web
+// application.
+export const publicVisibilityRefusal =
+	'Agents cannot make content public; a person can change the visibility in the web application.';
 
 export class McpCreationError extends Error {
 	constructor(message: string) {
@@ -326,6 +332,17 @@ async function planMcpContainer(
 		throw new McpCreationError(
 			'Containers marked as templates (template: true) cannot be created by this tool.'
 		);
+	}
+	if (input.payload.visibility === visibility.enum.public) {
+		throw new McpCreationError(publicVisibilityRefusal);
+	}
+	// Some types are public by default, such as categories and their terms;
+	// created by an agent, they are visible to the organization instead.
+	if (
+		'visibility' in payloadResult.data &&
+		payloadResult.data.visibility === visibility.enum.public
+	) {
+		payloadResult.data.visibility = visibility.enum.organization;
 	}
 
 	const parentsByGuid = new Map<string, McpRelatedContainer>();
