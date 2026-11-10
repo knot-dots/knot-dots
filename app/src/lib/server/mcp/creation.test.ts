@@ -1,20 +1,19 @@
 import { beforeEach, expect, test, vi } from 'vitest';
 import { anyContainer, emptyGrantRecords, type AnyPayload, type Container } from '$lib/models';
 
+// Categories are identified by the GUID of their category container and
+// their values by the GUID of their term container.
+const sdg = vi.hoisted(() => ({
+	climateAction: '00000000-0000-4000-8000-0000000000c2',
+	key: '00000000-0000-4000-8000-0000000000c1'
+}));
+
 const mocks = vi.hoisted(() => ({
 	categoryContext: {
-		keys: ['sdg'],
-		labels: new Map([['sdg', 'Sustainable Development Goal']]),
-		objectTypesPerKey: { sdg: ['indicator'] },
-		options: {
-			sdg: [
-				{
-					guid: '00000000-0000-4000-8000-000000000008',
-					label: 'Climate action',
-					value: '13'
-				}
-			]
-		}
+		keys: [sdg.key],
+		labels: new Map([[sdg.key, 'Sustainable Development Goal']]),
+		objectTypesPerKey: { [sdg.key]: ['indicator'] },
+		options: { [sdg.key]: [{ label: 'Climate action', value: sdg.climateAction }] }
 	},
 	containers: new Map<string, Container<AnyPayload>>(),
 	createAuthorizedContainer: vi.fn(),
@@ -489,9 +488,20 @@ test.each([
 	});
 
 	await expect(createMcpContainer({ ...input, tokenId, userId })({} as never)).rejects.toThrow(
-		`A ${parentType} cannot be the ${predicate} parent of a ${type}.`
+		new RegExp(`^An? ${parentType} cannot be the ${predicate} parent of an? ${type}\\.$`)
 	);
 	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
+});
+
+test.each([
+	['text', 'is-section-of', 'effect', 'An effect cannot be the is-section-of parent of a text.'],
+	['effect', 'is-part-of', 'goal', 'A goal cannot be the is-part-of parent of an effect.']
+] as const)('names a %s %s %s with its article', async (type, predicate, parentType, message) => {
+	mocks.containers.set(parentGuid, container(parentGuid, { title: 'Parent', type: parentType }));
+
+	await expect(createWith({ title: 'Child', type }, [{ parentGuid, predicate }])).rejects.toThrow(
+		message
+	);
 });
 
 test.each([
@@ -538,14 +548,19 @@ function createdPayload() {
 }
 
 test('accepts category values the organization offers', async () => {
-	await createWith({ category: { sdg: ['13'] }, title: 'Climate indicator', type: 'goal' });
+	await createWith({
+		category: { [sdg.key]: [sdg.climateAction] },
+		title: 'Climate indicator',
+		type: 'goal'
+	});
 
-	expect(createdPayload()).toMatchObject({ category: { sdg: ['13'] } });
+	expect(createdPayload()).toMatchObject({ category: { [sdg.key]: [sdg.climateAction] } });
 });
 
 test.each([
-	[{ policyField: ['mobility'] }, 'Unknown category: policyField.'],
-	[{ sdg: ['Climate action'] }, 'Unknown value of category sdg: Climate action.']
+	// The slug that identified the category before its GUID did.
+	[{ sdg: [sdg.climateAction] }, 'Unknown category: sdg.'],
+	[{ [sdg.key]: ['Climate action'] }, `Unknown value of category ${sdg.key}: Climate action.`]
 ])('rejects unknown categories and category values', async (category, message) => {
 	await expect(createWith({ category, title: 'Climate goal', type: 'goal' })).rejects.toThrow(
 		message

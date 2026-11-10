@@ -173,6 +173,11 @@ const measureTemplateScopeTypes: readonly PayloadType[] = [
 	payloadTypes.enum.simple_measure
 ];
 
+// The payload type with its indefinite article, such as "an effect".
+function withArticle(type: string) {
+	return `${/^[aeiou]/.test(type) ? 'an' : 'a'} ${type}`;
+}
+
 // The position after the existing children of the parent.
 function nextPosition(
 	relations: ReadonlyArray<{ object?: string; position: number; predicate: string }>,
@@ -332,9 +337,8 @@ async function planMcpContainer(
 	for (const { parentGuid, predicate } of input.parentRelations) {
 		const parent = parentsByGuid.get(parentGuid);
 		if (parent && !isValidParent(input.payload.type, predicate, parent.payload.type)) {
-			throw new McpCreationError(
-				`A ${parent.payload.type} cannot be the ${predicate} parent of a ${input.payload.type}.`
-			);
+			const message = `${withArticle(parent.payload.type)} cannot be the ${predicate} parent of ${withArticle(input.payload.type)}.`;
+			throw new McpCreationError(message.charAt(0).toUpperCase() + message.slice(1));
 		}
 	}
 	const parents = [...parentsByGuid.values()];
