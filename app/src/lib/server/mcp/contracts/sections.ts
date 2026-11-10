@@ -71,45 +71,68 @@ const sectionResourceDataTypes = resourceDataTypes.extract([
 	'resource_data_type.budget'
 ]);
 
+// The settings that add_section and update_section share.
+const sectionSettings = {
+	color: backgroundColor
+		.optional()
+		.describe('Background color of the section; not available for effect_collection.'),
+	measurement: progressMeasurement
+		.optional()
+		.describe(
+			'For progress: manual lets people set the progress of the parent by hand (the default); subordinateObjects computes it from the status of the containers of objectType that are part of the parent.'
+		),
+	objectType: progressObjectType
+		.optional()
+		.describe(
+			'For progress with measurement subordinateObjects: the type of the containers it counts. Defaults to task.'
+		),
+	visibility: visibility
+		.exclude([visibility.enum.public])
+		.optional()
+		.describe(
+			'Who can see the section: its creator, the members of its team or the organization (the default). Only a person can make it public, in the web application.'
+		)
+};
+
+type SectionSettings = {
+	[Key in keyof typeof sectionSettings]?: z.infer<(typeof sectionSettings)[Key]>;
+};
+
+// Why the settings do not fit a section of the type, if they do not.
+export function sectionSettingsIssue(
+	type: PayloadType,
+	{ color, measurement, objectType }: SectionSettings
+) {
+	if (
+		type !== payloadTypes.enum.progress &&
+		(measurement !== undefined || objectType !== undefined)
+	) {
+		return {
+			message: 'measurement and objectType apply only to a progress section.',
+			path: measurement !== undefined ? 'measurement' : 'objectType'
+		};
+	}
+	if (type === payloadTypes.enum.effect_collection && color !== undefined) {
+		return { message: 'An effect_collection has no background color.', path: 'color' };
+	}
+	return undefined;
+}
+
 export const addSectionInput = z
 	.strictObject({
-		color: backgroundColor
-			.optional()
-			.describe('Background color of the section; not available for effect_collection.'),
-		measurement: progressMeasurement
-			.optional()
-			.describe(
-				'For progress: manual lets people set the progress of the parent by hand (the default); subordinateObjects computes it from the status of the containers of objectType that are part of the parent.'
-			),
-		objectType: progressObjectType
-			.optional()
-			.describe(
-				'For progress with measurement subordinateObjects: the type of the containers it counts. Defaults to task.'
-			),
+		...sectionSettings,
 		parentGuid: z.uuid().describe('Container whose sections the new section is appended to.'),
 		resourceDataType: sectionResourceDataTypes
 			.optional()
 			.describe(
 				'Required for resource_data_collection: the actual or planned resource allocation of a measure, or the budget of a goal.'
 			),
-		type: mcpDataViewSectionTypes.describe('Type of the section.'),
-		visibility: visibility
-			.exclude([visibility.enum.public])
-			.optional()
-			.describe(
-				'Who can see the section: its creator, the members of its team or the organization (the default). Only a person can make it public, in the web application.'
-			)
+		type: mcpDataViewSectionTypes.describe('Type of the section.')
 	})
 	.superRefine((input, context) => {
-		if (
-			input.type !== payloadTypes.enum.progress &&
-			(input.measurement !== undefined || input.objectType !== undefined)
-		) {
-			context.addIssue({
-				code: 'custom',
-				message: 'measurement and objectType apply only to a progress section.',
-				path: [input.measurement !== undefined ? 'measurement' : 'objectType']
-			});
+		const issue = sectionSettingsIssue(input.type, input);
+		if (issue) {
+			context.addIssue({ code: 'custom', message: issue.message, path: [issue.path] });
 		}
 		if (
 			(input.type === payloadTypes.enum.resource_data_collection) !==
@@ -121,17 +144,36 @@ export const addSectionInput = z
 				path: ['resourceDataType']
 			});
 		}
-		if (input.type === payloadTypes.enum.effect_collection && input.color !== undefined) {
-			context.addIssue({
-				code: 'custom',
-				message: 'An effect_collection has no background color.',
-				path: ['color']
-			});
-		}
 	});
 
 export type AddSectionInput = z.infer<typeof addSectionInput>;
 
-export const addSectionOutput = containerSummary.extend({ revision: z.number().int().positive() });
+export const updateSectionToolName = 'update_section';
 
-export type AddSectionOutput = z.infer<typeof addSectionOutput>;
+export const updateSectionInput = z
+	.strictObject({
+		...sectionSettings,
+		expectedRevision: z
+			.number()
+			.int()
+			.positive()
+			.describe(
+				'Revision from the latest add_section, update_section or get_container response; the update fails if the section changed since.'
+			),
+		guid: z.uuid().describe('GUID of the section to change.')
+	})
+	.refine(
+		(input) =>
+			Object.keys(sectionSettings).some(
+				(key) => input[key as keyof typeof sectionSettings] !== undefined
+			),
+		'Change at least one setting.'
+	);
+
+export type UpdateSectionInput = z.infer<typeof updateSectionInput>;
+
+export const sectionOutput = containerSummary.extend({
+	revision: z.number().int().positive().describe('Pass as expectedRevision to update_section.')
+});
+
+export type SectionOutput = z.infer<typeof sectionOutput>;

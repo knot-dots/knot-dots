@@ -20,6 +20,7 @@ import {
 import type { McpAuth } from '$lib/server/mcp/auth';
 import { findUnknownCategory, loadMcpCategoryContext } from '$lib/server/mcp/categories';
 import { mcpPayloadTypes, withoutLegacyFields } from '$lib/server/mcp/contracts/payloads';
+import { isMcpDataViewSectionType } from '$lib/server/mcp/contracts/sections';
 import {
 	updateContainerToolName,
 	type UpdateContainerInput
@@ -69,6 +70,9 @@ export function updateMcpContainer(input: UpdateContainerInput & McpAuth) {
 				throw new McpUpdateError(
 					'Change custom collection sections with update_custom_collection_section.'
 				);
+			}
+			if (current && isMcpDataViewSectionType(current.payload.type)) {
+				throw new McpUpdateError(`Change ${current.payload.type} sections with update_section.`);
 			}
 			if (!current || !mcpPayloadTypes.safeParse(current.payload.type).success) {
 				throw new McpUpdateError(notFound);
