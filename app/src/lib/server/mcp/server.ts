@@ -5,7 +5,11 @@ import {
 	listMcpContainerCategoryValues
 } from '$lib/server/mcp/categories';
 import { getMcpContainer, searchMcpContainers } from '$lib/server/mcp/containers';
-import { addMcpCustomCollectionSection, createMcpContainer } from '$lib/server/mcp/creation';
+import { createMcpContainer } from '$lib/server/mcp/creation';
+import {
+	addMcpCustomCollectionSection,
+	updateMcpCustomCollectionSection
+} from '$lib/server/mcp/customCollections';
 import { attachMcpIndicator } from '$lib/server/mcp/indicators';
 import { setMcpActualData } from '$lib/server/mcp/actualData';
 import { listMcpOrganizationalUnits } from '$lib/server/mcp/organizationalUnits';
@@ -46,6 +50,10 @@ import {
 	registerUpdateContainerTool,
 	type UpdateContainerDependencies
 } from '$lib/server/mcp/tools/updateContainer';
+import {
+	registerUpdateCustomCollectionSectionTool,
+	type UpdateCustomCollectionSectionDependencies
+} from '$lib/server/mcp/tools/updateCustomCollectionSection';
 import {
 	registerGetContainerTool,
 	type GetContainerDependencies
@@ -94,7 +102,8 @@ type McpServerDependencies = AddContainerRelationDependencies &
 	SearchOrganizationUsersDependencies &
 	RemoveContainerRelationDependencies &
 	SetActualDataDependencies &
-	UpdateContainerDependencies;
+	UpdateContainerDependencies &
+	UpdateCustomCollectionSectionDependencies;
 
 const defaultDependencies: McpServerDependencies = {
 	async addContainerRelation(auth, input) {
@@ -143,6 +152,9 @@ const defaultDependencies: McpServerDependencies = {
 	},
 	async updateContainer(auth, input) {
 		return (await getPool()).connect(updateMcpContainer({ ...input, ...auth }));
+	},
+	async updateCustomCollectionSection(auth, input) {
+		return (await getPool()).connect(updateMcpCustomCollectionSection({ ...input, ...auth }));
 	}
 };
 
@@ -177,6 +189,7 @@ export function createKnotDotsMcpHandler(dependencies: McpServerDependencies) {
 			registerRemoveContainerRelationTool(server, authInfo, dependencies);
 			registerSetActualDataTool(server, authInfo, dependencies);
 			registerUpdateContainerTool(server, authInfo, dependencies);
+			registerUpdateCustomCollectionSectionTool(server, authInfo, dependencies);
 
 			return server;
 		},

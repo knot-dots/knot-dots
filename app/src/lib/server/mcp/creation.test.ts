@@ -19,7 +19,6 @@ const mocks = vi.hoisted(() => ({
 	containers: new Map<string, Container<AnyPayload>>(),
 	createAuthorizedContainer: vi.fn(),
 	recordMcpWriteEvent: vi.fn(),
-	relations: [] as Array<{ object: string; position: number; predicate: string }>,
 	transactionConnection: { transaction: true },
 	unreadableGuids: new Set<string>(),
 	unupdatableGuids: new Set<string>()
@@ -43,7 +42,6 @@ vi.mock('$lib/server/containerCreation', async (importOriginal) => ({
 	createAuthorizedContainer: mocks.createAuthorizedContainer
 }));
 vi.mock('$lib/server/db', () => ({
-	getAllDirectContainerRelations: () => async () => mocks.relations,
 	getContainerByGuid: (guid: string) => async () => mocks.containers.get(guid),
 	getManyContainers:
 		(_organizations: string[], { guid }: { guid: string[] }) =>
@@ -71,11 +69,7 @@ vi.mock('$lib/server/mcp/userContext', () => ({
 
 import { createContainerInput } from '$lib/server/mcp/contracts/creation';
 import { mcpPayloadTypeValues } from '$lib/server/mcp/contracts/payloads';
-import {
-	addMcpCustomCollectionSection,
-	createMcpContainer,
-	McpCreationError
-} from '$lib/server/mcp/creation';
+import { createMcpContainer } from '$lib/server/mcp/creation';
 
 const organizationGuid = '00000000-0000-4000-8000-000000000001';
 const pageGuid = '00000000-0000-4000-8000-000000000002';
@@ -126,7 +120,6 @@ beforeEach(() => {
 			visibility: 'organization'
 		})
 	);
-	mocks.relations = [];
 	mocks.unreadableGuids.clear();
 	mocks.unupdatableGuids.clear();
 	mocks.recordMcpWriteEvent.mockReset();
@@ -383,67 +376,6 @@ test('rejects an organizational unit of another organization', async () => {
 	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
 });
 
-test('maps categories to the persisted collection filter and appends the section', async () => {
-	mocks.relations = [
-		{ object: pageGuid, position: 2, predicate: 'is-section-of' },
-		{ object: pageGuid, position: 7, predicate: 'is-part-of' }
-	];
-
-	await addMcpCustomCollectionSection({
-		categories: { sdg: ['13'] },
-		includeSubordinateOrganizationalUnits: true,
-		pageGuid,
-		title: 'Objekte einbinden',
-		types: ['indicator'],
-		tokenId,
-		userId
-	})({} as never);
-
-	expect(mocks.createAuthorizedContainer).toHaveBeenCalledWith({
-		afterCreate: expect.any(Function),
-		data: expect.objectContaining({
-			payload: expect.objectContaining({
-				filter: {
-					organization: ['current'],
-					organizationalUnit: [],
-					sdg: ['13'],
-					type: ['indicator']
-				},
-				title: 'Objekte einbinden',
-				type: 'custom_collection'
-			}),
-			relation: [{ object: pageGuid, position: 3, predicate: 'is-section-of' }]
-		}),
-		features: [],
-		user: expect.objectContaining({ guid: userId })
-	});
-	expect(mocks.recordMcpWriteEvent).toHaveBeenCalledExactlyOnceWith(
-		{
-			containerGuid: createdGuid,
-			revision: createdRevision,
-			tokenId,
-			tool: 'add_custom_collection_section',
-			userId
-		},
-		mocks.transactionConnection
-	);
-});
-
-test('rejects category values that are not available for the selected types', async () => {
-	await expect(
-		addMcpCustomCollectionSection({
-			categories: { sdg: ['99'] },
-			includeSubordinateOrganizationalUnits: false,
-			pageGuid,
-			title: 'Objekte einbinden',
-			types: ['indicator'],
-			tokenId,
-			userId
-		})({} as never)
-	).rejects.toEqual(expect.any(McpCreationError));
-	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
-});
-
 function setUnitScopedProgram(guid = parentGuid, unit = organizationalUnitGuid) {
 	mocks.containers.set(
 		unit,
@@ -530,6 +462,9 @@ test.each([
 	['text', 'is-part-of-program', 'program'],
 	['goal', 'is-section-of', 'page'],
 	['goal', 'is-section-of', 'program'],
+	['text', 'is-section-of', 'effect'],
+	['text', 'is-section-of', 'objective'],
+	['text', 'is-section-of', 'binary_indicator'],
 	['text', 'is-part-of', 'goal']
 ] as const)('rejects a %s %s a %s', async (type, predicate, parentType) => {
 	mocks.containers.set(
@@ -708,3 +643,24 @@ test.each(['goal', 'knowledge', 'measure', 'rule', 'simple_measure'] as const)(
 		]);
 	}
 );
+
+test.each([
+	['an organization', organizationGuid, null],
+	['an organizational unit', organizationalUnitGuid, organizationalUnitGuid]
+])('creates a text section of %s in its area', async (_, areaGuid, unit) => {
+	mocks.containers.set(
+		organizationalUnitGuid,
+		container(organizationalUnitGuid, { name: 'Climate office', type: 'organizational_unit' })
+	);
+
+	await createWith({ body: 'Welcome', title: 'Welcome', type: 'text' }, [
+		{ parentGuid: areaGuid, predicate: 'is-section-of' }
+	]);
+
+	expect(mocks.createAuthorizedContainer.mock.calls[0][0].data).toMatchObject({
+		managed_by: [areaGuid],
+		organization: organizationGuid,
+		organizational_unit: unit,
+		relation: [{ object: areaGuid, position: 0, predicate: 'is-section-of' }]
+	});
+});
