@@ -6,8 +6,8 @@
 	import { page } from '$app/state';
 	import saveContainerUser from '$lib/client/saveContainerUser';
 	import InviteUserDialog from '$lib/components/InviteUserDialog.svelte';
-	import ObjectPermissionMatrix from '$lib/components/ObjectPermissionMatrix.svelte';
-	import UserPermissionMatrix from '$lib/components/UserPermissionMatrix.svelte';
+	import AreaPermissionMatrix from '$lib/components/AreaPermissionMatrix.svelte';
+	import ContentPermissionMatrix from '$lib/components/ContentPermissionMatrix.svelte';
 	import { ability } from '$lib/stores';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
@@ -152,7 +152,7 @@
 
 	{#if view === 'matrix'}
 		{#if inheritedSections && admins}
-			<ObjectPermissionMatrix
+			<ContentPermissionMatrix
 				{admins}
 				{adminTeams}
 				{container}
@@ -165,7 +165,7 @@
 				{users}
 			/>
 		{:else}
-			<UserPermissionMatrix
+			<AreaPermissionMatrix
 				{container}
 				editable={mayManageMembers}
 				{grants}
