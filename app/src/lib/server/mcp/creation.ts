@@ -14,6 +14,7 @@ import {
 	mayHaveStructuralParent,
 	payloadTypes,
 	predicates,
+	visibility,
 	type PayloadType,
 	type AnyPayload,
 	type Container,
@@ -40,11 +41,20 @@ import {
 	type CreateContainerInput
 } from '$lib/server/mcp/contracts/creation';
 import { isMcpRelatableType, withoutLegacyFields } from '$lib/server/mcp/contracts/payloads';
+import {
+	dataViewSectionParentTypes,
+	isMcpDataViewSectionType
+} from '$lib/server/mcp/contracts/sections';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
 import { runAsRequestUser } from '$lib/server/requestUser';
 import type { User } from '$lib/stores';
 
 const maxHierarchyLevel = 6;
+
+// Whether content is public is for a person to decide in the web
+// application.
+export const publicVisibilityRefusal =
+	'Agents cannot make content public; a person can change the visibility in the web application.';
 
 export class McpCreationError extends Error {
 	constructor(message: string) {
@@ -148,13 +158,15 @@ const isPartOfParentTypes: Partial<Record<PayloadType, readonly PayloadType[]>> 
 	[payloadTypes.enum.task]: [payloadTypes.enum.goal, payloadTypes.enum.measure]
 };
 
-// Section types MCP can create, and the containers whose detail view in the
-// web application shows sections.
-const sectionTypes: readonly PayloadType[] = [
-	payloadTypes.enum.custom_collection,
-	payloadTypes.enum.text
-];
-const sectionParentTypes: readonly PayloadType[] = mcpSectionParentTypes;
+// The parents a section MCP can create may have: text and custom
+// collections go into any container whose detail view in the web
+// application shows sections, data views only where they find their data.
+function sectionParentTypesOf(type: PayloadType): readonly PayloadType[] {
+	if (type === payloadTypes.enum.custom_collection || type === payloadTypes.enum.text) {
+		return mcpSectionParentTypes;
+	}
+	return isMcpDataViewSectionType(type) ? dataViewSectionParentTypes[type] : [];
+}
 
 // Types that can be part of a program, as in the web application. The
 // detail view of a program follows is-section-of only, so like the web
@@ -220,7 +232,7 @@ function isValidParent(
 		case predicates.enum['is-part-of']:
 			return isPartOfParentTypes[type]?.includes(parentType) ?? false;
 		case predicates.enum['is-section-of']:
-			return sectionTypes.includes(type) && sectionParentTypes.includes(parentType);
+			return sectionParentTypesOf(type).includes(parentType);
 	}
 }
 
@@ -320,6 +332,17 @@ async function planMcpContainer(
 		throw new McpCreationError(
 			'Containers marked as templates (template: true) cannot be created by this tool.'
 		);
+	}
+	if (input.payload.visibility === visibility.enum.public) {
+		throw new McpCreationError(publicVisibilityRefusal);
+	}
+	// Some types are public by default, such as categories and their terms;
+	// created by an agent, they are visible to the organization instead.
+	if (
+		'visibility' in payloadResult.data &&
+		payloadResult.data.visibility === visibility.enum.public
+	) {
+		payloadResult.data.visibility = visibility.enum.organization;
 	}
 
 	const parentsByGuid = new Map<string, McpRelatedContainer>();

@@ -189,6 +189,15 @@ test('points to update_custom_collection_section for custom collections', async 
 	expect(mocks.updateContainer).not.toHaveBeenCalled();
 });
 
+test('points to update_section for sections that show related data', async () => {
+	mocks.containers.set(guid, container({ title: 'Ziele', type: 'goal_collection' }));
+
+	await expect(update({ color: 'color.blue' })).rejects.toThrow(
+		'Change goal_collection sections with update_section.'
+	);
+	expect(mocks.updateContainer).not.toHaveBeenCalled();
+});
+
 test('rejects a stale expected revision before writing', async () => {
 	await expect(update({ title: 'Renamed' }, 1)).rejects.toThrow(
 		'The container changed since revision 1.'
@@ -230,6 +239,29 @@ test.each([
 	await expect(update(patch)).rejects.toThrow(message);
 	expect(mocks.updateContainer).not.toHaveBeenCalled();
 	expect(mocks.recordMcpWriteEvent).not.toHaveBeenCalled();
+});
+
+test('refuses to make a container public', async () => {
+	await expect(update({ visibility: 'public' })).rejects.toThrow(
+		'Agents cannot make content public; a person can change the visibility in the web application.'
+	);
+	expect(mocks.updateContainer).not.toHaveBeenCalled();
+});
+
+test('changes a container that is public already', async () => {
+	mocks.containers.set(
+		guid,
+		container({ title: 'Public goal', type: 'goal', visibility: 'public' })
+	);
+
+	await update({ title: 'Renamed' });
+
+	expect(mocks.updateContainer).toHaveBeenCalledWith(
+		expect.objectContaining({
+			payload: expect.objectContaining({ title: 'Renamed', visibility: 'public' })
+		}),
+		expect.anything()
+	);
 });
 
 test('rejects updating a template', async () => {
