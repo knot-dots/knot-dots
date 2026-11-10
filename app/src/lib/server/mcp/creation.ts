@@ -40,6 +40,10 @@ import {
 	type CreateContainerInput
 } from '$lib/server/mcp/contracts/creation';
 import { isMcpRelatableType, withoutLegacyFields } from '$lib/server/mcp/contracts/payloads';
+import {
+	dataViewSectionParentTypes,
+	isMcpDataViewSectionType
+} from '$lib/server/mcp/contracts/sections';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
 import { runAsRequestUser } from '$lib/server/requestUser';
 import type { User } from '$lib/stores';
@@ -148,13 +152,15 @@ const isPartOfParentTypes: Partial<Record<PayloadType, readonly PayloadType[]>> 
 	[payloadTypes.enum.task]: [payloadTypes.enum.goal, payloadTypes.enum.measure]
 };
 
-// Section types MCP can create, and the containers whose detail view in the
-// web application shows sections.
-const sectionTypes: readonly PayloadType[] = [
-	payloadTypes.enum.custom_collection,
-	payloadTypes.enum.text
-];
-const sectionParentTypes: readonly PayloadType[] = mcpSectionParentTypes;
+// The parents a section MCP can create may have: text and custom
+// collections go into any container whose detail view in the web
+// application shows sections, data views only where they find their data.
+function sectionParentTypesOf(type: PayloadType): readonly PayloadType[] {
+	if (type === payloadTypes.enum.custom_collection || type === payloadTypes.enum.text) {
+		return mcpSectionParentTypes;
+	}
+	return isMcpDataViewSectionType(type) ? dataViewSectionParentTypes[type] : [];
+}
 
 // Types that can be part of a program, as in the web application. The
 // detail view of a program follows is-section-of only, so like the web
@@ -220,7 +226,7 @@ function isValidParent(
 		case predicates.enum['is-part-of']:
 			return isPartOfParentTypes[type]?.includes(parentType) ?? false;
 		case predicates.enum['is-section-of']:
-			return sectionTypes.includes(type) && sectionParentTypes.includes(parentType);
+			return sectionParentTypesOf(type).includes(parentType);
 	}
 }
 
