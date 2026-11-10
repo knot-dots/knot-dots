@@ -1,6 +1,6 @@
 import type { RequestEvent } from '@sveltejs/kit';
 import { expect, test, vi } from 'vitest';
-import { addUserFeatures, getFeatures, withFeatures } from './features';
+import { addUserFeatures, featuresOfUser, getFeatures, withFeatures } from './features';
 
 const getPodFeatures = vi.hoisted(() => vi.fn());
 
@@ -60,4 +60,23 @@ test('serves the deployment-governed flags before the user features join', async
 		new Map([['PermissionMatrix', true]])
 	);
 	expect(beforeUserFeatures).toEqual(['PermissionMatrix']);
+});
+
+test('adds the ring flags of a user without a session to the deployment flags', async () => {
+	getPodFeatures.mockResolvedValue(
+		new Map([
+			['Adoptions', false],
+			['PermissionMatrix', true]
+		])
+	);
+	const event = { locals: { user: { settings: {} } } } as RequestEvent;
+	let features: string[] = [];
+	await withFeatures({
+		event,
+		resolve: async () => {
+			features = await featuresOfUser({ features: ['Adoptions', 'NotAFlag', 'ResourceV2'] });
+			return new Response();
+		}
+	});
+	expect(features).toEqual(['PermissionMatrix', 'ResourceV2']);
 });

@@ -24,13 +24,19 @@ export const withFeatures: Handle = async ({ event, resolve }) => {
 
 // Flags carrying a pod annotation are governed by the deployment alone; stale
 // entries in the user's settings must not resurrect them.
-export async function addUserFeatures(event: RequestEvent) {
+async function chosenRingFlags(settings: { features?: string[] }) {
 	const podFeatures = await getPodFeatures();
-	event.locals.features.push(
-		...(event.locals.user.settings.features ?? []).filter(
-			(flag) => ringFlags.has(flag) && !podFeatures.has(flag)
-		)
-	);
+	return (settings.features ?? []).filter((flag) => ringFlags.has(flag) && !podFeatures.has(flag));
+}
+
+export async function addUserFeatures(event: RequestEvent) {
+	event.locals.features.push(...(await chosenRingFlags(event.locals.user.settings)));
+}
+
+// The flags of a user who acts without a session, such as through an MCP
+// token: those of the deployment and the ring flags the user chose.
+export async function featuresOfUser(settings: { features?: string[] }) {
+	return [...getFeatures(), ...(await chosenRingFlags(settings))];
 }
 
 export const getFeatures = () => storage.getStore() ?? [];
