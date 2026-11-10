@@ -24,7 +24,9 @@ import { updateMcpContainer } from '$lib/server/mcp/update';
 
 const realm = 'test';
 
-async function createTestAuth(connection: Fixtures['connection']): Promise<McpAuth> {
+async function createTestAuth(
+	connection: Fixtures['connection']
+): Promise<McpAuth & { tokenId: string }> {
 	const userId = uuid();
 	await createOrUpdateUser({ family_name: '', given_name: '', guid: userId, realm, settings: {} })(
 		connection

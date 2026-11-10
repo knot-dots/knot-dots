@@ -7,13 +7,23 @@
 
 	let { data, form }: PageProps = $props();
 
-	let copied = $state(false);
+	let copiedValue = $state<string>();
 
-	async function copyToken(token: string) {
-		await navigator.clipboard.writeText(token);
-		copied = true;
+	async function copy(value: string) {
+		await navigator.clipboard.writeText(value);
+		copiedValue = value;
 	}
 </script>
+
+{#snippet copyButton(value: string)}
+	<button
+		class="button button-xs button-alternate-outline system-primary"
+		onclick={() => copy(value)}
+		type="button"
+	>
+		{copiedValue === value ? $_('mcp_tokens.copied') : $_('copy')}
+	</button>
+{/snippet}
 
 <PageLayout>
 	<FullscreenLayout>
@@ -35,14 +45,44 @@
 						<p>{$_('mcp_tokens.created_description')}</p>
 						<div class="token-value">
 							<code>{createdToken}</code>
-							<button
-								class="button button-xs button-alternate-outline system-primary"
-								onclick={() => copyToken(createdToken)}
-								type="button"
-							>
-								{copied ? $_('mcp_tokens.copied') : $_('copy')}
-							</button>
+							{@render copyButton(createdToken)}
 						</div>
+					</section>
+				{/if}
+
+				{#if data.oauth}
+					{@const oauth = data.oauth}
+					<section aria-labelledby="oauth-title">
+						<h2 id="oauth-title">{$_('mcp_tokens.oauth_title')}</h2>
+						<p>{$_('mcp_tokens.oauth_description')}</p>
+						<dl class="oauth-values">
+							<dt>{$_('mcp_tokens.oauth_server_url')}</dt>
+							<dd class="token-value">
+								<code>{oauth.serverUrl}</code>
+								{@render copyButton(oauth.serverUrl)}
+							</dd>
+							<dt>{$_('mcp_tokens.oauth_client_id')}</dt>
+							<dd class="token-value">
+								<code>{oauth.clientId}</code>
+								{@render copyButton(oauth.clientId)}
+							</dd>
+						</dl>
+						<ul class="oauth-apps">
+							<li>{$_('mcp_tokens.oauth_claude')}</li>
+							<li>
+								{$_('mcp_tokens.oauth_claude_code')}
+								<code
+									>claude mcp add --transport http knot-dots {oauth.serverUrl} --client-id {oauth.clientId}</code
+								>
+							</li>
+							<li>{$_('mcp_tokens.oauth_vscode')}</li>
+							<li>{$_('mcp_tokens.oauth_chatgpt')}</li>
+						</ul>
+						<p class="hint">{$_('mcp_tokens.oauth_expiry_hint')}</p>
+						<p class="hint">
+							{$_('mcp_tokens.oauth_disconnect')}
+							<a href={oauth.accountUrl} rel="external">{$_('mcp_tokens.oauth_account')}</a>
+						</p>
 					</section>
 				{/if}
 
@@ -203,6 +243,38 @@
 		border-radius: 0.25rem;
 		overflow-wrap: anywhere;
 		padding: 0.5rem;
+	}
+
+	.oauth-values {
+		margin-top: 0.75rem;
+		max-width: 40rem;
+	}
+
+	.oauth-values dt {
+		font-weight: 600;
+		margin-top: 0.75rem;
+	}
+
+	.oauth-values dd {
+		margin-top: 0.25rem;
+	}
+
+	.oauth-apps {
+		list-style: disc;
+		margin-top: 1rem;
+		padding-left: 1.25rem;
+	}
+
+	.oauth-apps li + li {
+		margin-top: 0.5rem;
+	}
+
+	.oauth-apps code {
+		overflow-wrap: anywhere;
+	}
+
+	.hint a {
+		text-decoration: underline;
 	}
 
 	.create-form {

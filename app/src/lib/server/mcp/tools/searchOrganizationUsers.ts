@@ -8,7 +8,11 @@ import {
 	type SearchOrganizationUsersOutput
 } from '$lib/server/mcp/contracts/users';
 import { mcpScopes } from '$lib/server/mcp/scopes';
-import { authorizeMcpTool, toolError } from '$lib/server/mcp/toolAuthorization';
+import {
+	authorizeMcpTool,
+	oauthScopeChallenge,
+	toolError
+} from '$lib/server/mcp/toolAuthorization';
 import { McpUserError } from '$lib/server/mcp/users';
 
 export interface SearchOrganizationUsersDependencies {
@@ -35,6 +39,7 @@ export function registerSearchOrganizationUsersTool(
 				'Search organization members by display name. Returns only display names and GUIDs; use the GUIDs with assignee filters.',
 			inputSchema: searchOrganizationUsersInput,
 			outputSchema: searchOrganizationUsersOutput,
+			scopeChallenge: oauthScopeChallenge(mcpScopes.usersRead),
 			title: 'Search organization users'
 		},
 		async (input) => {

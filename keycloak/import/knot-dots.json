@@ -956,6 +956,83 @@
         "offline_access",
         "microprofile-jwt"
       ]
+    },
+    {
+      "id": "ded33e28-c380-4d1b-8833-71465a071548",
+      "clientId": "knot-dots-mcp",
+      "name": "${mcpClientName}",
+      "description": "Shared public client for MCP clients such as Claude, ChatGPT and VS Code",
+      "surrogateAuthRequired": false,
+      "enabled": true,
+      "alwaysDisplayInConsole": false,
+      "clientAuthenticatorType": "client-secret",
+      "redirectUris": [
+        "https://claude.ai/api/mcp/auth_callback",
+        "https://vscode.dev/redirect",
+        "http://127.0.0.1/*",
+        "http://localhost/*"
+      ],
+      "webOrigins": [
+        "http://localhost:6274"
+      ],
+      "notBefore": 0,
+      "bearerOnly": false,
+      "consentRequired": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "publicClient": true,
+      "frontchannelLogout": false,
+      "protocol": "openid-connect",
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "oauth2.device.authorization.grant.enabled": "false",
+        "oidc.ciba.grant.enabled": "false",
+        "post.logout.redirect.uris": ""
+      },
+      "authenticationFlowBindingOverrides": {},
+      "fullScopeAllowed": false,
+      "nodeReRegistrationTimeout": 0,
+      "protocolMappers": [
+        {
+          "id": "85a973f6-59a1-435c-908f-6fea9715b290",
+          "name": "MCP audience (dev server)",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.custom.audience": "http://localhost:5173/mcp",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "id": "ac295e93-2bb7-4b41-b98c-f36fc7b8ee98",
+          "name": "MCP audience (preview)",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.custom.audience": "http://localhost:3000/mcp",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ],
+      "defaultClientScopes": [
+        "basic",
+        "web-origins",
+        "offline_access",
+        "containers:read",
+        "containers:write",
+        "organizations:read"
+      ],
+      "optionalClientScopes": [
+        "users:read"
+      ]
     }
   ],
   "clientScopes": [
@@ -1535,6 +1612,50 @@
           }
         }
       ]
+    },
+    {
+      "id": "997ec545-eab4-404a-b9cc-7066d8c34245",
+      "name": "containers:read",
+      "description": "MCP: Read programs, measures, goals, indicators and other content",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "consent.screen.text": "${mcpScopeContainersRead}"
+      }
+    },
+    {
+      "id": "69a2b458-d67c-44ab-a8ae-c14d04745427",
+      "name": "containers:write",
+      "description": "MCP: Create and change content and the relations between them",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "consent.screen.text": "${mcpScopeContainersWrite}"
+      }
+    },
+    {
+      "id": "9e91541b-ad01-4369-a620-06eb74b16999",
+      "name": "organizations:read",
+      "description": "MCP: Read organizations and organizational units",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "consent.screen.text": "${mcpScopeOrganizationsRead}"
+      }
+    },
+    {
+      "id": "96cfde83-12ca-46d0-ae6a-a54257e7262b",
+      "name": "users:read",
+      "description": "MCP: Resolve the names of organization members",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "consent.screen.text": "${mcpScopeUsersRead}"
+      }
     }
   ],
   "defaultDefaultClientScopes": [

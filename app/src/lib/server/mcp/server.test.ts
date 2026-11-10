@@ -493,6 +493,55 @@ test('denies user lookup without its dedicated scope', async () => {
 	});
 });
 
+test('asks OAuth clients to request the user scope for user lookup', async () => {
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: { organizationGuid: '00000000-0000-4000-8000-000000000003' },
+			name: 'search_organization_users'
+		}),
+		{
+			authInfo: {
+				...authInfo,
+				clientId: 'knot-dots-mcp',
+				extra: { clientId: 'knot-dots-mcp', userId },
+				resourceMetadataUrl: 'http://localhost/.well-known/oauth-protected-resource/mcp',
+				scopes: ['containers:read', 'containers:write', 'organizations:read']
+			}
+		}
+	);
+
+	expect(searchOrganizationUsers).not.toHaveBeenCalled();
+	expect(response.status).toBe(403);
+	expect(response.headers.get('www-authenticate')).toContain(
+		'scope="containers:read containers:write organizations:read users:read"'
+	);
+	expect(response.headers.get('www-authenticate')).toContain(
+		'resource_metadata="http://localhost/.well-known/oauth-protected-resource/mcp"'
+	);
+});
+
+test('lets OAuth clients look up users once the user has granted the scope', async () => {
+	searchOrganizationUsers.mockResolvedValue({ nextOffset: null, users: [] });
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: { organizationGuid: '00000000-0000-4000-8000-000000000003' },
+			name: 'search_organization_users'
+		}),
+		{
+			authInfo: {
+				...authInfo,
+				clientId: 'knot-dots-mcp',
+				extra: { clientId: 'knot-dots-mcp', userId },
+				scopes: ['containers:read', 'organizations:read', 'users:read']
+			}
+		}
+	);
+
+	expect(response.status).toBe(200);
+	expect(searchOrganizationUsers).toHaveBeenCalledOnce();
+});
+
 test('denies the category tool without the container read scope', async () => {
 	const response = await toolHandler.fetch(
 		modernRequest('tools/call', {
