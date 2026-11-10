@@ -2,8 +2,11 @@ import type { DatabaseConnection } from 'slonik';
 import { createFeatureDecisions } from '$lib/features';
 import de from '$lib/locales/de.json';
 import {
+	getPayloadSchema,
+	isCustomCollectionContainer,
 	isGoalContainer,
 	isTaskContainer,
+	isTextContainer,
 	payloadTypes,
 	predicates,
 	type AnyPayload,
@@ -17,15 +20,21 @@ import { summarizeContainer } from '$lib/server/mcp/containers';
 import {
 	addSectionToolName,
 	dataViewSectionParentTypes,
+	isMcpDataViewSectionType,
+	sectionSettingsIssue,
+	updateSectionToolName,
 	type AddSectionInput,
-	type AddSectionOutput,
-	type McpDataViewSectionType
+	type McpDataViewSectionType,
+	type SectionOutput,
+	type UpdateSectionInput
 } from '$lib/server/mcp/contracts/sections';
 import {
 	createMcpContainerAs,
 	findVisibleContainer,
-	McpCreationError
+	McpCreationError,
+	payloadValidationMessage
 } from '$lib/server/mcp/creation';
+import { conflict, McpUpdateError, writeMcpRevision } from '$lib/server/mcp/update';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
 import { runAsRequestUser } from '$lib/server/requestUser';
 
@@ -143,10 +152,18 @@ async function hasSectionOfSameKind(
 	);
 }
 
+function definedValues(settings: Record<string, unknown>) {
+	return Object.fromEntries(Object.entries(settings).filter(([, value]) => value !== undefined));
+}
+
+function asSection(container: Container<AnyPayload>): SectionOutput {
+	return { ...summarizeContainer(container), revision: container.revision };
+}
+
 // Appends a section showing data related to its parent, created like any
 // other section through create_container.
 export function addMcpSection(input: AddSectionInput & McpAuth) {
-	return (connection: DatabaseConnection): Promise<AddSectionOutput> =>
+	return (connection: DatabaseConnection): Promise<SectionOutput> =>
 		runAsRequestUser(input.userId, async () => {
 			const { parentGuid, tokenId, type, userId, ...options } = input;
 			const user = await loadMcpUserContext(connection, userId);
@@ -180,9 +197,7 @@ export function addMcpSection(input: AddSectionInput & McpAuth) {
 					organizationalUnitGuid: null,
 					parentRelations: [{ parentGuid, predicate: predicates.enum['is-section-of'] }],
 					payload: {
-						...Object.fromEntries(
-							Object.entries(options).filter(([, value]) => value !== undefined)
-						),
+						...definedValues(options),
 						title: titleOf(input, parent),
 						type
 					},
@@ -191,6 +206,52 @@ export function addMcpSection(input: AddSectionInput & McpAuth) {
 				},
 				addSectionToolName
 			);
-			return { ...summarizeContainer(created), revision: created.revision };
+			return asSection(created);
+		});
+}
+
+// Changes the given settings of a section added with add_section and keeps
+// the others, like the settings of the section in the web application.
+export function updateMcpSection(input: UpdateSectionInput & McpAuth) {
+	return (connection: DatabaseConnection): Promise<SectionOutput> =>
+		runAsRequestUser(input.userId, async () => {
+			const { expectedRevision, guid, tokenId, userId, ...settings } = input;
+			const user = await loadMcpUserContext(connection, userId);
+			const current = await findVisibleContainer(connection, user, guid);
+			if (current && isTextContainer(current)) {
+				throw new McpUpdateError('Change text sections with update_container.');
+			}
+			if (current && isCustomCollectionContainer(current)) {
+				throw new McpUpdateError(
+					'Change custom collection sections with update_custom_collection_section.'
+				);
+			}
+			if (!current || !isMcpDataViewSectionType(current.payload.type)) {
+				throw new McpUpdateError('Section not found or inaccessible.');
+			}
+			if (current.revision !== expectedRevision) {
+				throw conflict(expectedRevision);
+			}
+			const issue = sectionSettingsIssue(current.payload.type, settings);
+			if (issue) {
+				throw new McpUpdateError(issue.message);
+			}
+
+			const payloadResult = getPayloadSchema(current.payload.type).safeParse({
+				...current.payload,
+				...definedValues(settings)
+			});
+			if (!payloadResult.success) {
+				throw new McpUpdateError(payloadValidationMessage(payloadResult.error));
+			}
+
+			const updated = await writeMcpRevision({
+				auth: { tokenId, userId },
+				current,
+				payload: payloadResult.data,
+				tool: updateSectionToolName,
+				user
+			})(connection);
+			return asSection(updated);
 		});
 }

@@ -20,8 +20,8 @@ import {
 	sql
 } from '$lib/server/db';
 import type { McpAuth } from '$lib/server/mcp/auth';
-import { addSectionInput } from '$lib/server/mcp/contracts/sections';
-import { addMcpSection } from '$lib/server/mcp/sections';
+import { addSectionInput, updateSectionInput } from '$lib/server/mcp/contracts/sections';
+import { addMcpSection, updateMcpSection } from '$lib/server/mcp/sections';
 import { generateMcpToken } from '$lib/server/mcp/tokens';
 
 // Like hooks.server.ts, as containerOfType resolves the default titles.
@@ -175,4 +175,50 @@ test('adds a section of an organizational unit to the unit', async ({ connection
 		managed_by: [unit.guid],
 		organizational_unit: unit.guid
 	});
+});
+
+test('changes a section with the revision add_section returned', async ({
+	connection
+}: Fixtures) => {
+	const auth = await createTestAuth(connection);
+	const organization = await createOrganization(connection, auth.userId);
+	const measure = await createMeasure(connection, organization);
+	const progress = await add(auth, { parentGuid: measure.guid, type: 'progress' })(connection);
+
+	const updated = await updateMcpSection({
+		...updateSectionInput.parse({
+			color: 'color.gray',
+			expectedRevision: progress.revision,
+			guid: progress.guid,
+			measurement: 'subordinateObjects',
+			objectType: 'measure'
+		}),
+		...auth
+	})(connection);
+
+	expect(updated.revision).toBeGreaterThan(progress.revision);
+	await expect(getContainerByGuid(progress.guid)(connection)).resolves.toMatchObject({
+		payload: {
+			color: 'color.gray',
+			measurement: 'subordinateObjects',
+			objectType: 'measure',
+			title: 'Fortschritt',
+			type: payloadTypes.enum.progress
+		},
+		revision: updated.revision
+	});
+	await expect(
+		updateMcpSection({
+			...updateSectionInput.parse({
+				color: 'color.blue',
+				expectedRevision: progress.revision,
+				guid: progress.guid
+			}),
+			...auth
+		})(connection)
+	).rejects.toThrow(`The container changed since revision ${progress.revision}.`);
+	await expect(findWriteEvents(connection, auth.tokenId)).resolves.toEqual([
+		{ container_guid: progress.guid, tool: 'add_section' },
+		{ container_guid: progress.guid, tool: 'update_section' }
+	]);
 });

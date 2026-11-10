@@ -8,17 +8,22 @@ const mocks = vi.hoisted(() => ({
 	features: [] as string[],
 	featuresOfUser: vi.fn(),
 	recordMcpWriteEvent: vi.fn(),
-	transactionConnection: { transaction: true }
+	transactionConnection: { transaction: true },
+	updateContainer: vi.fn()
 }));
 
 vi.mock('$lib/authorization', () => ({
 	default: () => ({ can: () => true, cannot: () => false })
+}));
+vi.mock('$lib/server/computeManagedBy', () => ({
+	applyComputedManagedBy: async (_connection: unknown, containers: unknown[]) => containers
 }));
 vi.mock('$lib/server/containerCreation', async (importOriginal) => ({
 	...(await importOriginal<typeof import('$lib/server/containerCreation')>()),
 	createAuthorizedContainer: mocks.createAuthorizedContainer
 }));
 vi.mock('$lib/server/db', () => ({
+	ContainerRevisionConflictError: class ContainerRevisionConflictError extends Error {},
 	getContainerByGuid: (guid: string) => async () => {
 		const container = mocks.containers.get(guid);
 		if (!container) {
@@ -32,7 +37,9 @@ vi.mock('$lib/server/db', () => ({
 		async () =>
 			guid.map((value) => mocks.containers.get(value)).filter(Boolean),
 	recordMcpWriteEvent: (event: unknown) => async (connection: unknown) =>
-		mocks.recordMcpWriteEvent(event, connection)
+		mocks.recordMcpWriteEvent(event, connection),
+	updateContainer: (container: unknown, options: unknown) => async () =>
+		mocks.updateContainer(container, options)
 }));
 vi.mock('$lib/server/features', () => ({
 	featuresOfUser: mocks.featuresOfUser,
@@ -50,8 +57,8 @@ vi.mock('$lib/server/mcp/userContext', () => ({
 	})
 }));
 
-import { addSectionInput } from '$lib/server/mcp/contracts/sections';
-import { addMcpSection } from '$lib/server/mcp/sections';
+import { addSectionInput, updateSectionInput } from '$lib/server/mcp/contracts/sections';
+import { addMcpSection, updateMcpSection } from '$lib/server/mcp/sections';
 
 // Like hooks.server.ts, as containerOfType resolves the default titles.
 locale.set('de');
@@ -106,6 +113,18 @@ function store(...containers: Container<AnyPayload>[]) {
 
 function add(input: Record<string, unknown>) {
 	return addMcpSection({ ...addSectionInput.parse(input), tokenId, userId })({} as never);
+}
+
+function update(input: Record<string, unknown>, expectedRevision = 1) {
+	return updateMcpSection({
+		...updateSectionInput.parse({ expectedRevision, guid: existingSectionGuid, ...input }),
+		tokenId,
+		userId
+	})({} as never);
+}
+
+function updatedPayload() {
+	return mocks.updateContainer.mock.calls[0][0].payload;
 }
 
 function createdData() {
@@ -164,6 +183,12 @@ beforeEach(() => {
 		const created = { ...data, guid: createdGuid, revision: 1, user: [] };
 		await afterCreate?.(created, mocks.transactionConnection);
 		return created;
+	});
+	mocks.updateContainer.mockReset();
+	mocks.updateContainer.mockImplementation(async (next, { afterUpdate }) => {
+		const updated = { ...next, revision: 2 };
+		await afterUpdate?.(updated, mocks.transactionConnection);
+		return updated;
 	});
 });
 
@@ -469,6 +494,101 @@ test.each([
 	[{ type: 'html' }, 'Invalid option']
 ])('rejects the input %j in the contract', (input, message) => {
 	const result = addSectionInput.safeParse({ parentGuid: measureGuid, ...input });
+
+	expect(result.success).toBe(false);
+	expect(result.error?.issues.map(({ message }) => message).join(' ')).toContain(message);
+});
+
+function storeProgress() {
+	store(
+		container(
+			existingSectionGuid,
+			{ color: 'color.blue', title: 'Fortschritt', type: 'progress' },
+			{ relation: [section(existingSectionGuid, measureGuid, 4)] }
+		)
+	);
+}
+
+test('changes the given settings of a section and keeps the others', async () => {
+	storeProgress();
+
+	const output = await update({ measurement: 'subordinateObjects', objectType: 'measure' });
+
+	expect(updatedPayload()).toMatchObject({
+		color: 'color.blue',
+		measurement: 'subordinateObjects',
+		objectType: 'measure',
+		title: 'Fortschritt',
+		type: 'progress',
+		visibility: 'organization'
+	});
+	expect(output).toMatchObject({ guid: existingSectionGuid, label: 'Fortschritt', revision: 2 });
+	expect(mocks.recordMcpWriteEvent).toHaveBeenCalledExactlyOnceWith(
+		{ containerGuid: existingSectionGuid, revision: 2, tokenId, tool: 'update_section', userId },
+		mocks.transactionConnection
+	);
+});
+
+test('changes the color and visibility of a section', async () => {
+	store(container(existingSectionGuid, { title: 'Ziele', type: 'goal_collection' }));
+
+	await update({ color: 'color.gray', visibility: 'members' });
+
+	expect(updatedPayload()).toMatchObject({ color: 'color.gray', visibility: 'members' });
+});
+
+test.each([
+	[{ title: 'Background', type: 'text' }, 'Change text sections with update_container.'],
+	[
+		{ title: 'Climate goals', type: 'custom_collection' },
+		'Change custom collection sections with update_custom_collection_section.'
+	],
+	[{ title: 'Climate neutrality', type: 'goal' }, 'Section not found or inaccessible.']
+])('only changes sections added with add_section, not %j', async (payload, message) => {
+	store(container(existingSectionGuid, payload));
+
+	await expect(update({ color: 'color.blue' })).rejects.toThrow(message);
+	expect(mocks.updateContainer).not.toHaveBeenCalled();
+});
+
+test.each([
+	[
+		{ title: 'Ziele', type: 'goal_collection' },
+		{ measurement: 'manual' },
+		'measurement and objectType apply only to a progress section.'
+	],
+	[
+		{ title: 'Wirkung', type: 'effect_collection' },
+		{ color: 'color.blue' },
+		'An effect_collection has no background color.'
+	]
+])('rejects settings that %j does not have', async (payload, settings, message) => {
+	store(container(existingSectionGuid, payload));
+
+	await expect(update(settings)).rejects.toThrow(message);
+	expect(mocks.updateContainer).not.toHaveBeenCalled();
+});
+
+test('rejects a stale expected revision before writing', async () => {
+	storeProgress();
+
+	await expect(update({ color: 'color.gray' }, 7)).rejects.toThrow(
+		'The container changed since revision 7.'
+	);
+	expect(mocks.updateContainer).not.toHaveBeenCalled();
+});
+
+test.each([
+	[{}, 'Change at least one setting.'],
+	[{ type: 'map' }, 'Unrecognized key'],
+	[{ resourceDataType: 'resource_data_type.budget' }, 'Unrecognized key'],
+	[{ visibility: 'public' }, 'Invalid option']
+])('rejects the update %j in the contract', (input, message) => {
+	const result = updateSectionInput.safeParse({
+		expectedRevision: 1,
+		guid: existingSectionGuid,
+		...input
+	});
 
 	expect(result.success).toBe(false);
 	expect(result.error?.issues.map(({ message }) => message).join(' ')).toContain(message);

@@ -189,6 +189,15 @@ test('points to update_custom_collection_section for custom collections', async 
 	expect(mocks.updateContainer).not.toHaveBeenCalled();
 });
 
+test('points to update_section for sections that show related data', async () => {
+	mocks.containers.set(guid, container({ title: 'Ziele', type: 'goal_collection' }));
+
+	await expect(update({ color: 'color.blue' })).rejects.toThrow(
+		'Change goal_collection sections with update_section.'
+	);
+	expect(mocks.updateContainer).not.toHaveBeenCalled();
+});
+
 test('rejects a stale expected revision before writing', async () => {
 	await expect(update({ title: 'Renamed' }, 1)).rejects.toThrow(
 		'The container changed since revision 1.'
