@@ -32,7 +32,7 @@ export function registerListContainerCategoryValuesTool(
 				readOnlyHint: true
 			},
 			description:
-				'List a bounded page of stable values for one category returned by list_container_categories.',
+				'List a bounded page of stable values for one category returned by list_container_categories. Each value is the GUID of a term container, which update_container changes.',
 			inputSchema: listContainerCategoryValuesInput,
 			outputSchema: listContainerCategoryValuesOutput,
 			title: 'List container category values'

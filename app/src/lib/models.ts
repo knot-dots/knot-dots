@@ -2940,7 +2940,7 @@ const initialTeaserHighlightPayload = teaserHighlightPayload.partial({ title: tr
 
 const unrefinedTermPayload = z
 	.strictObject({
-		description: z.string().trim().optional(),
+		description: z.string().trim().optional().describe('GitHub-flavored Markdown.'),
 		filterLabel: z
 			.string()
 			.trim()

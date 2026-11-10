@@ -10,7 +10,7 @@ import {
 import { getFeatures } from '$lib/server/features';
 import type { McpAuth } from '$lib/server/mcp/auth';
 import { summarizeContainer } from '$lib/server/mcp/containers';
-import { mcpPayloadTypes } from '$lib/server/mcp/contracts/payloads';
+import { isMcpRelatableType } from '$lib/server/mcp/contracts/payloads';
 import {
 	addContainerRelationToolName,
 	removeContainerRelationToolName,
@@ -96,7 +96,7 @@ async function findRelatableContainer(
 	role: 'Object' | 'Subject'
 ) {
 	const container = await findVisibleContainer(connection, user, guid);
-	if (!container || !mcpPayloadTypes.safeParse(container.payload.type).success) {
+	if (!container || !isMcpRelatableType(container.payload.type)) {
 		throw new McpRelationError(`${role} container not found or inaccessible.`);
 	}
 	if ('template' in container.payload && container.payload.template === true) {
