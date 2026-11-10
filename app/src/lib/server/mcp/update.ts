@@ -7,6 +7,7 @@ import {
 	getPayloadSchema,
 	isCustomCollectionContainer,
 	predicates,
+	visibility,
 	type AnyPayload,
 	type Container
 } from '$lib/models';
@@ -25,7 +26,11 @@ import {
 	updateContainerToolName,
 	type UpdateContainerInput
 } from '$lib/server/mcp/contracts/update';
-import { findVisibleContainer, payloadValidationMessage } from '$lib/server/mcp/creation';
+import {
+	findVisibleContainer,
+	payloadValidationMessage,
+	publicVisibilityRefusal
+} from '$lib/server/mcp/creation';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
 import { runAsRequestUser } from '$lib/server/requestUser';
 import type { User } from '$lib/stores';
@@ -140,6 +145,12 @@ export function writeMcpRevision({
 	user: User;
 }) {
 	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>> => {
+		const isPublic = (value: AnyPayload) =>
+			'visibility' in value && value.visibility === visibility.enum.public;
+		if (isPublic(next) && !isPublic(current.payload)) {
+			throw new McpUpdateError(publicVisibilityRefusal);
+		}
+
 		let payload: AnyPayload;
 		try {
 			payload = authorizeContainerUpdate({
