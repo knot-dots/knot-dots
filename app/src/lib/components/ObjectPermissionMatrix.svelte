@@ -105,7 +105,7 @@
 	const roleColors: Record<MemberRole, string> = {
 		administrator: 'red',
 		head: 'yellow',
-		collaborator: 'blue',
+		collaborator: 'indigo',
 		observer: 'gray'
 	};
 
