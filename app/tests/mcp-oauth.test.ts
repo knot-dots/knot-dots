@@ -66,7 +66,9 @@ test.describe('MCP over OAuth', () => {
 		await page.getByRole('button', { name: 'Sign In' }).click();
 
 		// Keycloak asks for consent once and remembers it for later sign-ins.
-		const consent = page.getByRole('button', { name: 'Yes' });
+		// After sign-in it switches to the language of the user's account:
+		// German for Ada in a fresh realm, the browser's where none is set.
+		const consent = page.getByRole('button', { name: /^(Ja|Yes)$/ });
 		const asksForConsent = await Promise.race([
 			callback.then(() => false),
 			consent.waitFor().then(
@@ -75,7 +77,11 @@ test.describe('MCP over OAuth', () => {
 			)
 		]);
 		if (asksForConsent) {
-			await expect(page.getByText('Create and change content')).toBeVisible();
+			await expect(
+				page.getByText(
+					/Inhalte und ihre Beziehungen erstellen und ändern|Create and change content/
+				)
+			).toBeVisible();
 			await consent.click();
 		}
 		const code = new URL((await callback).url()).searchParams.get('code');
