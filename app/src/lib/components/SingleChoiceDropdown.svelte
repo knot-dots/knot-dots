@@ -8,11 +8,20 @@
 		button?: Snippet<[ReturnType<typeof createPopover>]>;
 		labelledBy?: string;
 		offset?: [number, number];
+		// called with the choice once it is made, beside the binding
+		onchange?: (value: T) => void;
 		options: Array<{ href?: string; label: string; value: T }>;
 		value: T;
 	}
 
-	let { button, labelledBy, offset = [0, 4], options, value = $bindable() }: Props = $props();
+	let {
+		button,
+		labelledBy,
+		offset = [0, 4],
+		onchange,
+		options,
+		value = $bindable()
+	}: Props = $props();
 
 	let selected = $derived(options.find((o) => o.value == value));
 </script>
@@ -37,7 +46,10 @@
 				<label>
 					<input
 						bind:group={value}
-						onchange={() => popover.close()}
+						onchange={() => {
+							popover.close();
+							onchange?.(option.value);
+						}}
 						type="radio"
 						value={option.value}
 					/>

@@ -20,9 +20,9 @@
 	import InviteUserDialog from '$lib/components/InviteUserDialog.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import PageLayout from '$lib/components/PageLayout.svelte';
-	import ObjectPermissionMatrix from '$lib/components/ObjectPermissionMatrix.svelte';
+	import AreaPermissionMatrix from '$lib/components/AreaPermissionMatrix.svelte';
+	import ContentPermissionMatrix from '$lib/components/ContentPermissionMatrix.svelte';
 	import TeamsTable from '$lib/components/TeamsTable.svelte';
-	import UserPermissionMatrix from '$lib/components/UserPermissionMatrix.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		predicates,
@@ -343,7 +343,7 @@
 				<ContextTabs slug="user-management" />
 			{:else if permissionView}
 				{#if data.inheritedSections && data.admins}
-					<ObjectPermissionMatrix
+					<ContentPermissionMatrix
 						admins={data.admins}
 						adminTeams={data.adminTeams}
 						container={data.container}
@@ -359,7 +359,7 @@
 						{users}
 					/>
 				{:else}
-					<UserPermissionMatrix
+					<AreaPermissionMatrix
 						container={data.container}
 						editable={isEditMode && $ability.can('manage-users', data.container)}
 						grants={data.grants}
