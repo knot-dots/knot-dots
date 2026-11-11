@@ -250,6 +250,7 @@ export function toDoc(row: {
 	const type: string | undefined = normalized?.type;
 	const title: string | undefined = normalized?.title ?? normalized?.name;
 	const description: string | undefined = normalized?.description;
+	const summary: string | undefined = normalized?.summary;
 	const body: string | undefined = normalized?.body;
 	const federalState: string | undefined = normalized?.federalState;
 	const visibility: string | undefined = normalized?.visibility;
@@ -313,6 +314,7 @@ export function toDoc(row: {
 			? [
 					title,
 					description,
+					summary,
 					body,
 					federalState,
 					...programTypeLabels,
