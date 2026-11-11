@@ -82,6 +82,13 @@ function measure(guid: string, managedBy: string) {
 	};
 }
 
+function task(guid: string, managedBy: string) {
+	return {
+		...measure(guid, managedBy),
+		payload: { title: 'Task', type: 'task', visibility: 'public' }
+	};
+}
+
 function program(guid: string, managedBy: string) {
 	return {
 		...measure(guid, managedBy),
@@ -240,6 +247,49 @@ test('the update permission on the route container authorizes a relation', async
 			subject: sourceGuid
 		}
 	]);
+});
+
+test('a relation the directory of allowed relations does not list is rejected', async () => {
+	// a measure is not part of a task, only the other way around
+	getManyContainers.mockReturnValue(async () => [
+		task(containerGuid, team),
+		measure(sourceGuid, otherTeam)
+	]);
+
+	await expect(
+		postRelation({
+			...user,
+			roles: [],
+			grants: grantRecordsForRoleOn(memberRoles.enum.collaborator, team)
+		})
+	).rejects.toMatchObject({ status: 422 });
+	expect(updateManyContainerRelations).not.toHaveBeenCalled();
+});
+
+test('a relation the directory does not list can still be taken away', async () => {
+	getManyContainers.mockReturnValue(async () => [
+		task(containerGuid, team),
+		measure(sourceGuid, otherTeam)
+	]);
+	const relation = {
+		deleted: true,
+		object: containerGuid,
+		position: 0,
+		predicate: 'is-part-of',
+		subject: sourceGuid
+	};
+
+	const response = await postRelation(
+		{
+			...user,
+			roles: [],
+			grants: grantRecordsForRoleOn(memberRoles.enum.collaborator, team)
+		},
+		[relation]
+	);
+
+	expect(response.status).toBe(204);
+	expect(deleteManyContainerRelations).toHaveBeenCalledWith([relation]);
 });
 
 test('relations without the update permission on the route container are ignored', async () => {
