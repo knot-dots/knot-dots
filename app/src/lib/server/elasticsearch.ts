@@ -205,13 +205,22 @@ export async function getManyContainersWithES(
 							}
 						}
 					},
-					// The official regional code is hierarchical: its leading digits
-					// name the federal state, the district and so on. It is matched
-					// as a prefix of the keyword rather than through the fuzzy full
-					// text, where the codes of neighbouring areas are near matches.
+					// The official regional code and the official municipality key
+					// are hierarchical: their leading digits name the federal state,
+					// the district and so on. They are matched as a prefix of the
+					// keyword rather than through the fuzzy full text, where the
+					// codes of neighbouring areas are near matches.
 					{
 						prefix: {
 							'payload.officialRegionalCode': {
+								value: filters.terms,
+								boost: 12
+							}
+						}
+					},
+					{
+						prefix: {
+							'payload.officialMunicipalityKey': {
 								value: filters.terms,
 								boost: 12
 							}

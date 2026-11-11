@@ -173,6 +173,7 @@ export function createIndexWithMappings(client: Client, index: string) {
 						indicatorCategory: { type: 'keyword' },
 						indicatorType: { type: 'keyword' },
 						level: { type: 'keyword' },
+						officialMunicipalityKey: { type: 'keyword' },
 						officialRegionalCode: { type: 'keyword' },
 						programType: { type: 'keyword' },
 						resource: { type: 'keyword' },
