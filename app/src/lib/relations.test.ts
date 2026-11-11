@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { type AnyPayload, type Container, payloadTypes, predicates } from '$lib/models';
 import {
+	isAllowedRelation,
 	type Node,
 	relatedObjectNodesByPredicate,
 	relatedSubjectNodesByPredicate
@@ -281,5 +282,35 @@ describe('relatedSubjectNodesByPredicate', () => {
 			expect.objectContaining({ guid: '1e0e1c5a-449c-4c08-aaf5-d3745ae42cd3' }),
 			expect.objectContaining({ guid: '88615c8b-ffc4-45d7-be1c-16ba32068eb5' })
 		]);
+	});
+});
+
+describe('isAllowedRelation', () => {
+	test.each([
+		[payloadTypes.enum.task, payloadTypes.enum.measure],
+		[payloadTypes.enum.goal, payloadTypes.enum.measure],
+		[payloadTypes.enum.measure, payloadTypes.enum.goal],
+		[payloadTypes.enum.teaser, payloadTypes.enum.teaser_collection]
+	])('a %s may be part of a %s', (subject, object) => {
+		expect(isAllowedRelation(subject, predicates.enum['is-part-of'], object)).toBe(true);
+	});
+
+	test.each([
+		[payloadTypes.enum.measure, payloadTypes.enum.task],
+		[payloadTypes.enum.goal, payloadTypes.enum.task],
+		[payloadTypes.enum.indicator, payloadTypes.enum.goal],
+		[payloadTypes.enum.page, payloadTypes.enum.goal]
+	])('a %s may not be part of a %s', (subject, object) => {
+		expect(isAllowedRelation(subject, predicates.enum['is-part-of'], object)).toBe(false);
+	});
+
+	test('predicates without an entry are not restricted', () => {
+		expect(
+			isAllowedRelation(
+				payloadTypes.enum.measure,
+				predicates.enum['is-consistent-with'],
+				payloadTypes.enum.task
+			)
+		).toBe(true);
 	});
 });
