@@ -157,7 +157,7 @@ export function createIndexWithMappings(client: Client, index: string) {
 						subject: { type: 'keyword' }
 					}
 				},
-				// Only the payload fields that queries filter, facet or sort by
+				// Only the payload fields that queries match, filter, facet or sort by
 				// are indexed. Everything else stays in _source for delivery,
 				// which keeps the values of actual data and the content of
 				// sections out of the index.
@@ -173,6 +173,7 @@ export function createIndexWithMappings(client: Client, index: string) {
 						indicatorCategory: { type: 'keyword' },
 						indicatorType: { type: 'keyword' },
 						level: { type: 'keyword' },
+						officialRegionalCode: { type: 'keyword' },
 						programType: { type: 'keyword' },
 						resource: { type: 'keyword' },
 						resourceCategory: { type: 'keyword' },
