@@ -1,4 +1,10 @@
-import { expect, test } from './fixtures';
+import {
+	type Container,
+	containerOfType,
+	type OrganizationalUnitPayload,
+	payloadTypes
+} from '$lib/models';
+import { createContainer, deleteContainer, expect, test } from './fixtures';
 
 test.use({ suiteId: 'elasticsearch' });
 test.use({ storageState: 'tests/.auth/orgadmin.json' });
@@ -44,5 +50,61 @@ test.describe('Optimistic frontend updates with Elasticsearch', () => {
 		// Close the overlay and verify the updated title on the board
 		await dotsBoard.overlay.closeButton.click();
 		await expect(dotsBoard.card(updatedTitle)).toBeVisible();
+	});
+});
+
+test.describe('Full-text search with Elasticsearch', () => {
+	test('finds organizational units by federal state and official regional code', async ({
+		adminContext,
+		testOrganization
+	}) => {
+		const newOrganizationalUnit = containerOfType(
+			payloadTypes.enum.organizational_unit,
+			testOrganization
+		) as Container<OrganizationalUnitPayload>;
+		const regionalAssociation = await createContainer(adminContext, {
+			...newOrganizationalUnit,
+			payload: {
+				...newOrganizationalUnit.payload,
+				federalState: 'Saarland',
+				name: 'Regionalverband',
+				officialRegionalCode: '100410100100'
+			}
+		});
+		const municipality = await createContainer(adminContext, {
+			...newOrganizationalUnit,
+			payload: {
+				...newOrganizationalUnit.payload,
+				federalState: 'Bremen',
+				name: 'Stadtgemeinde',
+				officialRegionalCode: '040110000000'
+			}
+		});
+
+		async function search(terms: string) {
+			const response = await adminContext.request.get('/container/v2', {
+				params: {
+					organization: testOrganization.guid,
+					terms,
+					type: payloadTypes.enum.organizational_unit
+				}
+			});
+			const { containers } = (await response.json()) as { containers: Container[] };
+			return containers.map(({ guid }) => guid);
+		}
+
+		try {
+			// The federal state, the complete code and its leading digits each
+			// find the one organizational unit. Polling gives the indexing
+			// worker time to catch up.
+			for (const terms of ['Saarland', '100410100100', '10041']) {
+				await expect
+					.poll(() => search(terms), { timeout: 20000 })
+					.toEqual([regionalAssociation.guid]);
+			}
+		} finally {
+			await deleteContainer(adminContext, regionalAssociation);
+			await deleteContainer(adminContext, municipality);
+		}
 	});
 });
