@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { type AnyPayload, type Container, payloadTypes, predicates } from '$lib/models';
 import {
+	isAllowedRelation,
 	type Node,
 	relatedObjectNodesByPredicate,
 	relatedSubjectNodesByPredicate
@@ -281,5 +282,64 @@ describe('relatedSubjectNodesByPredicate', () => {
 			expect.objectContaining({ guid: '1e0e1c5a-449c-4c08-aaf5-d3745ae42cd3' }),
 			expect.objectContaining({ guid: '88615c8b-ffc4-45d7-be1c-16ba32068eb5' })
 		]);
+	});
+});
+
+describe('isAllowedRelation', () => {
+	test.each([
+		[payloadTypes.enum.task, predicates.enum['is-part-of'], payloadTypes.enum.measure],
+		[payloadTypes.enum.goal, predicates.enum['is-part-of'], payloadTypes.enum.measure],
+		[payloadTypes.enum.measure, predicates.enum['is-part-of'], payloadTypes.enum.goal],
+		[payloadTypes.enum.teaser, predicates.enum['is-part-of'], payloadTypes.enum.teaser_collection],
+		[payloadTypes.enum.term, predicates.enum['is-part-of-category'], payloadTypes.enum.category],
+		[payloadTypes.enum.task, predicates.enum['is-part-of-measure'], payloadTypes.enum.measure],
+		[
+			payloadTypes.enum.goal,
+			predicates.enum['is-part-of-measure'],
+			payloadTypes.enum.simple_measure
+		],
+		[payloadTypes.enum.rule, predicates.enum['is-part-of-program'], payloadTypes.enum.program],
+		[payloadTypes.enum.text, predicates.enum['is-section-of'], payloadTypes.enum.page],
+		[payloadTypes.enum.chapter, predicates.enum['is-section-of'], payloadTypes.enum.report],
+		[payloadTypes.enum.measure, predicates.enum['is-section-of'], payloadTypes.enum.program],
+		[
+			payloadTypes.enum.relation_collection,
+			predicates.enum['is-section-of'],
+			payloadTypes.enum.goal
+		]
+	])('a %s %s a %s', (subject, predicate, object) => {
+		expect(isAllowedRelation(subject, predicate, object)).toBe(true);
+	});
+
+	test.each([
+		[payloadTypes.enum.measure, predicates.enum['is-part-of'], payloadTypes.enum.task],
+		[payloadTypes.enum.goal, predicates.enum['is-part-of'], payloadTypes.enum.task],
+		[payloadTypes.enum.indicator, predicates.enum['is-part-of'], payloadTypes.enum.goal],
+		[payloadTypes.enum.page, predicates.enum['is-part-of'], payloadTypes.enum.goal],
+		[payloadTypes.enum.term, predicates.enum['is-part-of-category'], payloadTypes.enum.term],
+		[payloadTypes.enum.measure, predicates.enum['is-part-of-measure'], payloadTypes.enum.goal],
+		[payloadTypes.enum.indicator, predicates.enum['is-part-of-measure'], payloadTypes.enum.measure],
+		[payloadTypes.enum.task, predicates.enum['is-part-of-program'], payloadTypes.enum.program],
+		[payloadTypes.enum.goal, predicates.enum['is-part-of-program'], payloadTypes.enum.measure],
+		[payloadTypes.enum.text, predicates.enum['is-section-of'], payloadTypes.enum.effect],
+		[payloadTypes.enum.chapter, predicates.enum['is-section-of'], payloadTypes.enum.goal],
+		[payloadTypes.enum.goal, predicates.enum['is-section-of'], payloadTypes.enum.page],
+		[
+			payloadTypes.enum.demographic_data,
+			predicates.enum['is-section-of'],
+			payloadTypes.enum.organization
+		]
+	])('a %s never %s a %s', (subject, predicate, object) => {
+		expect(isAllowedRelation(subject, predicate, object)).toBe(false);
+	});
+
+	test('predicates without an entry are not restricted', () => {
+		expect(
+			isAllowedRelation(
+				payloadTypes.enum.measure,
+				predicates.enum['is-consistent-with'],
+				payloadTypes.enum.task
+			)
+		).toBe(true);
 	});
 });
