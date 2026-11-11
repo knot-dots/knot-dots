@@ -250,6 +250,7 @@ export function toDoc(row: {
 	const title: string | undefined = normalized?.title ?? normalized?.name;
 	const description: string | undefined = normalized?.description;
 	const body: string | undefined = normalized?.body;
+	const federalState: string | undefined = normalized?.federalState;
 	const visibility: string | undefined = normalized?.visibility;
 	const validFrom = row.valid_from ? new Date(row.valid_from).toISOString() : undefined;
 	const priority = row.priority ?? undefined;
@@ -312,6 +313,7 @@ export function toDoc(row: {
 					title,
 					description,
 					body,
+					federalState,
 					...programTypeLabels,
 					...indicatorCategoryLabels,
 					...indicatorTypeLabels,
