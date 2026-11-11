@@ -253,6 +253,7 @@ export function toDoc(row: {
 	const summary: string | undefined = normalized?.summary;
 	const body: string | undefined = normalized?.body;
 	const federalState: string | undefined = normalized?.federalState;
+	const municipalityType: string | undefined = normalized?.cityAndMunicipalityTypeBBSR;
 	const visibility: string | undefined = normalized?.visibility;
 	const validFrom = row.valid_from ? new Date(row.valid_from).toISOString() : undefined;
 	const priority = row.priority ?? undefined;
@@ -317,6 +318,7 @@ export function toDoc(row: {
 					summary,
 					body,
 					federalState,
+					municipalityType,
 					...programTypeLabels,
 					...indicatorCategoryLabels,
 					...indicatorTypeLabels,
