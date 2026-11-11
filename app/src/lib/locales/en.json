@@ -713,6 +713,8 @@
 	"read_more": "Read more",
 	"register": "Register",
 	"relation_collection": "Sub-objects",
+	"relation_collection.add_existing_items": "Add existing objects",
+	"relation_collection.add_existing_items.failed": "{count, plural, one {1 object} other {# objects}} could not be added.",
 	"relation_filter.label": "Relations",
 	"relation_filter.option.contributes_to": "contributes to",
 	"relation_filter.option.is_consistent_with": "consistent with",
