@@ -62,17 +62,6 @@ export const POST = (async ({ locals, request }) => {
 		error(422, { message: unwrapFunctionStore(_)('error.bad_request') });
 	}
 
-	// Each relation may be declared once; one without an end refers to the
-	// container itself.
-	const relations = parseResult.data.flatMap(({ guid, relation }) =>
-		relation.map(
-			({ object, predicate, subject }) => `${subject ?? guid} ${predicate} ${object ?? guid}`
-		)
-	);
-	if (new Set(relations).size !== relations.length) {
-		error(422, { message: unwrapFunctionStore(_)('error.bad_request') });
-	}
-
 	const pending = new Set(guids);
 	const features = locals.features ?? [];
 

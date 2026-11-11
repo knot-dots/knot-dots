@@ -512,11 +512,6 @@ export function createManyContainers(inserts: readonly NewContainerWithGuid[]) {
 	}
 
 	const relations = inserts.flatMap((c) => c.relation);
-	const insertedGuids = new Set(inserts.map(({ guid }) => guid));
-	const externalProgramPlacements = relations.filter(
-		({ object, predicate }) =>
-			predicate === predicates.enum['is-part-of-program'] && !insertedGuids.has(object)
-	);
 
 	return async (connection: DatabaseTransactionConnection) => {
 		if (inserts.length === 0) {
@@ -569,28 +564,7 @@ export function createManyContainers(inserts: readonly NewContainerWithGuid[]) {
 					RETURNING object, predicate, subject
 				`);
 
-		const shiftedProgramSiblings =
-			externalProgramPlacements.length === 0
-				? []
-				: await connection.any(sql.typeAlias('guid')`
-					UPDATE container_relation relation
-					SET position = relation.position + 1
-					FROM ${sql.unnest(
-						externalProgramPlacements.map(({ object, position }) => [object, position]),
-						['uuid', 'int4']
-					)} AS placement(object, position)
-					WHERE relation.predicate = ${predicates.enum['is-part-of-program']}
-						AND relation.object = placement.object
-						AND relation.position >= placement.position
-						AND relation.valid_currently
-						AND NOT relation.deleted
-					RETURNING relation.subject AS guid
-				`);
-
 		const relationResult = await insertManyContainerRelations(relations, connection);
-		if (relationResult.length !== relations.length) {
-			throw new Error('relation_conflict');
-		}
 
 		const usersByRevision = new Map<number, Array<z.infer<typeof userRelation>>>();
 		for (const { object, predicate, subject } of userResult) {
@@ -624,9 +598,6 @@ export function createManyContainers(inserts: readonly NewContainerWithGuid[]) {
 		for (const { object, subject } of relationResult) {
 			affectedIndexingGuids.add(object);
 			affectedIndexingGuids.add(subject);
-		}
-		for (const { guid } of shiftedProgramSiblings) {
-			affectedIndexingGuids.add(guid);
 		}
 
 		return {
@@ -2586,18 +2557,6 @@ export function getAllContainersRelatedToMeasure(
 	};
 }
 
-// The teams (units marked as such) the user is a member of: everyone with a
-// role on the team's matrix.
-const teamsOfUser = (guid: string) => sql.fragment`
-	SELECT t.guid
-	FROM container_user cu
-	JOIN container t ON t.revision = cu.object
-		AND t.valid_currently AND NOT t.deleted
-		AND t.payload->>'type' = ${payloadTypes.enum.organizational_unit}
-		AND t.payload->>'organizationalUnitType' = ${organizationalUnitType.enum['organizational_unit_type.team']}
-	WHERE cu.subject = ${guid} AND cu.predicate = ${predicates.enum['is-member-of']}
-`;
-
 // Everything the user takes part in: the contents of the areas and the areas
 // the user has a role on, the containers granting rows to one of the user's
 // teams, and the tasks assigned to the user.
@@ -2607,7 +2566,13 @@ export function getAllContainersRelatedToUser(guid: string) {
 			WITH subjects AS (
 				SELECT ${guid}::uuid AS guid
 				UNION
-				${teamsOfUser(guid)}
+				SELECT t.guid
+				FROM container_user cu
+				JOIN container t ON t.revision = cu.object
+					AND t.valid_currently AND NOT t.deleted
+					AND t.payload->>'type' = ${payloadTypes.enum.organizational_unit}
+					AND t.payload->>'organizationalUnitType' = ${organizationalUnitType.enum['organizational_unit_type.team']}
+				WHERE cu.subject = ${guid} AND cu.predicate = ${predicates.enum['is-member-of']}
 			)
 			SELECT c.* FROM container c
 			JOIN container m ON c.managed_by = m.guid
