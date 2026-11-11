@@ -12,6 +12,7 @@ import {
 	type AnyPayload,
 	type Container,
 	grantSetForRole,
+	indicatorDashboardItemFor,
 	memberRoles,
 	modifiedContainer,
 	newContainer,
@@ -1504,7 +1505,7 @@ test('getContainerCopyGraph fetches the indicators of an indicator dashboard', a
 		unit: 'unit.percent'
 	});
 	const dashboard = containers.add({
-		item: [indicator.guid],
+		item: [indicatorDashboardItemFor(indicator.guid)],
 		title: 'Dashboard',
 		type: payloadTypes.enum.indicator_dashboard
 	});

@@ -14,6 +14,7 @@
 		type AnyPayload,
 		type Container,
 		type IndicatorDashboardPayload,
+		indicatorDashboardItemFor,
 		isActualDataContainer,
 		isEffectContainer,
 		isIndicatorContainer,
@@ -57,9 +58,11 @@
 		}
 	});
 
+	let selectedIndicators = $derived(container.payload.item.map(({ indicator }) => indicator));
+
 	// A string compares by value, so replacing the container with an equal copy, as dragging the
-	// section does, fetches nothing again.
-	let itemKey = $derived(container.payload.item.join());
+	// section does, fetches nothing again. Neither does changing how an indicator shows.
+	let itemKey = $derived(selectedIndicators.join());
 
 	// Every indicator shows the actual data, objectives and effects of the organization or
 	// organizational unit the section belongs to, like its detail view does. The dashboard yields
@@ -114,16 +117,23 @@
 
 	// Preserve the order of the selection
 	let items = $derived(
-		container.payload.item.flatMap(
+		selectedIndicators.flatMap(
 			(guid) => itemsResource.current?.find(({ indicator }) => indicator.guid === guid) ?? []
 		)
 	);
 
 	async function confirm(selected: string[]) {
+		// Indicators that stay keep their settings.
+		const item = selected.map(
+			(guid) =>
+				container.payload.item.find(({ indicator }) => indicator === guid) ??
+				indicatorDashboardItemFor(guid)
+		);
+
 		try {
 			const response = await saveContainer({
 				...container,
-				payload: { ...container.payload, item: selected }
+				payload: { ...container.payload, item }
 			});
 			if (response.ok) {
 				const updatedContainer = await response.json();
@@ -214,7 +224,7 @@
 		onconfirm={confirm}
 		payloadType={[payloadTypes.enum.indicator]}
 		title={$_('custom_collection.dialog.title')}
-		value={container.payload.item}
+		value={selectedIndicators}
 	/>
 {/if}
 
