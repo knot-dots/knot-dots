@@ -520,7 +520,9 @@ export function createContainerCopyPlan({
 				});
 				break;
 			case payloadTypes.enum.indicator_dashboard:
-				copy.payload.item = resolveItemGuids(copy.payload.item);
+				copy.payload.item = copy.payload.item.flatMap((item) =>
+					resolveItemGuids([item.indicator]).map((indicator) => ({ ...item, indicator }))
+				);
 				break;
 			default:
 				break;

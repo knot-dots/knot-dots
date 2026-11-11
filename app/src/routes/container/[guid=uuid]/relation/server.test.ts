@@ -34,6 +34,7 @@ import {
 	emptyGrantRecords,
 	grantRecordsForRoleOn,
 	grantSetForRole,
+	indicatorDashboardItemFor,
 	memberRoles
 } from '$lib/models';
 
@@ -564,11 +565,16 @@ function actualData() {
 	};
 }
 
-function dashboard(item: string[]) {
+function dashboard(indicators: string[]) {
 	return {
 		...measure(containerGuid, organization),
 		organization,
-		payload: { item, title: 'Dashboard', type: 'indicator_dashboard', visibility: 'public' }
+		payload: {
+			item: indicators.map((indicator) => indicatorDashboardItemFor(indicator)),
+			title: 'Dashboard',
+			type: 'indicator_dashboard',
+			visibility: 'public'
+		}
 	};
 }
 
