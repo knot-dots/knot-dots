@@ -65,35 +65,6 @@ import {
 import { enqueueIndexingEvent } from '$lib/server/indexingQueue';
 import { createGroup, deleteGroup, updateAccessSettings } from '$lib/server/keycloak';
 
-// Types that are indexed to Elasticsearch (must match indexContainersToElasticsearch.ts)
-const INDEXABLE_TYPES = new Set<string>([
-	'binary_indicator',
-	'effect',
-	'event',
-	'goal',
-	'help',
-	'indicator',
-	'knowledge',
-	'measure',
-	'objective',
-	'organization',
-	'organizational_unit',
-	'page',
-	'post',
-	'program',
-	'report',
-	'resource',
-	'resource_data',
-	'resource_v2',
-	'rule',
-	'simple_measure',
-	'task'
-]);
-
-function shouldIndexType(type: PayloadType): boolean {
-	return INDEXABLE_TYPES.has(type);
-}
-
 const createResultParserInterceptor = (): Interceptor => {
 	return {
 		// If you are not going to transform results using Zod, then you should use `afterQueryExecution` instead.
@@ -591,9 +562,7 @@ export function createManyContainers(inserts: readonly NewContainerWithGuid[]) {
 
 		const affectedIndexingGuids = new Set<string>();
 		for (const persisted of persistedContainers) {
-			if (shouldIndexType(persisted.payload.type)) {
-				affectedIndexingGuids.add(persisted.guid);
-			}
+			affectedIndexingGuids.add(persisted.guid);
 		}
 		for (const { object, subject } of relationResult) {
 			affectedIndexingGuids.add(object);
@@ -681,10 +650,7 @@ export function createContainer(
 			return created;
 		});
 
-		await enqueueContainerUpserts([
-			...(shouldIndexType(result.payload.type) ? [result.guid] : []),
-			...affectedContainerGuids(result.relation)
-		]);
+		await enqueueContainerUpserts([result.guid, ...affectedContainerGuids(result.relation)]);
 
 		return result;
 	};
@@ -815,10 +781,7 @@ export function updateContainer(
 			};
 		});
 
-		await enqueueContainerUpserts([
-			...(shouldIndexType(result.payload.type) ? [result.guid] : []),
-			...affectedGuids
-		]);
+		await enqueueContainerUpserts([result.guid, ...affectedGuids]);
 
 		return result;
 	};
@@ -940,13 +903,11 @@ export function deleteContainer(container: Container<AnyPayload>, visited = new 
 		});
 
 		await enqueueContainerUpserts(affectedGuids.filter((guid) => guid !== container.guid));
-		if (shouldIndexType(container.payload.type)) {
-			await enqueueIndexingEvent({
-				action: 'delete',
-				guid: container.guid,
-				timestamp: new Date().toISOString()
-			});
-		}
+		await enqueueIndexingEvent({
+			action: 'delete',
+			guid: container.guid,
+			timestamp: new Date().toISOString()
+		});
 	};
 }
 
@@ -1130,16 +1091,15 @@ export function restoreContainerRecursively(guid: string) {
 				sql.type(
 					z.object({
 						guid: z.string().uuid(),
-						revision: z.number().int().positive(),
-						type: z.string()
+						revision: z.number().int().positive()
 					})
 				)`
 					WITH RECURSIVE deleted_along AS (
-						SELECT c.guid, c.revision, c.valid_from, c.payload->>'type' AS type
+						SELECT c.guid, c.revision, c.valid_from
 						FROM container c
 						WHERE c.revision = ${deletedContainer.revision}
 						UNION
-						SELECT c.guid, c.revision, c.valid_from, c.payload->>'type' AS type
+						SELECT c.guid, c.revision, c.valid_from
 						FROM deleted_along parent
 						JOIN LATERAL (
 							SELECT cr.subject AS guid
@@ -1162,7 +1122,7 @@ export function restoreContainerRecursively(guid: string) {
 							AND c.valid_currently
 							AND c.valid_from = parent.valid_from
 					)
-					SELECT guid, revision, type
+					SELECT guid, revision
 					FROM deleted_along
 				`
 			);
@@ -1194,12 +1154,7 @@ export function restoreContainerRecursively(guid: string) {
 			await updateManyContainerRelationsInTransaction(relations, txConnection);
 
 			return {
-				affectedGuids: [
-					...deletedContainers
-						.filter(({ type }) => shouldIndexType(type as PayloadType))
-						.map(({ guid }) => guid),
-					...affectedContainerGuids(relations)
-				],
+				affectedGuids: [...guids, ...affectedContainerGuids(relations)],
 				container: await getContainerByGuid(guid)(txConnection)
 			};
 		});
@@ -2945,14 +2900,12 @@ export function createOrUpdateTaskPriority(taskPriority: TaskPriority[]) {
 			`);
 		});
 
-		if (shouldIndexType(payloadTypes.enum.task)) {
-			for (const taskGuid of new Set(tasks)) {
-				await enqueueIndexingEvent({
-					action: 'upsert',
-					guid: taskGuid,
-					timestamp: new Date().toISOString()
-				});
-			}
+		for (const taskGuid of new Set(tasks)) {
+			await enqueueIndexingEvent({
+				action: 'upsert',
+				guid: taskGuid,
+				timestamp: new Date().toISOString()
+			});
 		}
 	};
 }
