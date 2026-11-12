@@ -5,7 +5,7 @@ import {
 	listMcpContainerCategoryValues
 } from '$lib/server/mcp/categories';
 import { getMcpContainer, searchMcpContainers } from '$lib/server/mcp/containers';
-import { createMcpContainer } from '$lib/server/mcp/creation';
+import { createMcpContainer, createMcpContainers } from '$lib/server/mcp/creation';
 import {
 	addMcpCustomCollectionSection,
 	updateMcpCustomCollectionSection
@@ -38,6 +38,10 @@ import {
 	registerCreateContainerTool,
 	type CreateContainerDependencies
 } from '$lib/server/mcp/tools/createContainer';
+import {
+	registerCreateContainersTool,
+	type CreateContainersDependencies
+} from '$lib/server/mcp/tools/createContainers';
 import {
 	registerRemoveContainerRelationTool,
 	type RemoveContainerRelationDependencies
@@ -92,6 +96,7 @@ type McpServerDependencies = AddContainerRelationDependencies &
 	AddCustomCollectionSectionDependencies &
 	AttachIndicatorDependencies &
 	CreateContainerDependencies &
+	CreateContainersDependencies &
 	GetContainerDependencies &
 	ListContainerCategoriesDependencies &
 	ListContainerCategoryValuesDependencies &
@@ -117,6 +122,9 @@ const defaultDependencies: McpServerDependencies = {
 	},
 	async createContainer(auth, input) {
 		return (await getPool()).connect(createMcpContainer({ ...input, ...auth }));
+	},
+	async createContainers(auth, input) {
+		return (await getPool()).connect(createMcpContainers({ ...input, ...auth }));
 	},
 	async getContainer(userId, guid) {
 		return (await getPool()).connect(getMcpContainer({ guid, userId }));
@@ -168,7 +176,7 @@ export function createKnotDotsMcpHandler(dependencies: McpServerDependencies) {
 				},
 				{
 					instructions:
-						'Read knotdots://schemas/payloads and the matching linked payload schema before calling create_container or update_container. Pass update_container the revision from the latest get_container, create_container or update_container response for that container; there is no need to read it again after your own writes. Look up category keys and values with list_container_categories and list_container_category_values instead of guessing them. The description and body fields are GitHub-flavored Markdown. Call list_container_relations before add_container_relation or remove_container_relation; relations read as subject, predicate, object. Attach indicators to measures and goals with attach_indicator, which creates the effect or objective that links them; record actual values of an indicator with set_actual_data. Resource availability does not imply that a creation tool is available.'
+						'Read knotdots://schemas/payloads and the matching linked payload schema before calling create_container, create_containers or update_container. Pass update_container the revision from the latest get_container, create_container, create_containers or update_container response for that container; there is no need to read it again after your own writes. Look up category keys and values with list_container_categories and list_container_category_values instead of guessing them; categories and their values are category and term containers, created and changed with the container tools. The description and body fields are GitHub-flavored Markdown. Call list_container_relations before add_container_relation or remove_container_relation; relations read as subject, predicate, object. Attach indicators to measures and goals with attach_indicator, which creates the effect or objective that links them; record actual values of an indicator with set_actual_data. Resource availability does not imply that a creation tool is available.'
 				}
 			);
 
@@ -178,6 +186,7 @@ export function createKnotDotsMcpHandler(dependencies: McpServerDependencies) {
 			registerAddCustomCollectionSectionTool(server, authInfo, dependencies);
 			registerAttachIndicatorTool(server, authInfo, dependencies);
 			registerCreateContainerTool(server, authInfo, dependencies);
+			registerCreateContainersTool(server, authInfo, dependencies);
 			registerGetContainerTool(server, authInfo, dependencies);
 			registerListContainerCategoriesTool(server, authInfo, dependencies);
 			registerListContainerCategoryValuesTool(server, authInfo, dependencies);

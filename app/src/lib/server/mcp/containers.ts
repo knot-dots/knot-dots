@@ -9,6 +9,7 @@ import type {
 	SearchContainersInput,
 	SearchContainersOutput
 } from '$lib/server/mcp/contracts/containers';
+import { withoutLegacyFields } from '$lib/server/mcp/contracts/payloads';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
 import { runAsRequestUser } from '$lib/server/requestUser';
 import type { User } from '$lib/stores';
@@ -17,7 +18,11 @@ const searchBatchSize = 250;
 
 export function serializeMcpContainer(container: Container<AnyPayload>): GetContainerOutput {
 	return {
-		container: { ...container, valid_from: container.valid_from.toISOString() }
+		container: {
+			...container,
+			payload: withoutLegacyFields(container.payload.type, container.payload),
+			valid_from: container.valid_from.toISOString()
+		}
 	};
 }
 
