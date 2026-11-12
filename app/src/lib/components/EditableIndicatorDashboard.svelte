@@ -226,6 +226,7 @@
 					container={indicator}
 					height={item.height}
 					relatedContainers={related}
+					view={item.view}
 				/>
 			</li>
 		{/each}
