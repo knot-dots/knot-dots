@@ -2760,7 +2760,9 @@ h4.details-heading {
 	--color-surface-accent-container-raised: var(--color-amber-050);
 }
 
-.module-rules {
+/* Rules, and the helpers for arranging content (system mode layout) */
+.module-rules,
+.system-layout {
 	--color-accent-on-default: var(--color-pink-700);
 
 	--color-text-accent-strong: var(--color-pink-900);

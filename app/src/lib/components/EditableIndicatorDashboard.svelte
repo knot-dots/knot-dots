@@ -13,7 +13,14 @@
 	import IndicatorDashboardCard from '$lib/components/IndicatorDashboardCard.svelte';
 	import IndicatorDashboardCardMenu from '$lib/components/IndicatorDashboardCardMenu.svelte';
 	import IndicatorPicker from '$lib/components/IndicatorPicker.svelte';
-	import { columnsFor, layout, rowHeightFor } from '$lib/indicatorDashboardLayout';
+	import {
+		columnsFor,
+		dropIntoGap,
+		type Gap,
+		gapsOf,
+		layout,
+		rowHeightFor
+	} from '$lib/indicatorDashboardLayout';
 	import {
 		type AnyPayload,
 		type Container,
@@ -145,15 +152,35 @@
 		requestSubmit(event);
 	}
 
+	// Names a width as the menu does, whatever the number of columns shown
+	function widthText(width: IndicatorDashboardItem['width']) {
+		return $_(`indicator_dashboard.width_name.${width}`);
+	}
+
 	function describe(title: string, { height, view, width }: IndicatorDashboardItem) {
 		return $_('indicator_dashboard.announce.settings', {
 			values: {
 				height: $_(`indicator_dashboard.height.${height}`),
 				title,
 				view: $_(`indicator_dashboard.view.${view}`),
-				width: $_(`indicator_dashboard.width_name.${width}`)
+				width: widthText(width)
 			}
 		});
+	}
+
+	// Writes the cards shown, in a new order or with new settings, into their places in the
+	// payload; indicators that are not shown keep theirs.
+	function saveShown(shown: IndicatorDashboardItem[], event: Event) {
+		const item = [...container.payload.item];
+		items.forEach(({ index }, k) => {
+			item[index] = shown[k];
+		});
+		save(item, event);
+	}
+
+	async function focusCard(position: number) {
+		await tick();
+		(grid?.children[position] as HTMLElement | undefined)?.focus();
 	}
 
 	function change(
@@ -222,6 +249,116 @@
 				void move(position, title, offset, event);
 			}
 		};
+	}
+
+	// While a card is dragged: where it is, and the gaps of the grid when the dragging started, with
+	// the card still in its place. The cards do not move until it is dropped.
+	let dragged = $state<{ gaps: Gap[]; position: number }>();
+
+	// Where the dragged card would go: before or after a card, or into a gap
+	let dropTarget = $state<{ after: boolean; position: number } | { gap: number }>();
+
+	let dragFrame: number | undefined;
+
+	function startDragging(position: number) {
+		return (event: DragEvent) => {
+			if (!mayUpdate || (event.target as Element).closest('.dropdown')) {
+				event.preventDefault();
+				return;
+			}
+			// The sections around are sortable with svelte-dnd-action, which cancels any native
+			// dragging that reaches them.
+			event.stopPropagation();
+			if (event.dataTransfer) {
+				event.dataTransfer.effectAllowed = 'move';
+				event.dataTransfer.setData('text/plain', items[position].indicator.guid);
+			}
+			const gaps = gapsOf(
+				items.map(({ item }) => item),
+				columns
+			);
+			// After the browser has taken the image of the card it drags
+			dragFrame = requestAnimationFrame(() => {
+				dragged = { gaps, position };
+			});
+		};
+	}
+
+	function stopDragging() {
+		if (dragFrame !== undefined) {
+			cancelAnimationFrame(dragFrame);
+			dragFrame = undefined;
+		}
+		dragged = undefined;
+		dropTarget = undefined;
+	}
+
+	function dragOverCard(position: number) {
+		return (event: DragEvent) => {
+			if (!dragged) {
+				return;
+			}
+			event.preventDefault();
+			const { left, width } = (event.currentTarget as HTMLElement).getBoundingClientRect();
+			dropTarget =
+				position === dragged.position
+					? undefined
+					: { after: event.clientX > left + width / 2, position };
+		};
+	}
+
+	function dropOnCard(event: DragEvent) {
+		if (!dragged || !dropTarget || !('position' in dropTarget)) {
+			return;
+		}
+		event.preventDefault();
+		const from = dragged.position;
+		let to = dropTarget.position + (dropTarget.after ? 1 : 0);
+		if (from < to) {
+			to--;
+		}
+		stopDragging();
+		if (to === from) {
+			return;
+		}
+		const shown = items.map(({ item }) => item);
+		const [card] = shown.splice(from, 1);
+		shown.splice(to, 0, card);
+		const title = items[from].indicator.payload.title;
+		saveShown(shown, event);
+		announcement = $_(
+			to < from
+				? 'indicator_dashboard.announce.moved_forward'
+				: 'indicator_dashboard.announce.moved_back',
+			{ values: { count: items.length, position: to + 1, title } }
+		);
+		void focusCard(to);
+	}
+
+	function dropIntoGapAt(gap: Gap, event: DragEvent) {
+		if (!dragged) {
+			return;
+		}
+		event.preventDefault();
+		const from = dragged.position;
+		const title = items[from].indicator.payload.title;
+		stopDragging();
+		const shown = dropIntoGap(
+			items.map(({ item }) => item),
+			from,
+			gap,
+			columns
+		);
+		const to = gap.anchor === from ? from : gap.anchor > from ? gap.anchor : gap.anchor + 1;
+		saveShown(shown, event);
+		announcement = $_('indicator_dashboard.announce.filled_gap', {
+			values: {
+				height: $_(`indicator_dashboard.height.${shown[to].height}`),
+				title,
+				width: widthText(shown[to].width)
+			}
+		});
+		void focusCard(to);
 	}
 
 	let gridWidth = $state(0);
@@ -310,43 +447,101 @@
 {#if itemsResource.error}
 	<p>{$_('indicator_dashboard.load_failed')}</p>
 {:else if items.length > 0}
-	<ul
-		bind:clientWidth={gridWidth}
-		bind:this={grid}
-		class={['indicators', 'wide', gridWidth === 0 && 'is-measuring']}
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div
+		class="board wide"
+		ondragleave={(event) => {
+			if (!(event.currentTarget as HTMLElement).contains(event.relatedTarget as Node | null)) {
+				dropTarget = undefined;
+			}
+		}}
 		style:--columns={columns}
 		style:--row-height="{rowHeightFor(gridWidth, columns)}px"
 	>
-		{#each items as { index, indicator, item, related }, i (indicator.guid)}
-			{@const { column, columnSpan, row, rowSpan } = placements[i]}
-			{@const title = indicator.payload.title}
-			{#snippet settings()}
-				<IndicatorDashboardCardMenu
-					count={items.length}
-					{item}
-					onchange={(patch, event) => change(index, title, patch, event)}
-					onmove={(offset, event) => move(i, title, offset, event)}
-					onremove={(event) => remove(i, title, event)}
-					position={i}
-				/>
-			{/snippet}
-			<!-- Alt and the arrow keys move the focused card; the menu offers the same. -->
-			<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-			<li
-				onkeydown={moveWithKeyboard(i, title)}
-				style:grid-column="{column} / span {columnSpan}"
-				style:grid-row="{row} / span {rowSpan}"
-			>
-				<IndicatorDashboardCard
-					container={indicator}
-					height={item.height}
-					relatedContainers={related}
-					settings={mayUpdate ? settings : undefined}
-					view={item.view}
-				/>
-			</li>
-		{/each}
-	</ul>
+		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+		<ul
+			bind:clientWidth={gridWidth}
+			bind:this={grid}
+			class={['indicators', gridWidth === 0 && 'is-measuring']}
+			ondragover={(event) => {
+				// Between two cards, the insertion line keeps the place it shows.
+				if (dropTarget && 'position' in dropTarget) {
+					event.preventDefault();
+				}
+			}}
+			ondrop={dropOnCard}
+		>
+			{#each items as { index, indicator, item, related }, i (indicator.guid)}
+				{@const { column, columnSpan, row, rowSpan } = placements[i]}
+				{@const title = indicator.payload.title}
+				{#snippet settings()}
+					<IndicatorDashboardCardMenu
+						count={items.length}
+						{item}
+						onchange={(patch, event) => change(index, title, patch, event)}
+						onmove={(offset, event) => move(i, title, offset, event)}
+						onremove={(event) => remove(i, title, event)}
+						position={i}
+					/>
+				{/snippet}
+				<!-- Alt and the arrow keys move the focused card; the menu offers the same. -->
+				<!-- svelte-ignore a11y_no_noninteractive_element_interactions, a11y_no_noninteractive_tabindex -->
+				<li
+					aria-label={mayUpdate
+						? $_('indicator_dashboard.card_label', {
+								values: { count: items.length, position: i + 1, title }
+							})
+						: undefined}
+					class:is-dragged={dragged?.position === i}
+					draggable={mayUpdate}
+					ondragend={stopDragging}
+					ondragover={dragOverCard(i)}
+					ondragstart={startDragging(i)}
+					onkeydown={moveWithKeyboard(i, title)}
+					style:grid-column="{column} / span {columnSpan}"
+					style:grid-row="{row} / span {rowSpan}"
+					tabindex={mayUpdate ? 0 : undefined}
+				>
+					<IndicatorDashboardCard
+						container={indicator}
+						height={item.height}
+						relatedContainers={related}
+						settings={mayUpdate ? settings : undefined}
+						view={item.view}
+					/>
+				</li>
+			{/each}
+		</ul>
+
+		{#if dragged}
+			<!-- The gaps and the insertion line lie over the grid while a card is dragged. -->
+			<div aria-hidden="true" class="drag-layer system-layout">
+				{#each dragged.gaps as gap, k (k)}
+					<div
+						class={['gap', dropTarget && 'gap' in dropTarget && dropTarget.gap === k && 'is-over']}
+						ondragover={(event) => {
+							event.preventDefault();
+							dropTarget = { gap: k };
+						}}
+						ondrop={(event) => dropIntoGapAt(gap, event)}
+						role="presentation"
+						style:grid-column="{gap.column} / span {gap.columnSpan}"
+						style:grid-row="{gap.row} / span {gap.rowSpan}"
+					>
+						{$_('indicator_dashboard.drop_here')}
+					</div>
+				{/each}
+				{#if dropTarget && 'position' in dropTarget}
+					{@const { column, columnSpan, row, rowSpan } = placements[dropTarget.position]}
+					<div
+						class={['insertion', dropTarget.after ? 'insertion--after' : 'insertion--before']}
+						style:grid-column="{column} / span {columnSpan}"
+						style:grid-row="{row} / span {rowSpan}"
+					></div>
+				{/if}
+			</div>
+		{/if}
+	</div>
 {:else if mayUpdate && container.payload.item.length === 0}
 	<p>{$_('indicator_dashboard.empty')}</p>
 	<div class="catalog">
@@ -370,12 +565,82 @@
 {/if}
 
 <style>
+	.board {
+		position: relative;
+	}
+
 	/* The layout places every card; the DOM keeps the order of the items for screen readers. */
-	.indicators {
+	.indicators,
+	.drag-layer {
 		display: grid;
 		gap: 1rem;
 		grid-auto-rows: var(--row-height);
 		grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+	}
+
+	.indicators > li {
+		border-radius: var(--card-border-radius);
+	}
+
+	.indicators > li[draggable='true'] {
+		cursor: grab;
+	}
+
+	.indicators > li:focus-visible {
+		outline: 2px solid var(--focus-color);
+		outline-offset: 2px;
+	}
+
+	/* The dragged card stays in its place until it is dropped. */
+	.indicators > li.is-dragged {
+		opacity: 0.5;
+	}
+
+	/* Only the gaps take the dragged card; the cards below stay targets for the insertion line. */
+	.drag-layer {
+		inset: 0;
+		pointer-events: none;
+		position: absolute;
+	}
+
+	.gap {
+		align-items: center;
+		background-color: var(--color-background-accent-subtle);
+		border: 2px dashed var(--color-border-accent-strong);
+		border-radius: var(--card-border-radius);
+		color: var(--color-text-accent-default);
+		display: flex;
+		font-size: 0.875rem;
+		font-weight: 500;
+		justify-content: center;
+		pointer-events: auto;
+	}
+
+	.gap.is-over {
+		background-color: var(--color-background-accent-default);
+	}
+
+	/* A bar in the middle of the gap between two cards */
+	.insertion {
+		position: relative;
+	}
+
+	.insertion::before {
+		background-color: var(--color-background-accent-strong);
+		border-radius: 2px;
+		bottom: 0;
+		content: '';
+		position: absolute;
+		top: 0;
+		width: 4px;
+	}
+
+	.insertion--before::before {
+		left: calc(-0.5rem - 2px);
+	}
+
+	.insertion--after::before {
+		right: calc(-0.5rem - 2px);
 	}
 
 	/* The cards are placed once the width of the grid is known, so they do not jump. */
