@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
+	import { getContext, type Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import IndicatorDashboardChart from '$lib/components/IndicatorDashboardChart.svelte';
@@ -27,10 +27,12 @@
 		container: Container<IndicatorPayload>;
 		height: IndicatorDashboardItem['height'];
 		relatedContainers: Container<AnyPayload>[];
+		// Beside the title row, outside of the area that opens the indicator
+		settings?: Snippet;
 		view: IndicatorDashboardItem['view'];
 	}
 
-	let { container, height, relatedContainers, view }: Props = $props();
+	let { container, height, relatedContainers, settings, view }: Props = $props();
 
 	const overlayContext = getContext('overlay');
 
@@ -86,32 +88,40 @@
 		/>
 	{/if}
 
-	<!-- The link takes the keyboard; the rest of the row only widens the target for pointers. -->
-	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-	<header class="title-row" onclick={openFromTitleRow}>
-		<h3>
-			{#if container.payload.icon}
-				<img alt="" class="pictogram" src={transformFileURL(container.payload.icon)} />
+	<div class="top">
+		<!-- The link takes the keyboard; the rest of the row only widens the target for pointers. -->
+		<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+		<header class="title-row" onclick={openFromTitleRow}>
+			<h3>
+				{#if container.payload.icon}
+					<img alt="" class="pictogram" src={transformFileURL(container.payload.icon)} />
+				{/if}
+				<a
+					bind:this={link}
+					class="title"
+					href={overlayURL(page.url, overlayKey.enum.view, container.guid)}
+					onclick={updateOverlayHistory}
+					title={container.payload.title}
+				>
+					{container.payload.title}
+				</a>
+				{#if reviewStatus}
+					<TargetCheck status={reviewStatus} />
+				{/if}
+			</h3>
+			{#if height === '4/4'}
+				<div class="description">
+					<Summary {container} />
+				</div>
 			{/if}
-			<a
-				bind:this={link}
-				class="title"
-				href={overlayURL(page.url, overlayKey.enum.view, container.guid)}
-				onclick={updateOverlayHistory}
-				title={container.payload.title}
-			>
-				{container.payload.title}
-			</a>
-			{#if reviewStatus}
-				<TargetCheck status={reviewStatus} />
-			{/if}
-		</h3>
-		{#if height === '4/4'}
-			<div class="description">
-				<Summary {container} />
+		</header>
+
+		{#if settings}
+			<div class="settings">
+				{@render settings()}
 			</div>
 		{/if}
-	</header>
+	</div>
 
 	<div class="body">
 		{#if view === 'stat'}
@@ -151,6 +161,11 @@
 		position: relative;
 	}
 
+	/* An open menu lies above the cards that follow. */
+	.card:has(.settings :global([aria-expanded='true'])) {
+		z-index: 1;
+	}
+
 	/* The pictogram of a stat, faint behind the content in the lower right corner, 8 or 16 px from
 	   the outer edge of the card as in the design (the border takes 1 px). It is 155 or 290 px at
 	   rows of 84 px and grows with the rows on large screens, but never wider than the card
@@ -176,6 +191,44 @@
 	.backdrop--rows-4 {
 		--backdrop-inset: calc(1rem - 1px);
 		--backdrop-size: calc(var(--row-height, 84px) * 290 / 84);
+	}
+
+	.top {
+		align-items: flex-start;
+		display: flex;
+	}
+
+	.card--rows-1 .top {
+		align-items: center;
+	}
+
+	.top > .title-row {
+		flex: 1;
+		min-width: 0;
+	}
+
+	/* The menu button is 28 px, centered on the title line of 24 px with 8 px padding. */
+	.settings {
+		flex-shrink: 0;
+		padding-top: 6px;
+	}
+
+	.card--rows-1 .settings {
+		padding-top: 0;
+	}
+
+	/* The title takes the whole row. The menu button only shows while the title row is hovered or
+	   focused, or its menu is open, and then takes room from the title. */
+	@media (hover: hover) {
+		.top:not(:hover, :focus-within) > .settings:not(:has(:global([aria-expanded='true']))) {
+			display: none;
+		}
+	}
+
+	.settings :global(.dropdown-button) {
+		--dropdown-button-border-radius: 4px;
+		--dropdown-button-expanded-background: var(--color-background-accent-expanded);
+		--dropdown-button-padding: 0.25rem;
 	}
 
 	/* The indicator is open in the overlay, as in Card. */
