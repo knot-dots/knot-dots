@@ -410,6 +410,7 @@
 	"indicator_category.urban_development": "Urban development",
 	"indicator_category.wegweiser_kommune": "Wegweiser Kommune",
 	"indicator_dashboard": "Indicator dashboard",
+	"indicator_dashboard.chart_label": "{title}: actual values {first} to {last}",
 	"indicator_dashboard.empty": "Select the indicators to show here.",
 	"indicator_dashboard.load_failed": "The indicators could not be loaded.",
 	"indicator_dashboard.save_failed": "The selection could not be saved.",

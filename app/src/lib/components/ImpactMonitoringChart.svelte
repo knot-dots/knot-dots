@@ -3,6 +3,7 @@
 	import type { Attachment } from 'svelte/attachments';
 	import { _, number } from 'svelte-i18n';
 	import { indicatorActualData, indicatorActualDataContainers } from '$lib/indicatorActualData';
+	import { indicatorChartOptions, textWidthIn, valueExtent } from '$lib/indicatorChart';
 	import {
 		type Container,
 		findAncestors,
@@ -31,14 +32,12 @@
 
 	let actualValues = $derived(
 		indicatorActualData(container.guid, relatedContainers).map(([year, value]) => ({
-			date: new Date(year, 0),
-			value
+			value,
+			year
 		}))
 	);
 
-	let actualValuesByYear = $derived(
-		new Map(actualValues.map(({ date, value }) => [date.getFullYear(), value]))
-	);
+	let actualValuesByYear = $derived(new Map(actualValues.map(({ value, year }) => [year, value])));
 
 	const colorDomain = [
 		status.enum['status.idea'],
@@ -76,23 +75,23 @@
 				[] as Array<Array<number>>
 			)
 			.map(([year, value]) => ({
-				date: new Date(year, 0),
-				value: (actualValuesByYear.get(year) ?? 0) + value
+				value: (actualValuesByYear.get(year) ?? 0) + value,
+				year
 			}));
 
-		const objectivesMinYear = Math.min(...objectives.map(({ date }) => date.getFullYear()));
+		const objectivesMinYear = Math.min(...objectives.map(({ year }) => year));
 
 		if (objectives.length > 0) {
 			objectives = [
 				{
-					date: new Date(objectivesMinYear - 1, 0),
-					value: actualValuesByYear.get(objectivesMinYear - 1) ?? 0
+					value: actualValuesByYear.get(objectivesMinYear - 1) ?? 0,
+					year: objectivesMinYear - 1
 				},
 				...objectives
 			];
 		}
 
-		return objectives;
+		return objectives.toSorted((a, b) => a.year - b.year);
 	});
 
 	let effects = $derived(
@@ -108,7 +107,7 @@
 
 			if (measure.payload.status == status.enum['status.done']) {
 				return c.payload.achievedValues.map(([year, value]) => ({
-					date: new Date(year, 0),
+					year,
 					value: value,
 					status: status.enum['status.done'],
 					title: c.payload.title,
@@ -117,7 +116,7 @@
 			} else if (measure.payload.status == status.enum['status.in_implementation']) {
 				return [
 					...c.payload.plannedValues.map(([year, value], index) => ({
-						date: new Date(year, 0),
+						year,
 						value: c.payload.achievedValues[index]
 							? value - c.payload.achievedValues[index][1]
 							: value,
@@ -126,7 +125,7 @@
 						guid: c.guid
 					})),
 					...c.payload.achievedValues.map(([year, value]) => ({
-						date: new Date(year, 0),
+						year,
 						value: value,
 						status: status.enum['status.done'],
 						title: c.payload.title,
@@ -135,7 +134,7 @@
 				];
 			} else if (measure.payload.status == status.enum['status.rejected']) {
 				return c.payload.plannedValues.map(([year]) => ({
-					date: new Date(year, 0),
+					year,
 					value: 0,
 					status: measure.payload.status,
 					title: c.payload.title,
@@ -143,7 +142,7 @@
 				}));
 			} else {
 				return c.payload.plannedValues.map(([year, value]) => ({
-					date: new Date(year, 0),
+					year,
 					value: value,
 					status: measure.payload.status,
 					title: c.payload.title,
@@ -156,57 +155,77 @@
 	let actualValuesWithEffects = $derived(
 		effects[0]?.value < 0
 			? [
-					...effects.map(({ date, value, status }) => ({ date, value: Math.abs(value), status })),
-					...actualValues.map(({ date, value }) => ({
-						date,
+					...effects.map(({ status, value, year }) => ({ status, value: Math.abs(value), year })),
+					...actualValues.map(({ value, year }) => ({
 						value:
 							value -
 							Math.abs(
 								effects
-									.filter((e) => e.date.getFullYear() == date.getFullYear())
+									.filter((e) => e.year == year)
 									.reduce((accumulator, currentValue) => accumulator + currentValue.value, 0)
 							),
-						status: 'trend'
+						status: 'trend',
+						year
 					}))
 				]
 			: [...effects, ...actualValues.map((t) => ({ ...t, status: 'trend' }))]
 	);
 
-	// Create a reactive state for the container's width
-	let currentWidth = $state(0);
+	// The values of each status summed up per year, which the areas stack
+	let areas = $derived.by(() => {
+		const sums = new Map<string, { status: string; value: number; year: number }>();
+		for (const { status, value, year } of actualValuesWithEffects) {
+			const key = `${year} ${status}`;
+			sums.set(key, { status, value: (sums.get(key)?.value ?? 0) + value, year });
+		}
+		return [...sums.values()].toSorted((a, b) => a.year - b.year);
+	});
 
-	const chart: Attachment = (element) => {
-		// Use a ResizeObserver to measure the container and trigger a render
-		const observer = new ResizeObserver((entries) => {
-			for (let entry of entries) {
-				// Get the actual inner width of the container div
-				const { width } = entry.contentRect;
+	// The y axis covers zero, the stacks above and below it, and the objectives.
+	let extent = $derived.by(() => {
+		const above = new Map<number, number>();
+		const below = new Map<number, number>();
+		for (const { value, year } of areas) {
+			const stack = value < 0 ? below : above;
+			stack.set(year, (stack.get(year) ?? 0) + value);
+		}
+		return valueExtent([
+			0,
+			...above.values(),
+			...below.values(),
+			...objectives.map((o) => o.value)
+		]);
+	});
 
-				// Only render if we have a valid width
-				if (width > 0) {
-					currentWidth = width;
-				}
-			}
+	let width = $state(0);
+
+	// Axes and grid as in the other charts of indicators, 640:400
+	const chart: Attachment<HTMLElement> = (element) => {
+		if (width === 0 || areas.length + objectives.length === 0) {
+			return;
+		}
+
+		const options = indicatorChartOptions({
+			extent,
+			format: (value) => $number(value),
+			height: (width * 400) / 640,
+			textWidth: textWidthIn(element),
+			width,
+			years: [...areas, ...objectives].map(({ year }) => year)
 		});
 
-		// Start observing the element this action is attached to
-		observer.observe(element);
-
-		// Svelte tracks dependencies here. Because we read currentWidth, allData,
-		// colorDomain, etc., any change to them will trigger a re-render.
-		if (currentWidth === 0) return;
-
-		// Use innerHTML = '' instead of firstChild.remove()
-		// because we are going to append TWO elements now (plot + legend).
-		element.innerHTML = '';
-
 		const plot = Plot.plot({
+			...options,
+			color: {
+				domain: colorDomain,
+				range: colorRange
+			},
 			marks: [
-				Plot.areaY(actualValuesWithEffects, {
-					x: 'date',
+				...options.marks,
+				Plot.areaY(areas, {
+					x: 'year',
 					y: 'value',
 					fill: 'status',
-					interval: 'year',
 					order:
 						effects[0]?.value < 0
 							? [
@@ -222,63 +241,56 @@
 									status.enum['status.in_implementation'],
 									status.enum['status.in_planning'],
 									status.enum['status.idea']
-								],
-					reduce: 'sum'
+								]
 				}),
 				Plot.lineY(objectives, {
-					x: 'date',
+					x: 'year',
 					y: 'value',
-					interval: 'year',
-					sort: 'date',
 					stroke: 'var(--indicator-color-objective)',
 					strokeDasharray: '8 4'
 				})
-			],
-			width: currentWidth,
-			height: (currentWidth * 400) / 640, // Maintain the 640:400 aspect ratio
-			grid: true,
-			y: { label: $_(unit), tickFormat: (d) => $number(d) },
-			color: {
-				domain: colorDomain,
-				range: colorRange
-			},
-			style: {
-				fontSize: '0.75rem'
-			}
+			]
 		});
 
-		element.append(plot);
-
-		if (showLegend) {
-			const legend = Plot.legend({
-				color: {
-					legend: true,
-					domain: colorDomain,
-					range: colorRange,
-					tickFormat: (d) => $_(d)
-				},
-				style: {
-					fontSize: '0.75rem'
-				},
-				swatchHeight: 3
-			});
-
-			element.append(legend);
-		}
-
-		// Return a destroy method for cleanup
-		return () => {
-			observer.disconnect();
-		};
+		element.replaceChildren(
+			plot,
+			...(showLegend
+				? [
+						Plot.legend({
+							color: {
+								legend: true,
+								domain: colorDomain,
+								range: colorRange,
+								tickFormat: (d) => $_(d)
+							},
+							style: {
+								fontFamily: 'inherit',
+								fontSize: '0.75rem'
+							},
+							swatchHeight: 3
+						})
+					]
+				: [])
+		);
 	};
 </script>
 
 {#if actualDataContainer.length > 0 || effects.length > 0 || objectives.length > 0}
 	<figure class="chart">
-		<div role="img" {@attach chart}></div>
+		<span class="unit">{unit}</span>
+		<div bind:clientWidth={width} class="plot" role="img" {@attach chart}></div>
 
 		{#if actualDataContainer[0]?.payload.source}
 			<figcaption>{$_('indicator.source')}: {actualDataContainer[0].payload.source}</figcaption>
 		{/if}
 	</figure>
 {/if}
+
+<style>
+	.unit,
+	.plot {
+		color: var(--chart-axis-text);
+		font-size: 0.75rem;
+		line-height: 1.5;
+	}
+</style>
