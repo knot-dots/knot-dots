@@ -7,25 +7,35 @@
 	import tooltip from '$lib/attachments/tooltip';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import requestSubmit from '$lib/client/requestSubmit';
+	import requestSubmitElement from '$lib/client/requestSubmitElement';
 	import saveContainer from '$lib/client/saveContainer';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import IndicatorDashboardCard from '$lib/components/IndicatorDashboardCard.svelte';
 	import IndicatorDashboardCardMenu from '$lib/components/IndicatorDashboardCardMenu.svelte';
+	import IndicatorDashboardResize, {
+		type Rect,
+		type Resizing
+	} from '$lib/components/IndicatorDashboardResize.svelte';
 	import IndicatorPicker from '$lib/components/IndicatorPicker.svelte';
 	import {
 		columnsFor,
 		dropIntoGap,
 		type Gap,
 		gapsOf,
+		gridGap,
 		layout,
-		rowHeightFor
+		type Placement,
+		rowHeightFor,
+		rowSpanOf,
+		widthSteps
 	} from '$lib/indicatorDashboardLayout';
 	import {
 		type AnyPayload,
 		type Container,
 		type IndicatorDashboardItem,
 		type IndicatorDashboardPayload,
+		indicatorDashboardHeights,
 		indicatorDashboardItemFor,
 		isActualDataContainer,
 		isEffectContainer,
@@ -147,9 +157,13 @@
 
 	// Changes go into the payload; the form of the section saves them, like it saves the title, so
 	// that the two never save the same revision at once.
-	function save(item: IndicatorDashboardItem[], event: Event) {
+	function save(item: IndicatorDashboardItem[], source: Event | HTMLElement) {
 		container.payload.item = item;
-		requestSubmit(event);
+		if (source instanceof Event) {
+			requestSubmit(source);
+		} else {
+			requestSubmitElement(source);
+		}
 	}
 
 	// Names a width as the menu does, whatever the number of columns shown
@@ -187,10 +201,10 @@
 		index: number,
 		title: string,
 		patch: Partial<IndicatorDashboardItem>,
-		event: Event
+		source: Event | HTMLElement
 	) {
 		const changed = { ...container.payload.item[index], ...patch };
-		save(container.payload.item.with(index, changed), event);
+		save(container.payload.item.with(index, changed), source);
 		announcement = describe(title, changed);
 	}
 
@@ -262,7 +276,7 @@
 
 	function startDragging(position: number) {
 		return (event: DragEvent) => {
-			if (!mayUpdate || (event.target as Element).closest('.dropdown')) {
+			if (!mayUpdate || (event.target as Element).closest('.dropdown, .handle')) {
 				event.preventDefault();
 				return;
 			}
@@ -365,6 +379,169 @@
 
 	let columns = $derived(columnsFor(gridWidth));
 
+	let rowHeight = $derived(rowHeightFor(gridWidth, columns));
+
+	let columnWidth = $derived((gridWidth - (columns - 1) * gridGap) / columns);
+
+	const extent = (count: number, unit: number) => count * unit + (count - 1) * gridGap;
+
+	// Where a placement is in the grid, in pixels
+	function rectOf({ column, columnSpan, row, rowSpan }: Placement): Rect {
+		return {
+			height: extent(rowSpan, rowHeight),
+			left: (column - 1) * (columnWidth + gridGap),
+			top: (row - 1) * (rowHeight + gridGap),
+			width: extent(columnSpan, columnWidth)
+		};
+	}
+
+	// While a card is resized with a handle: its card, and the height and width it snaps to.
+	// Nothing changes until the handle is released.
+	let resizing = $state<Resizing & { position: number }>();
+
+	let stopResizing: (() => void) | undefined;
+
+	$effect(() => () => stopResizing?.());
+
+	function startResizing(position: number, axis: Resizing['axis']) {
+		return (event: PointerEvent) => {
+			if (!mayUpdate || event.button !== 0) {
+				return;
+			}
+			// No dragging of the card, no selecting of text
+			event.preventDefault();
+			event.stopPropagation();
+
+			const { item, index } = items[position];
+			const placement = placements[position];
+			const rect = rectOf(placement);
+			const start = { x: event.clientX, y: event.clientY };
+			// Where the right and the bottom edge snap to
+			const widthStops =
+				axis === 'height'
+					? []
+					: widthSteps(item, placement, columns).map(({ columnSpan, width }) => ({
+							width,
+							x: columnSpan >= columns ? gridWidth : rect.left + extent(columnSpan, columnWidth)
+						}));
+			const heightStops =
+				axis === 'width'
+					? []
+					: indicatorDashboardHeights.options.map((height) => ({
+							height,
+							y: rect.top + extent(rowSpanOf(height), rowHeight)
+						}));
+			resizing = {
+				atMax: { height: false, width: false },
+				axis,
+				height: item.height,
+				pointer: start,
+				position,
+				width: item.width
+			};
+
+			const nearest = <T,>(stops: T[], at: (stop: T) => number, to: number) =>
+				stops.reduce((best, stop) =>
+					Math.abs(at(stop) - to) < Math.abs(at(best) - to) ? stop : best
+				);
+
+			const move = (event: PointerEvent) => {
+				if (!resizing) {
+					return;
+				}
+				const right = rect.left + rect.width + event.clientX - start.x;
+				const bottom = rect.top + rect.height + event.clientY - start.y;
+				const maxRight = Math.max(...widthStops.map(({ x }) => x));
+				const maxBottom = Math.max(...heightStops.map(({ y }) => y));
+				const atMax = {
+					height: heightStops.length > 0 && bottom > maxBottom + 6,
+					width: widthStops.length > 0 && right > maxRight + 6
+				};
+				if ((atMax.width && !resizing.atMax.width) || (atMax.height && !resizing.atMax.height)) {
+					announcement =
+						atMax.width && atMax.height
+							? $_('indicator_dashboard.max_size')
+							: atMax.width
+								? $_('indicator_dashboard.max_width')
+								: $_('indicator_dashboard.max_height');
+				}
+				resizing = {
+					...resizing,
+					atMax,
+					height:
+						heightStops.length > 0
+							? nearest(heightStops, ({ y }) => y, Math.min(bottom, maxBottom)).height
+							: item.height,
+					pointer: { x: event.clientX, y: event.clientY },
+					width:
+						widthStops.length > 0
+							? nearest(widthStops, ({ x }) => x, Math.min(right, maxRight)).width
+							: item.width
+				};
+			};
+
+			const finish = (commit: boolean) => {
+				const done = resizing;
+				stopResizing?.();
+				if (!done || !grid) {
+					return;
+				}
+				const patch: Partial<IndicatorDashboardItem> = {
+					...(done.height !== item.height ? { height: done.height } : {}),
+					...(done.width !== item.width ? { width: done.width } : {})
+				};
+				if (commit && Object.keys(patch).length > 0) {
+					change(index, items[position].indicator.payload.title, patch, grid);
+				} else {
+					announcement = $_('indicator_dashboard.announce.size_unchanged');
+				}
+				void focusCard(position);
+			};
+
+			const release = () => finish(true);
+			const cancel = () => finish(false);
+			// Esc cancels before anything else reacts to it, such as the menu button that kept the focus
+			const escape = (event: KeyboardEvent) => {
+				if (event.key === 'Escape') {
+					event.preventDefault();
+					event.stopPropagation();
+					finish(false);
+				}
+			};
+			window.addEventListener('pointermove', move);
+			window.addEventListener('pointerup', release);
+			window.addEventListener('pointercancel', cancel);
+			window.addEventListener('keydown', escape, true);
+			stopResizing = () => {
+				window.removeEventListener('pointermove', move);
+				window.removeEventListener('pointerup', release);
+				window.removeEventListener('pointercancel', cancel);
+				window.removeEventListener('keydown', escape, true);
+				stopResizing = undefined;
+				resizing = undefined;
+			};
+		};
+	}
+
+	// On two columns every card takes the whole row, so only its height can be dragged.
+	let resizeAxes = $derived<Resizing['axis'][]>(
+		columns > 2 ? ['width', 'height', 'both'] : ['height']
+	);
+
+	let preview = $derived(
+		resizing &&
+			rectOf(
+				layout(
+					items.map(({ item }, k) =>
+						k === resizing?.position
+							? { ...item, height: resizing.height, width: resizing.width }
+							: item
+					),
+					columns
+				)[resizing.position]
+			)
+	);
+
 	let placements = $derived(
 		layout(
 			items.map(({ item }) => item),
@@ -449,14 +626,14 @@
 {:else if items.length > 0}
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
-		class="board wide"
+		class={['board', 'wide', resizing && 'is-resizing']}
 		ondragleave={(event) => {
 			if (!(event.currentTarget as HTMLElement).contains(event.relatedTarget as Node | null)) {
 				dropTarget = undefined;
 			}
 		}}
 		style:--columns={columns}
-		style:--row-height="{rowHeightFor(gridWidth, columns)}px"
+		style:--row-height="{rowHeight}px"
 	>
 		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 		<ul
@@ -509,6 +686,18 @@
 						settings={mayUpdate ? settings : undefined}
 						view={item.view}
 					/>
+					{#if mayUpdate}
+						{#each resizeAxes as axis (axis)}
+							<button
+								aria-label={$_(`indicator_dashboard.resize_${axis}`)}
+								class={['handle', `handle--${axis}`, 'system-layout']}
+								onpointerdown={startResizing(i, axis)}
+								tabindex="-1"
+								title={$_(`indicator_dashboard.resize_${axis}`)}
+								type="button"
+							></button>
+						{/each}
+					{/if}
 				</li>
 			{/each}
 		</ul>
@@ -541,6 +730,10 @@
 				{/if}
 			</div>
 		{/if}
+
+		{#if resizing && preview}
+			<IndicatorDashboardResize {columns} {preview} {resizing} {widthText} />
+		{/if}
 	</div>
 {:else if mayUpdate && container.payload.item.length === 0}
 	<p>{$_('indicator_dashboard.empty')}</p>
@@ -565,8 +758,16 @@
 {/if}
 
 <style>
+	/* The board keeps the stacking of its cards, handles and layers to itself. It lies above the
+	   sections that follow while a card menu is open or a card is resized. */
 	.board {
+		isolation: isolate;
 		position: relative;
+	}
+
+	.board:has(:global([aria-expanded='true'])),
+	.board.is-resizing {
+		z-index: 1;
 	}
 
 	/* The layout places every card; the DOM keeps the order of the items for screen readers. */
@@ -576,6 +777,92 @@
 		gap: 1rem;
 		grid-auto-rows: var(--row-height);
 		grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+	}
+
+	.indicators {
+		position: relative;
+		z-index: 1;
+	}
+
+	/* Each card keeps its handles with it, and a card with its menu open lies above the others and
+	   their handles. */
+	.indicators > li {
+		position: relative;
+		z-index: 0;
+	}
+
+	.indicators > li:has(:global([aria-expanded='true'])) {
+		z-index: 1;
+	}
+
+	/* While a card is resized, the cards lose their surface and the glow of the target check, so
+	   the grid shows behind them. */
+	.board.is-resizing .indicators :global(.card) {
+		background: transparent;
+		box-shadow: none;
+	}
+
+	.board.is-resizing,
+	.board.is-resizing :global(*) {
+		user-select: none;
+	}
+
+	/* Handles at the right edge, the bottom edge and the corner, half over the card */
+	.handle {
+		background-color: var(--color-surface-default);
+		border: 1px solid var(--color-border-accent-strong);
+		box-shadow: var(--shadow-sm);
+		display: none;
+		padding: 0;
+		position: absolute;
+		touch-action: none;
+		z-index: 2;
+	}
+
+	/* A larger area to grab */
+	.handle::before {
+		content: '';
+		inset: -8px;
+		position: absolute;
+	}
+
+	.handle--width {
+		border-radius: 5px;
+		cursor: ew-resize;
+		height: 36px;
+		margin-top: -18px;
+		right: -5px;
+		top: 50%;
+		width: 10px;
+	}
+
+	.handle--height {
+		border-radius: 5px;
+		bottom: -5px;
+		cursor: ns-resize;
+		height: 10px;
+		left: 50%;
+		margin-left: -18px;
+		width: 36px;
+	}
+
+	.handle--both {
+		border-radius: 50%;
+		bottom: -5px;
+		cursor: nwse-resize;
+		height: 14px;
+		right: -5px;
+		width: 14px;
+	}
+
+	/* No handles on touch screens, where the menu sets the size, nor while the menu is open */
+	@media (hover: hover) and (pointer: fine) {
+		.board:not(.is-resizing)
+			.indicators
+			> li:not(.is-dragged, :has(:global([aria-expanded='true']))):is(:hover, :focus-within)
+			> .handle {
+			display: block;
+		}
 	}
 
 	.indicators > li {
@@ -601,6 +888,7 @@
 		inset: 0;
 		pointer-events: none;
 		position: absolute;
+		z-index: 2;
 	}
 
 	.gap {

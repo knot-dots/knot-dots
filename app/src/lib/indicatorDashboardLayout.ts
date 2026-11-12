@@ -236,3 +236,32 @@ export function dropIntoGap<T extends Item>(items: T[], from: number, gap: Gap, 
 	const anchor = gap.anchor > from ? gap.anchor - 1 : gap.anchor;
 	return rest.toSpliced(anchor + 1, 0, moved);
 }
+
+// The widths a card can take by dragging its right edge, one for each look: on six columns
+// those that fit from its column, and 6/6; on four columns half and whole, keeping the width it
+// has where it looks the same; on two columns none, since every card takes the whole row. A card
+// that fills the end of its row looks whole whatever its width.
+export function widthSteps(
+	item: Item,
+	{ column, columnSpan }: Pick<Placement, 'column' | 'columnSpan'>,
+	columns: number
+) {
+	if (columns < 4) {
+		return [];
+	}
+	if (columns < 6) {
+		const half = columnSpanOf(item.width, columns) === 2 ? item.width : '3/6';
+		const whole = columnSpan === columns ? item.width : '6/6';
+		return [
+			...(half !== whole && column + 1 <= columns ? [{ columnSpan: 2, width: half }] : []),
+			{ columnSpan: columns, width: whole }
+		];
+	}
+	return (['2/6', '3/6', '4/6', '6/6'] as const)
+		.map((width) => ({ columnSpan: columnSpanOf(width, columns), width }))
+		.filter(({ columnSpan, width }) => width === '6/6' || column + columnSpan - 1 <= columns);
+}
+
+export function rowSpanOf(height: Item['height']) {
+	return rowsByHeight[height];
+}

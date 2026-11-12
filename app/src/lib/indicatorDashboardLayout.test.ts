@@ -6,7 +6,8 @@ import {
 	gapsOf,
 	layout,
 	type Placement,
-	rowHeightFor
+	rowHeightFor,
+	widthSteps
 } from '$lib/indicatorDashboardLayout';
 
 // Cards and placements in the notation of the spec: height/width, and row, columns from–to and
@@ -224,4 +225,32 @@ test('on four columns, a width that looks the same is kept', () => {
 	const gap = gapsOf(items, 4).find(({ anchor }) => anchor === 1);
 	expect(gap).toBeDefined();
 	expect(dropIntoGap(items, 3, gap!, 4)).toEqual(cards('m/2 s/2 s/3 l/3'));
+});
+
+// The widths the card at `index` can take where the layout places it
+const widths = (items: string, index: number, columns: number) =>
+	widthSteps(cards(items)[index], layout(cards(items), columns)[index], columns).map(
+		({ width }) => width
+	);
+
+test('on six columns, a card can take the widths that fit from its column, and full', () => {
+	expect(widths('l/2', 0, 6)).toEqual(['2/6', '3/6', '4/6', '6/6']);
+	expect(widths('l/3 l/2', 1, 6)).toEqual(['2/6', '3/6', '6/6']);
+	expect(widths('l/4 l/2', 1, 6)).toEqual(['2/6', '6/6']);
+});
+
+test('on four columns, a card can be half or whole and keeps a width that looks the same', () => {
+	expect(widths('l/2 l/2', 0, 4)).toEqual(['2/6', '6/6']);
+	expect(widths('l/3 l/3', 0, 4)).toEqual(['3/6', '6/6']);
+	expect(widths('l/4', 0, 4)).toEqual(['3/6', '4/6']);
+	expect(widths('l/2 l/2', 1, 4)).toEqual(['2/6', '6/6']);
+});
+
+test('on four columns, a card that fills the end of its row keeps its width', () => {
+	expect(widths('l/2 l/full', 0, 4)).toEqual(['2/6']);
+	expect(widths('l/3 l/full', 0, 4)).toEqual(['3/6']);
+});
+
+test('on two columns, the width of a card cannot be dragged', () => {
+	expect(widths('l/2', 0, 2)).toEqual([]);
 });
