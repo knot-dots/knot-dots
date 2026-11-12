@@ -91,6 +91,45 @@ test('Selected indicators show the data of the organizational unit the section b
 	await expect(section.getByText('Select the indicators to show here.')).toBeVisible();
 });
 
+test('Cards are placed in a grid and open from their title row only', async ({
+	isMobile,
+	landingPage,
+	organizationalUnitWithActualData,
+	otherIndicator,
+	testIndicator
+}) => {
+	test.skip(isMobile, 'On small screens every card takes the whole row');
+
+	await landingPage.goto(`/${organizationalUnitWithActualData.guid}`);
+	await landingPage.header.editModeToggle.check();
+
+	const section = await landingPage.addSection('Indicator dashboard');
+	await section.getByRole('button', { name: 'Add items', exact: true }).click();
+	const dialog = landingPage.page.getByRole('dialog');
+	for (const indicator of [testIndicator, otherIndicator]) {
+		await dialog.getByRole('searchbox').fill(indicator.payload.title);
+		await dialog.getByRole('article').filter({ hasText: indicator.payload.title }).click();
+	}
+	await dialog.getByRole('button', { name: 'Apply (2)' }).click();
+	await expect(dialog).not.toBeVisible();
+
+	// New indicators are two columns wide, so they stand side by side
+	const cards = section.getByRole('article');
+	await expect(cards).toHaveCount(2);
+	const [first, second] = [await cards.nth(0).boundingBox(), await cards.nth(1).boundingBox()];
+	expect(second?.y).toBe(first?.y);
+	expect(second!.x).toBeGreaterThan(first!.x + first!.width);
+
+	// A click into the body of the card opens nothing
+	const card = cards.nth(0);
+	await card.getByText('No data available').click();
+	await expect(landingPage.page).not.toHaveURL(/view=/);
+
+	// A click anywhere in the title row opens the indicator
+	await card.locator('header').click({ position: { x: 4, y: 4 } });
+	await expect(landingPage.page).toHaveURL(new RegExp(`view=${testIndicator.guid}`));
+});
+
 test('Indicators show the data of the organization when the section belongs to it', async ({
 	landingPage,
 	organizationalUnitWithActualData,

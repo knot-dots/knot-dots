@@ -8,8 +8,9 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
+	import IndicatorDashboardCard from '$lib/components/IndicatorDashboardCard.svelte';
 	import IndicatorPicker from '$lib/components/IndicatorPicker.svelte';
-	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
+	import { columnsFor, layout, rowHeightFor } from '$lib/indicatorDashboardLayout';
 	import {
 		type AnyPayload,
 		type Container,
@@ -115,10 +116,25 @@
 		});
 	}
 
-	// Preserve the order of the selection
+	// Preserve the order of the selection. Indicators that are gone are left out, so they leave no
+	// space in the grid.
 	let items = $derived(
-		selectedIndicators.flatMap(
-			(guid) => itemsResource.current?.find(({ indicator }) => indicator.guid === guid) ?? []
+		container.payload.item.flatMap((item) => {
+			const loaded = itemsResource.current?.find(
+				({ indicator }) => indicator.guid === item.indicator
+			);
+			return loaded ? [{ ...loaded, item }] : [];
+		})
+	);
+
+	let gridWidth = $state(0);
+
+	let columns = $derived(columnsFor(gridWidth));
+
+	let placements = $derived(
+		layout(
+			items.map(({ item }) => item),
+			columns
 		)
 	);
 
@@ -197,12 +213,18 @@
 {#if itemsResource.error}
 	<p>{$_('indicator_dashboard.load_failed')}</p>
 {:else if items.length > 0}
-	<ul class="indicators wide">
-		{#each items as { indicator, related } (indicator.guid)}
-			<li>
-				<NewIndicatorCard
+	<ul
+		bind:clientWidth={gridWidth}
+		class={['indicators', 'wide', gridWidth === 0 && 'is-measuring']}
+		style:--columns={columns}
+		style:--row-height="{rowHeightFor(gridWidth, columns)}px"
+	>
+		{#each items as { indicator, item, related }, i (indicator.guid)}
+			{@const { column, columnSpan, row, rowSpan } = placements[i]}
+			<li style:grid-column="{column} / span {columnSpan}" style:grid-row="{row} / span {rowSpan}">
+				<IndicatorDashboardCard
 					container={indicator}
-					ignoreBulkActionContext
+					height={item.height}
 					relatedContainers={related}
 				/>
 			</li>
@@ -229,9 +251,16 @@
 {/if}
 
 <style>
+	/* The layout places every card; the DOM keeps the order of the items for screen readers. */
 	.indicators {
-		display: flex;
-		flex-direction: column;
+		display: grid;
 		gap: 1rem;
+		grid-auto-rows: var(--row-height);
+		grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+	}
+
+	/* The cards are placed once the width of the grid is known, so they do not jump. */
+	.is-measuring {
+		visibility: hidden;
 	}
 </style>
