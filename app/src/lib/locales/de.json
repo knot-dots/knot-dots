@@ -713,6 +713,8 @@
 	"read_more": "Mehr anzeigen",
 	"register": "Registrieren",
 	"relation_collection": "Unterobjekte",
+	"relation_collection.add_existing_items": "Vorhandene Objekte hinzufügen",
+	"relation_collection.add_existing_items.failed": "{count, plural, one {1 Objekt konnte} other {# Objekte konnten}} nicht hinzugefügt werden.",
 	"relation_filter.label": "Beziehungen",
 	"relation_filter.option.contributes_to": "trägt bei",
 	"relation_filter.option.is_consistent_with": "unterstützen sich",

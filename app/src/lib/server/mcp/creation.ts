@@ -20,6 +20,7 @@ import {
 	type NewContainer
 } from '$lib/models';
 import { organizationScopeAsFilter } from '$lib/organizationScope';
+import { isAllowedRelation } from '$lib/relations';
 import { isMeasureTemplateScope } from '$lib/templateScopes';
 import { ContainerCreationError, createAuthorizedContainer } from '$lib/server/containerCreation';
 import {
@@ -130,18 +131,6 @@ export function createAndRecordContainer({
 	};
 }
 
-// Parent types allowed for is-part-of, following the parents the web
-// application offers for each type.
-const isPartOfParentTypes: Partial<Record<PayloadType, readonly PayloadType[]>> = {
-	[payloadTypes.enum.effect]: [payloadTypes.enum.measure, payloadTypes.enum.simple_measure],
-	[payloadTypes.enum.goal]: [payloadTypes.enum.goal],
-	[payloadTypes.enum.knowledge]: [payloadTypes.enum.knowledge],
-	[payloadTypes.enum.objective]: [payloadTypes.enum.goal],
-	[payloadTypes.enum.measure]: [payloadTypes.enum.goal, payloadTypes.enum.measure],
-	[payloadTypes.enum.simple_measure]: [payloadTypes.enum.goal, payloadTypes.enum.measure],
-	[payloadTypes.enum.task]: [payloadTypes.enum.goal, payloadTypes.enum.measure]
-};
-
 // Section types MCP can create, and the containers whose detail view in the
 // web application shows sections.
 const sectionTypes: readonly PayloadType[] = [payloadTypes.enum.text];
@@ -204,7 +193,7 @@ function isValidParent(
 		case predicates.enum['is-part-of-measure']:
 			return isMeasureTemplateScope(parent);
 		case predicates.enum['is-part-of']:
-			return isPartOfParentTypes[type]?.includes(parent.payload.type) ?? false;
+			return isAllowedRelation(type, predicate, parent.payload.type);
 		case predicates.enum['is-section-of']:
 			return sectionTypes.includes(type) && sectionParentTypes.includes(parent.payload.type);
 	}

@@ -17,7 +17,7 @@ import {
 	relation,
 	taskCategories
 } from '$lib/models';
-import { isProtectedContainerRelationPredicate } from '$lib/relations';
+import { isAllowedRelation, isProtectedContainerRelationPredicate } from '$lib/relations';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
 import { authorizeContainerRelationChanges } from '$lib/server/containerRelations';
 import {
@@ -275,11 +275,29 @@ export const POST = (async ({ locals, params, request }) => {
 		});
 
 		const removed = authorized.filter(({ deleted }) => deleted);
+		const upserted = authorized.filter(({ deleted }) => !deleted);
+
+		// Relations must follow the directory of allowed relations. Taking a
+		// relation away is always possible.
+		const payloadType = new Map(containers.map(({ guid, payload }) => [guid, payload.type]));
+		if (
+			upserted.some(({ object, predicate, subject }) => {
+				const subjectType = payloadType.get(subject);
+				const objectType = payloadType.get(object);
+				return (
+					subjectType !== undefined &&
+					objectType !== undefined &&
+					!isAllowedRelation(subjectType, predicate, objectType)
+				);
+			})
+		) {
+			error(422, { message: unwrapFunctionStore(_)('error.unprocessable_entity') });
+		}
+
 		if (removed.length > 0) {
 			await deleteManyContainerRelations(removed)(tx);
 		}
 
-		const upserted = authorized.filter(({ deleted }) => !deleted);
 		if (upserted.length > 0) {
 			await updateManyContainerRelations(upserted)(tx);
 		}
