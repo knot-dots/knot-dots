@@ -3,6 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import IndicatorDashboardChart from '$lib/components/IndicatorDashboardChart.svelte';
+	import IndicatorDashboardStat from '$lib/components/IndicatorDashboardStat.svelte';
 	import Summary from '$lib/components/Summary.svelte';
 	import TargetCheck from '$lib/components/TargetCheck.svelte';
 	import { getReviewContext } from '$lib/contexts/review.svelte';
@@ -26,9 +27,10 @@
 		container: Container<IndicatorPayload>;
 		height: IndicatorDashboardItem['height'];
 		relatedContainers: Container<AnyPayload>[];
+		view: IndicatorDashboardItem['view'];
 	}
 
-	let { container, height, relatedContainers }: Props = $props();
+	let { container, height, relatedContainers, view }: Props = $props();
 
 	const overlayContext = getContext('overlay');
 
@@ -76,6 +78,14 @@
 	]}
 	style:--aura-color={auraColor}
 >
+	{#if view === 'stat' && height !== '1/4' && container.payload.icon}
+		<img
+			alt=""
+			class={['backdrop', `backdrop--rows-${rowsByHeight[height]}`]}
+			src={transformFileURL(container.payload.icon)}
+		/>
+	{/if}
+
 	<!-- The link takes the keyboard; the rest of the row only widens the target for pointers. -->
 	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 	<header class="title-row" onclick={openFromTitleRow}>
@@ -104,11 +114,15 @@
 	</header>
 
 	<div class="body">
-		<IndicatorDashboardChart
-			{container}
-			{relatedContainers}
-			variant={height === '1/4' ? 'sparkline' : 'chart'}
-		/>
+		{#if view === 'stat'}
+			<IndicatorDashboardStat {container} {height} {relatedContainers} />
+		{:else}
+			<IndicatorDashboardChart
+				{container}
+				{relatedContainers}
+				variant={height === '1/4' ? 'sparkline' : 'chart'}
+			/>
+		{/if}
 	</div>
 
 	{#if height !== '1/4' && source}
@@ -127,11 +141,41 @@
 		border: 1px solid var(--color-border-accent-subtle);
 		border-radius: var(--card-border-radius);
 		box-shadow: var(--shadow-sm);
+		container-type: inline-size;
 		display: flex;
 		flex-direction: column;
 		height: 100%;
+		isolation: isolate;
 		overflow: hidden;
 		padding: 0.5rem;
+		position: relative;
+	}
+
+	/* The pictogram of a stat, faint behind the content in the lower right corner, 8 or 16 px from
+	   the outer edge of the card as in the design (the border takes 1 px). It is 155 or 290 px at
+	   rows of 84 px and grows with the rows on large screens, but never wider than the card
+	   allows. A pictogram that is not square keeps its proportions in the corner. */
+	.backdrop {
+		aspect-ratio: 1;
+		bottom: var(--backdrop-inset);
+		object-fit: contain;
+		object-position: right bottom;
+		opacity: 0.14;
+		pointer-events: none;
+		position: absolute;
+		right: var(--backdrop-inset);
+		width: min(var(--backdrop-size), 100% - 2 * var(--backdrop-inset));
+		z-index: -1;
+	}
+
+	.backdrop--rows-2 {
+		--backdrop-inset: calc(0.5rem - 1px);
+		--backdrop-size: calc(var(--row-height, 84px) * 155 / 84);
+	}
+
+	.backdrop--rows-4 {
+		--backdrop-inset: calc(1rem - 1px);
+		--backdrop-size: calc(var(--row-height, 84px) * 290 / 84);
 	}
 
 	/* The indicator is open in the overlay, as in Card. */
