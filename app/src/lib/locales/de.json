@@ -410,6 +410,7 @@
 	"indicator_category.urban_development": "Stadtentwicklung",
 	"indicator_category.wegweiser_kommune": "Wegweiser Kommune",
 	"indicator_dashboard": "Indikatoren Dashboard",
+	"indicator_dashboard.chart_label": "{title}: Ist-Werte {first} bis {last}",
 	"indicator_dashboard.empty": "Wählen Sie die Indikatoren aus, die hier angezeigt werden sollen.",
 	"indicator_dashboard.load_failed": "Die Indikatoren konnten nicht geladen werden.",
 	"indicator_dashboard.save_failed": "Die Auswahl konnte nicht gespeichert werden.",
