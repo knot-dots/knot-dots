@@ -1,19 +1,23 @@
 <script lang="ts">
 	import { IsInViewport, resource } from 'runed';
+	import { tick } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import ChartMixed from '~icons/knotdots/chart-mixed';
 	import Plus from '~icons/knotdots/plus';
 	import tooltip from '$lib/attachments/tooltip';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
+	import requestSubmit from '$lib/client/requestSubmit';
 	import saveContainer from '$lib/client/saveContainer';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import IndicatorDashboardCard from '$lib/components/IndicatorDashboardCard.svelte';
+	import IndicatorDashboardCardMenu from '$lib/components/IndicatorDashboardCardMenu.svelte';
 	import IndicatorPicker from '$lib/components/IndicatorPicker.svelte';
 	import { columnsFor, layout, rowHeightFor } from '$lib/indicatorDashboardLayout';
 	import {
 		type AnyPayload,
 		type Container,
+		type IndicatorDashboardItem,
 		type IndicatorDashboardPayload,
 		indicatorDashboardItemFor,
 		isActualDataContainer,
@@ -117,15 +121,108 @@
 	}
 
 	// Preserve the order of the selection. Indicators that are gone are left out, so they leave no
-	// space in the grid.
+	// space in the grid. Each item knows its index in the payload, where changes go.
 	let items = $derived(
-		container.payload.item.flatMap((item) => {
+		container.payload.item.flatMap((item, index) => {
 			const loaded = itemsResource.current?.find(
 				({ indicator }) => indicator.guid === item.indicator
 			);
-			return loaded ? [{ ...loaded, item }] : [];
+			return loaded ? [{ ...loaded, index, item }] : [];
 		})
 	);
+
+	let grid = $state<HTMLElement>();
+
+	let emptyCatalogButton = $state<HTMLButtonElement>();
+
+	// Read out by screen readers whenever a card changes
+	let announcement = $state('');
+
+	// Changes go into the payload; the form of the section saves them, like it saves the title, so
+	// that the two never save the same revision at once.
+	function save(item: IndicatorDashboardItem[], event: Event) {
+		container.payload.item = item;
+		requestSubmit(event);
+	}
+
+	function describe(title: string, { height, view, width }: IndicatorDashboardItem) {
+		return $_('indicator_dashboard.announce.settings', {
+			values: {
+				height: $_(`indicator_dashboard.height.${height}`),
+				title,
+				view: $_(`indicator_dashboard.view.${view}`),
+				width: $_(`indicator_dashboard.width_name.${width}`)
+			}
+		});
+	}
+
+	function change(
+		index: number,
+		title: string,
+		patch: Partial<IndicatorDashboardItem>,
+		event: Event
+	) {
+		const changed = { ...container.payload.item[index], ...patch };
+		save(container.payload.item.with(index, changed), event);
+		announcement = describe(title, changed);
+	}
+
+	// Swaps the card with the one before or after it among the cards shown.
+	async function move(position: number, title: string, offset: -1 | 1, event: Event) {
+		const neighbor = items[position + offset];
+		if (!neighbor) {
+			return;
+		}
+		const index = items[position].index;
+		const item = [...container.payload.item];
+		[item[index], item[neighbor.index]] = [item[neighbor.index], item[index]];
+		// Moving the card in the DOM takes the focus away from it.
+		const focused = document.activeElement;
+		save(item, event);
+		announcement = $_(
+			offset < 0
+				? 'indicator_dashboard.announce.moved_forward'
+				: 'indicator_dashboard.announce.moved_back',
+			{ values: { count: items.length, position: position + offset + 1, title } }
+		);
+		await tick();
+		if (focused instanceof HTMLElement && focused.isConnected) {
+			focused.focus();
+		}
+	}
+
+	async function remove(position: number, title: string, event: Event) {
+		save(container.payload.item.toSpliced(items[position].index, 1), event);
+		announcement = $_('indicator_dashboard.announce.removed', { values: { title } });
+		await tick();
+		// The focus goes to the card that takes the place of the removed one, or to the section when
+		// no card is left.
+		const next = grid?.children[Math.min(position, items.length - 1)];
+		(
+			next?.querySelector('a') ??
+			emptyCatalogButton ??
+			document.getElementById(idForTitle)
+		)?.focus();
+	}
+
+	function moveWithKeyboard(position: number, title: string) {
+		return (event: KeyboardEvent) => {
+			if (!mayUpdate || !event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+				return;
+			}
+			const offset =
+				event.key === 'ArrowLeft' || event.key === 'ArrowUp'
+					? -1
+					: event.key === 'ArrowRight' || event.key === 'ArrowDown'
+						? 1
+						: undefined;
+			if (offset) {
+				// Alt + ArrowLeft would otherwise go back in the history.
+				event.preventDefault();
+				void move(position, title, offset, event);
+			}
+		};
+	}
 
 	let gridWidth = $state(0);
 
@@ -215,17 +312,36 @@
 {:else if items.length > 0}
 	<ul
 		bind:clientWidth={gridWidth}
+		bind:this={grid}
 		class={['indicators', 'wide', gridWidth === 0 && 'is-measuring']}
 		style:--columns={columns}
 		style:--row-height="{rowHeightFor(gridWidth, columns)}px"
 	>
-		{#each items as { indicator, item, related }, i (indicator.guid)}
+		{#each items as { index, indicator, item, related }, i (indicator.guid)}
 			{@const { column, columnSpan, row, rowSpan } = placements[i]}
-			<li style:grid-column="{column} / span {columnSpan}" style:grid-row="{row} / span {rowSpan}">
+			{@const title = indicator.payload.title}
+			{#snippet settings()}
+				<IndicatorDashboardCardMenu
+					count={items.length}
+					{item}
+					onchange={(patch, event) => change(index, title, patch, event)}
+					onmove={(offset, event) => move(i, title, offset, event)}
+					onremove={(event) => remove(i, title, event)}
+					position={i}
+				/>
+			{/snippet}
+			<!-- Alt and the arrow keys move the focused card; the menu offers the same. -->
+			<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+			<li
+				onkeydown={moveWithKeyboard(i, title)}
+				style:grid-column="{column} / span {columnSpan}"
+				style:grid-row="{row} / span {rowSpan}"
+			>
 				<IndicatorDashboardCard
 					container={indicator}
 					height={item.height}
 					relatedContainers={related}
+					settings={mayUpdate ? settings : undefined}
 					view={item.view}
 				/>
 			</li>
@@ -234,7 +350,7 @@
 {:else if mayUpdate && container.payload.item.length === 0}
 	<p>{$_('indicator_dashboard.empty')}</p>
 	<div class="catalog">
-		<button onclick={() => dialog?.showModal()} type="button">
+		<button bind:this={emptyCatalogButton} onclick={() => dialog?.showModal()} type="button">
 			<ChartMixed />
 			{$_('custom_collection.add_items')}
 		</button>
@@ -242,6 +358,8 @@
 {/if}
 
 {#if mayUpdate}
+	<p aria-live="polite" class="is-visually-hidden">{announcement}</p>
+
 	<IndicatorPicker
 		bind:dialog
 		onconfirm={confirm}
