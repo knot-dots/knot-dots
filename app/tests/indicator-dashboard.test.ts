@@ -125,9 +125,11 @@ test('Cards are placed in a grid and open from their title row only', async ({
 	await card.getByText('No data available').click();
 	await expect(landingPage.page).not.toHaveURL(/view=/);
 
-	// A click anywhere in the title row opens the indicator
+	// A click anywhere in the title row opens the indicator, and its card shows it is selected
 	await card.locator('header').click({ position: { x: 4, y: 4 } });
 	await expect(landingPage.page).toHaveURL(new RegExp(`view=${testIndicator.guid}`));
+	await expect(card).toHaveClass(/is-active/);
+	await expect(cards.nth(1)).not.toHaveClass(/is-active/);
 });
 
 test('Indicators show the data of the organization when the section belongs to it', async ({

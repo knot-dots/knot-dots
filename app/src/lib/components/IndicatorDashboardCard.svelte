@@ -14,7 +14,8 @@
 		type IndicatorDashboardItem,
 		type IndicatorPayload,
 		overlayKey,
-		overlayURL
+		overlayURL,
+		paramsFromFragment
 	} from '$lib/models';
 	import { reviewIndicator } from '$lib/reviewStatus';
 	import { overlayHistory } from '$lib/stores';
@@ -67,7 +68,14 @@
 	}
 </script>
 
-<article class={['card', `card--rows-${rowsByHeight[height]}`]} style:--aura-color={auraColor}>
+<article
+	class={[
+		'card',
+		`card--rows-${rowsByHeight[height]}`,
+		paramsFromFragment(page.url).get(overlayKey.enum.view) === container.guid && 'is-active'
+	]}
+	style:--aura-color={auraColor}
+>
 	<!-- The link takes the keyboard; the rest of the row only widens the target for pointers. -->
 	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 	<header class="title-row" onclick={openFromTitleRow}>
@@ -124,6 +132,12 @@
 		height: 100%;
 		overflow: hidden;
 		padding: 0.5rem;
+	}
+
+	/* The indicator is open in the overlay, as in Card. */
+	.card.is-active {
+		background-color: var(--color-primary-050);
+		border-color: var(--color-primary-700);
 	}
 
 	/* Overrides the headers of .details-section, which the dashboard is part of. */
