@@ -84,6 +84,7 @@
 		<img
 			alt=""
 			class={['backdrop', `backdrop--rows-${rowsByHeight[height]}`]}
+			draggable="false"
 			src={transformFileURL(container.payload.icon)}
 		/>
 	{/if}
@@ -94,11 +95,17 @@
 		<header class="title-row" onclick={openFromTitleRow}>
 			<h3>
 				{#if container.payload.icon}
-					<img alt="" class="pictogram" src={transformFileURL(container.payload.icon)} />
+					<img
+						alt=""
+						class="pictogram"
+						draggable="false"
+						src={transformFileURL(container.payload.icon)}
+					/>
 				{/if}
 				<a
 					bind:this={link}
 					class="title"
+					draggable="false"
 					href={overlayURL(page.url, overlayKey.enum.view, container.guid)}
 					onclick={updateOverlayHistory}
 					title={container.payload.title}
