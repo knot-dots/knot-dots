@@ -19,6 +19,7 @@
 		type Container,
 		containerOfType,
 		displayName,
+		isOrganizationalUnitContainer,
 		type OrganizationalUnitPayload,
 		organizationalUnitType,
 		type OrganizationPayload,
@@ -129,7 +130,11 @@
 			return;
 		}
 		saving = true;
-		const parent = managedOrganizationalUnits.find(({ guid }) => guid === area);
+		// the chosen area is the selected context itself or a unit below it; the
+		// organization as context leaves the team without a parent
+		const parent = [container, ...managedOrganizationalUnits]
+			.filter(isOrganizationalUnitContainer)
+			.find(({ guid }) => guid === area);
 		try {
 			const response = await createTeam(trimmed, organization, parent);
 			if (!response.ok) {
