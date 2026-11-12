@@ -352,7 +352,7 @@ async function createResourceData(
 	});
 }
 
-async function inviteUser(
+export async function inviteUser(
 	context: BrowserContext,
 	email: string,
 	container: Container<AnyPayload>,

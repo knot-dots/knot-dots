@@ -1,4 +1,12 @@
-import { test, expect } from './fixtures';
+import {
+	type Container,
+	containerOfType,
+	type NewContainer,
+	type OrganizationalUnitPayload,
+	payloadTypes,
+	predicates
+} from '$lib/models';
+import { createContainer, deleteContainer, expect, inviteUser, test } from './fixtures';
 
 test.use({ suiteId: 'user-management-permissions' });
 
@@ -297,5 +305,112 @@ test.describe('Content permission matrix', () => {
 		await inheritResponse;
 		await expect(inheritedBob).toHaveCount(1);
 		await expect(overlay.getByRole('button', { name: 'Add item' })).toHaveCount(0);
+	});
+});
+
+test.describe('Unit permission matrix', () => {
+	test.skip(
+		({ browserName }) => browserName !== 'chromium',
+		'This suite runs only on Chromium because we are just testing write permissions'
+	);
+
+	test.use({ storageState: 'tests/.auth/orgadmin.json' });
+
+	test('removes a person who also works in a unit below', async ({
+		adminContext,
+		page,
+		testOrganization,
+		testOrganizationalUnit
+	}) => {
+		// Bob works in the unit and in a unit below it. The user table lists
+		// him for both, the matrix of the unit holds his row there alone.
+		const newUnitBelow = containerOfType(
+			payloadTypes.enum.organizational_unit,
+			testOrganization
+		) as NewContainer<OrganizationalUnitPayload>;
+		const unitBelow = await createContainer(adminContext, {
+			...newUnitBelow,
+			payload: {
+				...newUnitBelow.payload,
+				level: testOrganizationalUnit.payload.level + 1,
+				name: 'Unit below'
+			},
+			relation: [
+				{
+					object: testOrganizationalUnit.guid,
+					position: 0,
+					predicate: predicates.enum['is-part-of']
+				}
+			]
+		});
+		await inviteUser(adminContext, 'bob@example.org', testOrganizationalUnit);
+		await inviteUser(adminContext, 'bob@example.org', unitBelow);
+
+		try {
+			await page.goto(`/${testOrganizationalUnit.guid}/user-management?view=permissions`);
+			await page.getByRole('checkbox', { name: 'Edit mode' }).check();
+
+			// the invitation gave the unit a matrix of its own, so the switch is on
+			// and the own rows are editable right away
+			await expect(page.getByRole('checkbox', { name: 'Individual rights' })).toBeChecked();
+
+			// Bob shows up in the inherited section as well, so tell his own row
+			// apart by its checkboxes
+			const ownBob = page
+				.getByRole('row', { name: 'Bob Bow' })
+				.filter({ has: page.getByRole('checkbox', { name: 'Read (This object)' }) });
+			await expect(ownBob).toHaveCount(1);
+
+			const removeResponse = page.waitForResponse(
+				(r) => r.url().endsWith('/grant') && r.request().method() === 'POST'
+			);
+			await ownBob.getByRole('button', { name: 'Remove' }).click();
+			await removeResponse;
+			await expect(ownBob).toHaveCount(0);
+
+			// his role in the unit below stays, so the user table still lists him
+			await page.goto(`/${testOrganizationalUnit.guid}/user-management`);
+			await expect(page.getByRole('row', { name: 'Bob Bow' })).toBeVisible();
+		} finally {
+			await deleteContainer(adminContext, unitBelow);
+		}
+	});
+});
+
+test.describe('Teams', () => {
+	test.skip(
+		({ browserName }) => browserName !== 'chromium',
+		'This suite runs only on Chromium because we are just testing write permissions'
+	);
+
+	test.use({ storageState: 'tests/.auth/orgadmin.json' });
+
+	test('creates a team below the selected unit', async ({
+		adminContext,
+		page,
+		testOrganizationalUnit
+	}) => {
+		await page.goto(`/${testOrganizationalUnit.guid}/user-management?view=teams`);
+		await page.getByRole('button', { name: 'Create team' }).click();
+
+		// the new row proposes the selected unit as the area of the team
+		await expect(page.getByRole('button', { name: 'Belongs to' })).toHaveText(
+			testOrganizationalUnit.payload.name
+		);
+		const createdResponse = page.waitForResponse(
+			(r) => r.url().endsWith('/container') && r.request().method() === 'POST'
+		);
+		await page.getByRole('textbox', { name: 'Name of the team' }).fill('Unit team');
+		await page.getByRole('textbox', { name: 'Name of the team' }).press('Enter');
+		const team = (await (await createdResponse).json()) as Container<OrganizationalUnitPayload>;
+
+		try {
+			// the team lists under the unit instead of under the organization
+			const row = page.getByRole('row', { name: 'Unit team' });
+			await expect(row).toBeVisible();
+			await expect(row).toContainText(testOrganizationalUnit.payload.name);
+		} finally {
+			await deleteContainer(adminContext, team);
+		}
 	});
 });
