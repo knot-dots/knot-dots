@@ -12,7 +12,7 @@ vi.mock('$lib/server/keycloak', () => ({ updateUser }));
 import { PUT } from './+server';
 
 const guid = '00000000-0000-4000-8000-000000000001';
-const favorite = [{ href: '/', title: 'Home' }];
+const favorite = [{ href: 'knotdots://00000000-0000-4000-8000-000000000001/me', title: 'Home' }];
 
 function put(features: string[], { roles = [] as string[], target = guid } = {}) {
 	const body = {

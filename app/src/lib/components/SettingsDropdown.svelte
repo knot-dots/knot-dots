@@ -16,6 +16,7 @@
 	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import { getFavoriteListContext } from '$lib/contexts/favoriteList';
+	import { createFavoriteURL } from '$lib/favorites';
 	import {
 		type AnyPayload,
 		type Container,
@@ -119,11 +120,7 @@
 
 	let favoritesList = getFavoriteListContext();
 
-	let href = $derived(
-		page.url.searchParams.size
-			? `${page.url.pathname}?${page.url.searchParams.toString()}`
-			: page.url.pathname
-	);
+	let href = $derived(createFavoriteURL(page));
 
 	// Favorites of organizational units are toggled in the list of the organizational unit,
 	// others in that of the organization.

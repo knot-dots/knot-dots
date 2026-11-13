@@ -42,6 +42,7 @@
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import WorkspacesMegaMenu from '$lib/components/WorkspacesMegaMenu.svelte';
 	import { getFavoriteListContext } from '$lib/contexts/favoriteList';
+	import { createFavoriteURL } from '$lib/favorites';
 	import { getReviewContext } from '$lib/contexts/review.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
@@ -178,11 +179,7 @@
 
 	let favoritesList = getFavoriteListContext();
 
-	let href = $derived(
-		page.url.searchParams.size
-			? `${page.url.pathname}?${page.url.searchParams.toString()}`
-			: page.url.pathname
-	);
+	let href = $derived(createFavoriteURL(page));
 
 	// Favorites of organizational units are toggled in the list of the organizational unit,
 	// others in that of the organization.
@@ -192,9 +189,7 @@
 
 	let isFavorite = $derived(favoritesList[favoriteListKey].findIndex((f) => f.href === href) > -1);
 
-	let isPlatformFavorite = $derived(
-		favoritesList.platform.findIndex((f) => f.href === page.url.toString().split('#')[0]) > -1
-	);
+	let isPlatformFavorite = $derived(favoritesList.platform.findIndex((f) => f.href === href) > -1);
 
 	let facetLabels = $derived(page.data.categoryContext.labels);
 
@@ -257,7 +252,6 @@
 	}
 
 	async function togglePlatformFavorite() {
-		const href = page.url.toString().split('#')[0];
 		const index = favoritesList.platform.findIndex((f) => f.href === href);
 
 		favoritesList.platform =

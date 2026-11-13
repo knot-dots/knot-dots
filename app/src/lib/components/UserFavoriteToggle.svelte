@@ -7,10 +7,11 @@
 	import tooltip from '$lib/attachments/tooltip';
 	import saveUser from '$lib/client/saveUser';
 	import { getFavoriteListContext } from '$lib/contexts/favoriteList';
+	import { createFavoriteURL } from '$lib/favorites';
 	import { user as userSchema } from '$lib/models';
 	import { user } from '$lib/stores';
 
-	let href = $derived(page.url.toString());
+	let href = $derived(createFavoriteURL(page));
 
 	const favoriteList = getFavoriteListContext();
 
