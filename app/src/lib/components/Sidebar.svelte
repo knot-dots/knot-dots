@@ -180,6 +180,8 @@
 		return href;
 	}
 
+	// The items keep the stored href as guid, which identifies them and is saved after
+	// reordering, while their href is the one displayed.
 	let favoriteItemsOrganization = $derived(
 		favoriteList.organization.map((favorite) => ({
 			...favorite,
@@ -222,8 +224,8 @@
 		event: CustomEvent<DndEvent<Favorite & { guid: string }>>
 	) {
 		favoriteItemsOrganization = event.detail.items;
-		favoriteList.organization = favoriteItemsOrganization.map(({ href, icon, title }) => ({
-			href,
+		favoriteList.organization = favoriteItemsOrganization.map(({ guid, icon, title }) => ({
+			href: guid,
 			icon,
 			title
 		}));
@@ -241,8 +243,8 @@
 	) {
 		favoriteItemsOrganizationalUnit = event.detail.items;
 		favoriteList.organizationalUnit = favoriteItemsOrganizationalUnit.map(
-			({ href, icon, title }) => ({
-				href,
+			({ guid, icon, title }) => ({
+				href: guid,
 				icon,
 				title
 			})
@@ -256,8 +258,8 @@
 
 	function handleDndFinalizePlatform(event: CustomEvent<DndEvent<Favorite & { guid: string }>>) {
 		favoriteItemsPlatform = event.detail.items;
-		favoriteList.platform = favoriteItemsPlatform.map(({ href, icon, title }) => ({
-			href,
+		favoriteList.platform = favoriteItemsPlatform.map(({ guid, icon, title }) => ({
+			href: guid,
 			icon,
 			title
 		}));
@@ -270,8 +272,8 @@
 
 	function handleDndFinalizeUser(event: CustomEvent<DndEvent<Favorite & { guid: string }>>) {
 		favoriteItemsUser = event.detail.items;
-		favoriteList.user = favoriteItemsUser.map(({ href, icon, title }) => ({
-			href,
+		favoriteList.user = favoriteItemsUser.map(({ guid, icon, title }) => ({
+			href: guid,
 			icon,
 			title
 		}));
