@@ -752,3 +752,27 @@ test('isMemberOrTeamMemberOf accepts a row of the user or of one of their teams'
 		isMemberOrTeamMemberOf({ guid: teamMember }, { ...measure, user_grant: { ...grants, own: [] } })
 	).toBe(false);
 });
+
+const indicatorDashboard = getPayloadSchema(payloadTypes.enum.indicator_dashboard);
+
+const dashboardIndicatorOne = '0b6b5b8e-1d5e-4c50-9a2c-1f4f7f3f6a01';
+
+const dashboardIndicatorTwo = '0b6b5b8e-1d5e-4c50-9a2c-1f4f7f3f6a02';
+
+test('an indicator dashboard shows an indicator without settings as a large chart two columns wide', () => {
+	expect(
+		indicatorDashboard.parse({
+			item: [
+				{ height: '1/4', indicator: dashboardIndicatorOne, view: 'stat', width: '3/6' },
+				{ indicator: dashboardIndicatorTwo }
+			],
+			title: 'Dashboard',
+			type: payloadTypes.enum.indicator_dashboard
+		})
+	).toMatchObject({
+		item: [
+			{ height: '1/4', indicator: dashboardIndicatorOne, view: 'stat', width: '3/6' },
+			{ height: '4/4', indicator: dashboardIndicatorTwo, view: 'chart', width: '2/6' }
+		]
+	});
+});

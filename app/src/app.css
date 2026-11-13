@@ -188,6 +188,7 @@
 	--color-background-accent-disabled: var(--color-gray-100);
 	--color-background-accent-hover: var(--color-background-system-hover);
 	--color-background-accent-expanded: var(--color-background-system-expanded);
+	--color-background-accent-white: var(--color-white);
 
 	--color-border-accent-strong: var(--color-border-system-strong);
 	--color-border-accent-default: var(--color-border-system-default);
@@ -325,6 +326,10 @@
 	--indicator-color-trend-line: #0b808e;
 	--indicator-color-trend-area: #d5f5f6;
 	--indicator-color-objective: #3980ac;
+
+	/* Grid lines and labels of the axes in charts */
+	--chart-axis-text: var(--color-gray-500);
+	--chart-grid: var(--color-gray-100);
 
 	--shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
 	--shadow-md: 0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -2px rgba(0, 0, 0, 0.05);
@@ -2103,6 +2108,27 @@ h4.details-heading {
 	color: var(--color-text-muted);
 	font-size: 0.75rem;
 	line-height: 1.5;
+}
+
+/* Keyboard shortcut of the item, flush right */
+.cascading-menu-item > kbd {
+	color: var(--color-text-subtle);
+	flex-shrink: 0;
+	font-family: inherit;
+	font-size: 0.75rem;
+	line-height: 1.5;
+	margin-left: auto;
+}
+
+.cascading-menu-item:disabled {
+	background-color: transparent;
+	color: var(--color-text-disabled);
+	cursor: default;
+}
+
+.cascading-menu-item:disabled > svg,
+.cascading-menu-item:disabled > kbd {
+	color: var(--color-icon-disabled);
 }
 
 .cascading-menu-divider {

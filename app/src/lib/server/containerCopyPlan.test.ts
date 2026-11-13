@@ -783,11 +783,12 @@ test('remaps collection members without instantiating template references', () =
 	expect(snapshot).toEqual(originalSnapshot);
 });
 
-test('keeps only indicators of an indicator dashboard the target may use', () => {
+test('keeps only indicators of an indicator dashboard the target may use, with their settings', () => {
+	const publicItem = { height: '2/4', indicator: guids.publicItem, view: 'stat', width: '3/6' };
 	const containers = [
 		makeContainer(guids.root, { title: 'Report', type: payloadTypes.enum.report }),
 		makeContainer(guids.child, {
-			item: [guids.publicItem, guids.inaccessibleItem],
+			item: [publicItem, { indicator: guids.inaccessibleItem }],
 			title: 'Dashboard',
 			type: payloadTypes.enum.indicator_dashboard
 		}),
@@ -813,7 +814,7 @@ test('keeps only indicators of an indicator dashboard the target may use', () =>
 		allocateGuid: allocator()
 	});
 
-	expect(copyFor(plan, guids.child)?.payload).toMatchObject({ item: [guids.publicItem] });
+	expect(copyFor(plan, guids.child)?.payload).toMatchObject({ item: [publicItem] });
 	expect(plan.has(guids.publicItem)).toBe(false);
 });
 
@@ -1090,6 +1091,9 @@ test('applies edited root payloads before remapping nested container references'
 		title: 'Child',
 		type: payloadTypes.enum.text
 	});
+	if (root.payload.type !== payloadTypes.enum.custom_collection) {
+		throw new Error('Expected a custom collection');
+	}
 	const sourcePayload = structuredClone(root.payload);
 	const editedPayload = {
 		...root.payload,

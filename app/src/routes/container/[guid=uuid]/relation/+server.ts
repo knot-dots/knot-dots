@@ -92,7 +92,10 @@ export const GET = (async ({ locals, params, url }) => {
 					await locals.pool.connect(
 						getManyContainers(
 							[],
-							{ guid: container.payload.item, type: [payloadTypes.enum.indicator] },
+							{
+								guid: container.payload.item.map(({ indicator }) => indicator),
+								type: [payloadTypes.enum.indicator]
+							},
 							''
 						)
 					)

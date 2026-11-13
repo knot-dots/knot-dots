@@ -4,6 +4,7 @@
 	import { _, number } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import { indicatorActualData, indicatorActualDataContainers } from '$lib/indicatorActualData';
+	import { indicatorChartOptions, ownColor, textWidthIn, valueExtent } from '$lib/indicatorChart';
 	import {
 		type ActualDataPayload,
 		administrativeTypes,
@@ -34,8 +35,8 @@
 
 	let actualValues = $derived(
 		indicatorActualData(container.guid, relatedContainers).map(([year, value]) => ({
-			date: new Date(year, 0),
-			value
+			value,
+			year
 		}))
 	);
 
@@ -43,11 +44,8 @@
 	let comparisonValues = $derived(
 		comparisonContainers?.map((container) => ({
 			values: container.payload.values
-				.map(([key, value]) => ({
-					date: new Date(key, 0),
-					value
-				}))
-				.toSorted((a, b) => a.date.getTime() - b.date.getTime()),
+				.map(([year, value]) => ({ value, year }))
+				.toSorted((a, b) => a.year - b.year),
 			municipalityGuid: container.organizational_unit ?? container.organization,
 			color:
 				$compareState.colorAssignments[container.organizational_unit ?? container.organization] ||
@@ -63,8 +61,6 @@
 		)
 	]);
 
-	let allYears = $derived([...new Set(allData.map((d) => d.date.getFullYear()))].toSorted());
-
 	let hasComparisonData = $derived(comparisonValues.some(({ values }) => values.length > 0));
 
 	// Build color scale domain and range; omit the current context when it has no data of its own
@@ -73,7 +69,7 @@
 		...comparisonValues.map((c) => c.municipalityGuid)
 	]);
 	let colorRange = $derived([
-		...(actualValues.length > 0 ? ['var(--indicator-color-own-base)'] : []),
+		...(actualValues.length > 0 ? [ownColor] : []),
 		...comparisonValues.map((c) => `var(${c.color})`)
 	]);
 
@@ -90,107 +86,86 @@
 		)
 	);
 
-	// Create a reactive state for the container's width
-	let currentWidth = $state(0);
+	let width = $state(0);
 
-	const chart: Attachment = (element) => {
-		// Use a ResizeObserver to measure the container and trigger a render
-		const observer = new ResizeObserver((entries) => {
-			for (let entry of entries) {
-				// Get the actual inner width of the container div
-				const { width } = entry.contentRect;
+	// Axes and grid as in the other charts of indicators, 640:400
+	const chart: Attachment<HTMLElement> = (element) => {
+		if (width === 0 || allData.length === 0) {
+			return;
+		}
 
-				// Only render if we have a valid width
-				if (width > 0) {
-					currentWidth = width;
-				}
-			}
+		const options = indicatorChartOptions({
+			extent: valueExtent(allData.map(({ value }) => value)),
+			format: (value) => $number(value),
+			height: (width * 400) / 640,
+			textWidth: textWidthIn(element),
+			width,
+			years: allData.map(({ year }) => year)
 		});
 
-		// Start observing the element this action is attached to
-		observer.observe(element);
-
-		// Svelte tracks dependencies here. Because we read currentWidth, allData,
-		// colorDomain, etc., any change to them will trigger a re-render.
-		if (currentWidth === 0) return;
-
-		// Use innerHTML = '' instead of firstChild.remove()
-		// because we are going to append TWO elements now (plot + legend).
-		element.innerHTML = '';
-
-		const plot = Plot.plot({
-			marks: [
-				Plot.lineY(
-					allData.filter(
-						(d) => d.municipality !== 'current' && stateMunicipalityGuids.has(d.municipality)
+		element.replaceChildren(
+			Plot.plot({
+				...options,
+				color: {
+					domain: colorDomain,
+					range: colorRange
+				},
+				marks: [
+					...options.marks,
+					Plot.lineY(
+						allData.filter(
+							(d) => d.municipality !== 'current' && stateMunicipalityGuids.has(d.municipality)
+						),
+						{
+							x: 'year',
+							y: 'value',
+							z: 'municipality',
+							stroke: 'municipality',
+							strokeWidth: 2,
+							strokeLinecap: 'round',
+							strokeDasharray: '4'
+						}
 					),
-					{
-						x: 'date',
-						y: 'value',
-						z: 'municipality',
-						stroke: 'municipality',
-						strokeWidth: 2,
-						strokeLinecap: 'round',
-						strokeDasharray: '4'
-					}
-				),
-				Plot.lineY(
-					allData.filter(
-						(d) => d.municipality !== 'current' && !stateMunicipalityGuids.has(d.municipality)
+					Plot.lineY(
+						allData.filter(
+							(d) => d.municipality !== 'current' && !stateMunicipalityGuids.has(d.municipality)
+						),
+						{
+							x: 'year',
+							y: 'value',
+							z: 'municipality',
+							stroke: 'municipality',
+							strokeWidth: 2,
+							strokeLinecap: 'round'
+						}
 					),
-					{
-						x: 'date',
+					Plot.lineY(
+						allData.filter((d) => d.municipality === 'current'),
+						{
+							x: 'year',
+							y: 'value',
+							z: 'municipality',
+							stroke: 'municipality',
+							strokeWidth: 3,
+							strokeLinecap: 'round'
+						}
+					),
+					Plot.dot(allData, {
+						x: 'year',
 						y: 'value',
-						z: 'municipality',
-						stroke: 'municipality',
-						strokeWidth: 2,
-						strokeLinecap: 'round'
-					}
-				),
-				Plot.lineY(
-					allData.filter((d) => d.municipality === 'current'),
-					{
-						x: 'date',
-						y: 'value',
-						z: 'municipality',
-						stroke: 'municipality',
-						strokeWidth: 3,
-						strokeLinecap: 'round'
-					}
-				),
-				Plot.dot(allData, {
-					x: 'date',
-					y: 'value',
-					fill: 'municipality',
-					r: (d) => (d.municipality === 'current' ? 4 : 2.5)
-				})
-			],
-			width: currentWidth,
-			height: (currentWidth * 400) / 640, // Maintain the 640:400 aspect ratio
-			grid: true,
-			x: allYears.length === 1 ? { tickFormat: (d: Date) => String(d.getFullYear()) } : undefined,
-			y: { label: $_(unit), tickFormat: (d) => $number(d) },
-			color: {
-				domain: colorDomain,
-				range: colorRange
-			},
-			style: {
-				fontSize: '0.75rem'
-			}
-		});
-
-		element.append(plot);
-
-		// Return a destroy method for cleanup
-		return () => {
-			observer.disconnect();
-		};
+						fill: 'municipality',
+						r: (d) => (d.municipality === 'current' ? 4 : 2.5)
+					})
+				]
+			})
+		);
 	};
 </script>
 
 {#if actualDataContainer[0] || hasComparisonData}
 	<figure class="chart">
-		<div role="img" {@attach chart}></div>
+		<span class="unit">{unit}</span>
+		<div bind:clientWidth={width} class="plot" role="img" {@attach chart}></div>
 		<ul class="chart-legend">
 			{#each colorDomain as guid (guid)}
 				{@const i = colorDomain.indexOf(guid)}
@@ -230,6 +205,13 @@
 <style>
 	figure {
 		flex-grow: 1;
+	}
+
+	.unit,
+	.plot {
+		color: var(--chart-axis-text);
+		font-size: 0.75rem;
+		line-height: 1.5;
 	}
 
 	.chart-legend {
