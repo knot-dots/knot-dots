@@ -184,11 +184,13 @@
 			: page.url.pathname
 	);
 
-	let isFavorite = $derived(
-		[...favoritesList.organization, ...favoritesList.organizationalUnit].findIndex(
-			(f) => f.href === href
-		) > -1
+	// Favorites of organizational units are toggled in the list of the organizational unit,
+	// others in that of the organization.
+	let favoriteListKey = $derived<'organization' | 'organizationalUnit'>(
+		page.data.currentOrganizationalUnit ? 'organizationalUnit' : 'organization'
 	);
+
+	let isFavorite = $derived(favoritesList[favoriteListKey].findIndex((f) => f.href === href) > -1);
 
 	let isPlatformFavorite = $derived(
 		favoritesList.platform.findIndex((f) => f.href === page.url.toString().split('#')[0]) > -1
@@ -233,7 +235,7 @@
 	}
 
 	async function toggleFavorite() {
-		const key = page.data.currentOrganizationalUnit ? 'organizationalUnit' : 'organization';
+		const key = favoriteListKey;
 		const index = favoritesList[key].findIndex((f) => f.href === href);
 
 		favoritesList[key] =
