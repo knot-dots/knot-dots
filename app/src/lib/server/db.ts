@@ -494,20 +494,22 @@ export function createManyContainers(inserts: readonly NewContainerWithGuid[]) {
 			container.managed_by[0],
 			container.organization,
 			container.organizational_unit,
+			container.own_matrix ?? false,
 			JSON.stringify(container.payload),
 			container.realm
 		]);
 		const containerResult = await connection.any(sql.typeAlias('anyContainer')`
-			INSERT INTO container (guid, managed_by, organization, organizational_unit, payload, realm)
+			INSERT INTO container (guid, managed_by, organization, organizational_unit, own_matrix, payload, realm)
 			SELECT
 				input.guid,
 				input.managed_by,
 				input.organization,
 				input.organizational_unit,
+				input.own_matrix,
 				input.payload::jsonb,
 				input.realm
-			FROM ${sql.unnest(containerValues, ['uuid', 'uuid', 'uuid', 'uuid', 'text', 'text'])}
-				AS input(guid, managed_by, organization, organizational_unit, payload, realm)
+			FROM ${sql.unnest(containerValues, ['uuid', 'uuid', 'uuid', 'uuid', 'bool', 'text', 'text'])}
+				AS input(guid, managed_by, organization, organizational_unit, own_matrix, payload, realm)
 			RETURNING *
 		`);
 

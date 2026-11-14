@@ -48,6 +48,7 @@ export function containerFixtureSchema({ organization }: { organization: string 
 			managed_by: newContainer.shape.managed_by.optional(),
 			organization: z.uuid().default(organization),
 			organizational_unit: z.uuid().nullable().default(null),
+			own_matrix: z.boolean().optional(),
 			payload: payloadWithTitle,
 			realm: z.string().default(realm),
 			relation: z.array(relation).default(() => [])

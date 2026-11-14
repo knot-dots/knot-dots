@@ -85,7 +85,7 @@ const test = base
 
 // For the containers created with createContainer() rather than as fixtures: in the
 // tests of createContainer() itself, which assigns the GUID and completes the
-// relations, and where createManyContainers() does not write a column, e.g. own_matrix.
+// relations.
 function newContainerInput(
 	organization: string,
 	payload: PayloadFixture,
@@ -925,15 +925,14 @@ test('restoring an organization is refused because its Keycloak group is gone', 
 
 test('the restored revision keeps the own matrix and the grants derived from the member roles', async ({
 	connection,
-	organization
+	containers
 }) => {
 	const member = await createTestUser(connection);
-	// createManyContainers() does not write own_matrix, so the program is no fixture.
-	const program = await createContainer({
-		...newContainerInput(organization, { type: payloadTypes.enum.program }, []),
-		own_matrix: true,
-		user: team(member)
-	})(connection);
+	const program = containers.add(
+		{ type: payloadTypes.enum.program },
+		{ own_matrix: true, user: team(member) }
+	);
+	await containers.persist();
 	const before = await getContainerByGuid(program.guid)(connection);
 	const grantsBefore = await computeUserGrants(connection, member, [program.guid]);
 	expect(grantsBefore.get(program.guid)?.scope_sourced).toBe(false);

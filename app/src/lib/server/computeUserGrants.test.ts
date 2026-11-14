@@ -3,19 +3,16 @@ import os from 'node:os';
 import path from 'node:path';
 import { v4 as uuid } from 'uuid';
 import { expect } from 'vitest';
-import { type Fixtures, test } from '$lib/fixtures';
+import { type ContainerFixtures, type Fixtures, realm, test } from '$lib/fixtures';
 import {
-	type AnyPayload,
 	grantForNewContainer,
 	modifiedContainer,
-	newContainer,
 	organizationalUnitType,
 	payloadTypes,
 	predicates
 } from '$lib/models';
 import { computeUserGrants, computeUserGrantsFromRoles } from '$lib/server/computeUserGrants';
 import {
-	createContainer,
 	createOrUpdateUser,
 	deleteContainer,
 	getAllGrantsOfUser,
@@ -26,38 +23,6 @@ import {
 import { withFeatures } from '$lib/server/features';
 import { withRequestUser } from '$lib/server/requestUser';
 
-const realm = 'test';
-
-function newTestContainer(
-	organization: string,
-	type: AnyPayload['type'],
-	options: {
-		ownMatrix?: boolean;
-		organizationalUnit?: string;
-		payload?: Record<string, unknown>;
-		relation?: { object: string; predicate: string }[];
-		user?: { predicate: string; subject: string }[];
-	} = {}
-) {
-	return {
-		...newContainer.parse({
-			managed_by: organization,
-			organization,
-			organizational_unit: options.organizationalUnit ?? null,
-			payload: {
-				...(type === payloadTypes.enum.organizational_unit
-					? { name: 'Lorem ipsum', ...options.payload }
-					: { title: 'Lorem ipsum' }),
-				type
-			},
-			realm,
-			relation: options.relation?.map((r, position) => ({ ...r, position })) ?? [],
-			user: options.user ?? []
-		}),
-		own_matrix: options.ownMatrix ?? false
-	};
-}
-
 async function newTestUser(connection: Fixtures['connection']) {
 	const guid = uuid();
 	await createOrUpdateUser({ family_name: '', given_name: '', guid, realm, settings: {} })(
@@ -66,12 +31,14 @@ async function newTestUser(connection: Fixtures['connection']) {
 	return guid;
 }
 
-test('contents inherit from the organization by default', async ({ connection }: Fixtures) => {
-	const organization = uuid();
+test('contents inherit from the organization by default', async ({
+	connection,
+	containers,
+	organization
+}) => {
 	const subject = await newTestUser(connection);
-	const measure = await createContainer(newTestContainer(organization, payloadTypes.enum.measure))(
-		connection
-	);
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	await containers.persist();
 	await setContainerGrants(organization, subject, {
 		self: [],
 		subordinates: ['read', 'update', 'create']
@@ -92,12 +59,14 @@ test('contents inherit from the organization by default', async ({ connection }:
 	});
 });
 
-test('rows on an inheriting container lie dormant', async ({ connection }: Fixtures) => {
-	const organization = uuid();
+test('rows on an inheriting container lie dormant', async ({
+	connection,
+	containers,
+	organization
+}) => {
 	const subject = await newTestUser(connection);
-	const measure = await createContainer(newTestContainer(organization, payloadTypes.enum.measure))(
-		connection
-	);
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	await containers.persist();
 	await setContainerGrants(measure.guid, subject, {
 		self: ['read', 'update'],
 		subordinates: ['read', 'update', 'create', 'delete', 'manage-users']
@@ -119,13 +88,13 @@ test('rows on an inheriting container lie dormant', async ({ connection }: Fixtu
 });
 
 test('a decoupled container is governed by its own matrix alone', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
+	connection,
+	containers,
+	organization
+}) => {
 	const subject = await newTestUser(connection);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, { ownMatrix: true })
-	)(connection);
+	const measure = containers.add({ type: payloadTypes.enum.measure }, { own_matrix: true });
+	await containers.persist();
 	await setContainerGrants(measure.guid, subject, {
 		self: ['read', 'update'],
 		subordinates: ['delete']
@@ -152,17 +121,18 @@ test('a decoupled container is governed by its own matrix alone', async ({
 	});
 });
 
-test('contents inherit from the nearest decoupled ancestor', async ({ connection }: Fixtures) => {
-	const organization = uuid();
+test('contents inherit from the nearest decoupled ancestor', async ({
+	connection,
+	containers,
+	organization,
+	relations
+}) => {
 	const subject = await newTestUser(connection);
-	const program = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
-	)(connection);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, {
-			relation: [{ object: program.guid, predicate: predicates.enum['is-part-of-program'] }]
-		})
-	)(connection);
+	const program = containers.add({ type: payloadTypes.enum.program }, { own_matrix: true });
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	relations.add(measure, predicates.enum['is-part-of-program'], program);
+	await containers.persist();
+	await relations.persist();
 	await setContainerGrants(program.guid, subject, {
 		self: ['read'],
 		subordinates: ['read', 'update']
@@ -201,18 +171,20 @@ test('contents inherit from the nearest decoupled ancestor', async ({ connection
 });
 
 test('a decoupled organizational unit cuts the organization off its contents', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
+	connection,
+	containers,
+	organization
+}) => {
 	const subject = await newTestUser(connection);
-	const unit = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.organizational_unit, {
-			ownMatrix: true
-		})
-	)(connection);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, { organizationalUnit: unit.guid })
-	)(connection);
+	const unit = containers.add(
+		{ type: payloadTypes.enum.organizational_unit },
+		{ own_matrix: true }
+	);
+	const measure = containers.add(
+		{ type: payloadTypes.enum.measure },
+		{ organizational_unit: unit.guid }
+	);
+	await containers.persist();
 	await setContainerGrants(unit.guid, subject, { self: [], subordinates: ['read'] })(connection);
 	await setContainerGrants(organization, subject, {
 		self: [],
@@ -235,13 +207,13 @@ test('a decoupled organizational unit cuts the organization off its contents', a
 });
 
 test('organization administrators keep every kind regardless of decoupling', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
+	connection,
+	containers,
+	organization
+}) => {
 	const subject = await newTestUser(connection);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, { ownMatrix: true })
-	)(connection);
+	const measure = containers.add({ type: payloadTypes.enum.measure }, { own_matrix: true });
+	await containers.persist();
 	await setContainerGrants(organization, subject, {
 		self: ['read', 'update', 'manage-users'],
 		subordinates: ['read', 'update', 'create', 'delete', 'manage-users']
@@ -264,13 +236,13 @@ test('organization administrators keep every kind regardless of decoupling', asy
 });
 
 test('the read paths enrich containers with the grants of the request user', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
+	connection,
+	containers,
+	organization
+}) => {
 	const subject = await newTestUser(connection);
-	const measure = await createContainer(newTestContainer(organization, payloadTypes.enum.measure))(
-		connection
-	);
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	await containers.persist();
 	await setContainerGrants(organization, subject, { self: [], subordinates: ['read', 'update'] })(
 		connection
 	);
@@ -324,22 +296,26 @@ test('the read paths enrich containers with the grants of the request user', asy
 	expect(outside.user_grant).toBeUndefined();
 });
 
-test('member roles govern while the permission matrix is off', async ({ connection }: Fixtures) => {
-	const organization = uuid();
+test('member roles govern while the permission matrix is off', async ({
+	connection,
+	containers,
+	organization,
+	relations
+}) => {
 	const subject = await newTestUser(connection);
-	const program = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.program, {
+	const program = containers.add(
+		{ type: payloadTypes.enum.program },
+		{
 			user: [
 				{ predicate: predicates.enum['is-head-of'], subject },
 				{ predicate: predicates.enum['is-member-of'], subject }
 			]
-		})
-	)(connection);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, {
-			relation: [{ object: program.guid, predicate: predicates.enum['is-part-of-program'] }]
-		})
-	)(connection);
+		}
+	);
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	relations.add(measure, predicates.enum['is-part-of-program'], program);
+	await containers.persist();
+	await relations.persist();
 	// stored grant rows play no part while the roles govern
 	await setContainerGrants(organization, subject, { self: [], subordinates: ['delete'] })(
 		connection
@@ -364,17 +340,20 @@ test('member roles govern while the permission matrix is off', async ({ connecti
 	expect(fromGrants.get(measure.guid)?.self).toEqual(['delete']);
 });
 
-test('rows on an inheriting organizational unit lie dormant', async ({ connection }: Fixtures) => {
+test('rows on an inheriting organizational unit lie dormant', async ({
+	connection,
+	containers,
+	organization
+}) => {
 	// units follow the same inheritance flag as programs and measures: their
 	// rows rest until the unit decouples its matrix
-	const organization = uuid();
 	const subject = await newTestUser(connection);
-	const unit = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.organizational_unit)
-	)(connection);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, { organizationalUnit: unit.guid })
-	)(connection);
+	const unit = containers.add({ type: payloadTypes.enum.organizational_unit });
+	const measure = containers.add(
+		{ type: payloadTypes.enum.measure },
+		{ organizational_unit: unit.guid }
+	);
+	await containers.persist();
 	await setContainerGrants(unit.guid, subject, {
 		self: ['read', 'update'],
 		subordinates: ['read', 'update', 'create', 'delete', 'manage-users']
@@ -389,23 +368,20 @@ test('rows on an inheriting organizational unit lie dormant', async ({ connectio
 	expect(grants.get(measure.guid)?.self).toEqual([]);
 });
 
-test('two decoupled programs act side by side', async ({ connection }: Fixtures) => {
-	const organization = uuid();
+test('two decoupled programs act side by side', async ({
+	connection,
+	containers,
+	organization,
+	relations
+}) => {
 	const subject = await newTestUser(connection);
-	const programA = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
-	)(connection);
-	const programB = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
-	)(connection);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, {
-			relation: [
-				{ object: programA.guid, predicate: predicates.enum['is-part-of-program'] },
-				{ object: programB.guid, predicate: predicates.enum['is-part-of-program'] }
-			]
-		})
-	)(connection);
+	const programA = containers.add({ type: payloadTypes.enum.program }, { own_matrix: true });
+	const programB = containers.add({ type: payloadTypes.enum.program }, { own_matrix: true });
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	relations.add(measure, predicates.enum['is-part-of-program'], programA);
+	relations.add(measure, predicates.enum['is-part-of-program'], programB);
+	await containers.persist();
+	await relations.persist();
 	await setContainerGrants(programA.guid, subject, {
 		self: [],
 		subordinates: ['read', 'update']
@@ -437,24 +413,19 @@ test('two decoupled programs act side by side', async ({ connection }: Fixtures)
 });
 
 test('a chain without a decoupled ancestor adds the organization', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
+	connection,
+	containers,
+	organization,
+	relations
+}) => {
 	const subject = await newTestUser(connection);
-	const programA = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
-	)(connection);
-	const programB = await createContainer(newTestContainer(organization, payloadTypes.enum.program))(
-		connection
-	);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, {
-			relation: [
-				{ object: programA.guid, predicate: predicates.enum['is-part-of-program'] },
-				{ object: programB.guid, predicate: predicates.enum['is-part-of-program'] }
-			]
-		})
-	)(connection);
+	const programA = containers.add({ type: payloadTypes.enum.program }, { own_matrix: true });
+	const programB = containers.add({ type: payloadTypes.enum.program });
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	relations.add(measure, predicates.enum['is-part-of-program'], programA);
+	relations.add(measure, predicates.enum['is-part-of-program'], programB);
+	await containers.persist();
+	await relations.persist();
 	await setContainerGrants(programA.guid, subject, {
 		self: [],
 		subordinates: ['update']
@@ -477,27 +448,28 @@ test('a chain without a decoupled ancestor adds the organization', async ({
 });
 
 test('a decoupled program cuts a decoupled organizational unit off its contents', async ({
-	connection
-}: Fixtures) => {
+	connection,
+	containers,
+	relations
+}) => {
 	// a program defining its own rights replaces the inherited ones, whether
 	// they come from the organization or from the organizational unit
-	const organization = uuid();
 	const subject = await newTestUser(connection);
-	const unit = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.organizational_unit, { ownMatrix: true })
-	)(connection);
-	const program = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.program, {
-			ownMatrix: true,
-			organizationalUnit: unit.guid
-		})
-	)(connection);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, {
-			organizationalUnit: unit.guid,
-			relation: [{ object: program.guid, predicate: predicates.enum['is-part-of-program'] }]
-		})
-	)(connection);
+	const unit = containers.add(
+		{ type: payloadTypes.enum.organizational_unit },
+		{ own_matrix: true }
+	);
+	const program = containers.add(
+		{ type: payloadTypes.enum.program },
+		{ organizational_unit: unit.guid, own_matrix: true }
+	);
+	const measure = containers.add(
+		{ type: payloadTypes.enum.measure },
+		{ organizational_unit: unit.guid }
+	);
+	relations.add(measure, predicates.enum['is-part-of-program'], program);
+	await containers.persist();
+	await relations.persist();
 	await setContainerGrants(program.guid, subject, {
 		self: [],
 		subordinates: ['update']
@@ -520,24 +492,18 @@ test('a decoupled program cuts a decoupled organizational unit off its contents'
 });
 
 test('decoupled ancestors accumulate up the chain, nearest first', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
+	connection,
+	containers,
+	relations
+}) => {
 	const subject = await newTestUser(connection);
-	const grandparent = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
-	)(connection);
-	const parent = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.program, {
-			ownMatrix: true,
-			relation: [{ object: grandparent.guid, predicate: predicates.enum['is-part-of'] }]
-		})
-	)(connection);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, {
-			relation: [{ object: parent.guid, predicate: predicates.enum['is-part-of-program'] }]
-		})
-	)(connection);
+	const grandparent = containers.add({ type: payloadTypes.enum.program }, { own_matrix: true });
+	const parent = containers.add({ type: payloadTypes.enum.program }, { own_matrix: true });
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	relations.add(parent, predicates.enum['is-part-of'], grandparent);
+	relations.add(measure, predicates.enum['is-part-of-program'], parent);
+	await containers.persist();
+	await relations.persist();
 	await setContainerGrants(parent.guid, subject, { self: [], subordinates: ['read'] })(connection);
 	await setContainerGrants(grandparent.guid, subject, {
 		self: [],
@@ -551,26 +517,19 @@ test('decoupled ancestors accumulate up the chain, nearest first', async ({
 });
 
 test('paths meeting at the same decoupled ancestor yield one source', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
+	connection,
+	containers,
+	relations
+}) => {
 	const subject = await newTestUser(connection);
-	const program = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
-	)(connection);
-	const chapter = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.goal, {
-			relation: [{ object: program.guid, predicate: predicates.enum['is-part-of-program'] }]
-		})
-	)(connection);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, {
-			relation: [
-				{ object: chapter.guid, predicate: predicates.enum['is-part-of'] },
-				{ object: program.guid, predicate: predicates.enum['is-part-of-program'] }
-			]
-		})
-	)(connection);
+	const program = containers.add({ type: payloadTypes.enum.program }, { own_matrix: true });
+	const chapter = containers.add({ type: payloadTypes.enum.goal });
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	relations.add(chapter, predicates.enum['is-part-of-program'], program);
+	relations.add(measure, predicates.enum['is-part-of'], chapter);
+	relations.add(measure, predicates.enum['is-part-of-program'], program);
+	await containers.persist();
+	await relations.persist();
 	await setContainerGrants(program.guid, subject, { self: [], subordinates: ['read'] })(connection);
 
 	const grants = await computeUserGrants(connection, subject, [measure.guid]);
@@ -579,24 +538,18 @@ test('paths meeting at the same decoupled ancestor yield one source', async ({
 });
 
 test('a full self set on one of several sources makes an administrator', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
+	connection,
+	containers,
+	relations
+}) => {
 	const subject = await newTestUser(connection);
-	const programA = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
-	)(connection);
-	const programB = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
-	)(connection);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, {
-			relation: [
-				{ object: programA.guid, predicate: predicates.enum['is-part-of-program'] },
-				{ object: programB.guid, predicate: predicates.enum['is-part-of-program'] }
-			]
-		})
-	)(connection);
+	const programA = containers.add({ type: payloadTypes.enum.program }, { own_matrix: true });
+	const programB = containers.add({ type: payloadTypes.enum.program }, { own_matrix: true });
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	relations.add(measure, predicates.enum['is-part-of-program'], programA);
+	relations.add(measure, predicates.enum['is-part-of-program'], programB);
+	await containers.persist();
+	await relations.persist();
 	await setContainerGrants(programA.guid, subject, {
 		self: ['read', 'update', 'manage-users'],
 		subordinates: []
@@ -623,94 +576,81 @@ async function sourcesOf(connection: Fixtures['connection'], guid: string) {
 	return (await computeUserGrants(connection, subject, [guid])).get(guid)?.sources;
 }
 
-async function newDecoupledUnit(connection: Fixtures['connection'], organization: string) {
-	return createContainer(
-		newTestContainer(organization, payloadTypes.enum.organizational_unit, { ownMatrix: true })
-	)(connection);
+function addDecoupledUnit(containers: ContainerFixtures) {
+	return containers.add({ type: payloadTypes.enum.organizational_unit }, { own_matrix: true });
 }
 
 test('managed_by parity: program governed by the organization', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
-	const program = await createContainer(newTestContainer(organization, payloadTypes.enum.program))(
-		connection
-	);
+	connection,
+	containers,
+	organization
+}) => {
+	const program = containers.add({ type: payloadTypes.enum.program });
+	await containers.persist();
 	expect(await sourcesOf(connection, program.guid)).toEqual([organization]);
 });
 
 test('managed_by parity: program governed by the organizational unit', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
-	const unit = await newDecoupledUnit(connection, organization);
-	const program = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.program, { organizationalUnit: unit.guid })
-	)(connection);
+	connection,
+	containers
+}) => {
+	const unit = addDecoupledUnit(containers);
+	const program = containers.add(
+		{ type: payloadTypes.enum.program },
+		{ organizational_unit: unit.guid }
+	);
+	await containers.persist();
 	expect(await sourcesOf(connection, program.guid)).toEqual([unit.guid]);
 });
 
 test('managed_by parity: program governed by itself when it has a matrix', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
-	const program = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
-	)(connection);
+	connection,
+	containers
+}) => {
+	const program = containers.add({ type: payloadTypes.enum.program }, { own_matrix: true });
+	await containers.persist();
 	expect(await sourcesOf(connection, program.guid)).toEqual([program.guid]);
 });
 
 test('managed_by parity: measure governed by its program when only the program has a matrix', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
-	const program = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
-	)(connection);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, {
-			relation: [{ object: program.guid, predicate: predicates.enum['is-part-of-program'] }]
-		})
-	)(connection);
+	connection,
+	containers,
+	relations
+}) => {
+	const program = containers.add({ type: payloadTypes.enum.program }, { own_matrix: true });
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	relations.add(measure, predicates.enum['is-part-of-program'], program);
+	await containers.persist();
+	await relations.persist();
 	expect(await sourcesOf(connection, measure.guid)).toEqual([program.guid]);
 });
 
 test('managed_by parity: measure governed by both matrices when program and measure have one', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
-	const program = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
-	)(connection);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, {
-			ownMatrix: true,
-			relation: [{ object: program.guid, predicate: predicates.enum['is-part-of-program'] }]
-		})
-	)(connection);
+	connection,
+	containers,
+	relations
+}) => {
+	const program = containers.add({ type: payloadTypes.enum.program }, { own_matrix: true });
+	const measure = containers.add({ type: payloadTypes.enum.measure }, { own_matrix: true });
+	relations.add(measure, predicates.enum['is-part-of-program'], program);
+	await containers.persist();
+	await relations.persist();
 	// nearest first: the measure's own matrix precedes the program's
 	expect(await sourcesOf(connection, measure.guid)).toEqual([measure.guid, program.guid]);
 });
 
 test('managed_by parity: matrices accumulate across all levels, nearest first', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
-	const program = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
-	)(connection);
-	const goal = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.goal, {
-			ownMatrix: true,
-			relation: [{ object: program.guid, predicate: predicates.enum['is-part-of-program'] }]
-		})
-	)(connection);
-	const subgoal = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.goal, {
-			ownMatrix: true,
-			relation: [{ object: goal.guid, predicate: predicates.enum['is-part-of'] }]
-		})
-	)(connection);
+	connection,
+	containers,
+	relations
+}) => {
+	const program = containers.add({ type: payloadTypes.enum.program }, { own_matrix: true });
+	const goal = containers.add({ type: payloadTypes.enum.goal }, { own_matrix: true });
+	const subgoal = containers.add({ type: payloadTypes.enum.goal }, { own_matrix: true });
+	relations.add(goal, predicates.enum['is-part-of-program'], program);
+	relations.add(subgoal, predicates.enum['is-part-of'], goal);
+	await containers.persist();
+	await relations.persist();
 	expect(await sourcesOf(connection, subgoal.guid)).toEqual([
 		subgoal.guid,
 		goal.guid,
@@ -719,116 +659,95 @@ test('managed_by parity: matrices accumulate across all levels, nearest first', 
 });
 
 test('managed_by parity: decoupled ancestors reachable via several paths appear once', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
-	const firstProgram = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
-	)(connection);
-	const secondProgram = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
-	)(connection);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, {
-			relation: [
-				{ object: firstProgram.guid, predicate: predicates.enum['is-part-of-program'] },
-				{ object: secondProgram.guid, predicate: predicates.enum['is-part-of-program'] }
-			]
-		})
-	)(connection);
+	connection,
+	containers,
+	relations
+}) => {
+	const firstProgram = containers.add({ type: payloadTypes.enum.program }, { own_matrix: true });
+	const secondProgram = containers.add({ type: payloadTypes.enum.program }, { own_matrix: true });
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	relations.add(measure, predicates.enum['is-part-of-program'], firstProgram);
+	relations.add(measure, predicates.enum['is-part-of-program'], secondProgram);
+	await containers.persist();
+	await relations.persist();
 	expect(await sourcesOf(connection, measure.guid)).toEqual(
 		[firstProgram.guid, secondProgram.guid].toSorted()
 	);
 });
 
 test('managed_by parity: a decoupled ancestor shared by two paths appears once', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
-	const root = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.goal, { ownMatrix: true })
-	)(connection);
-	const firstBranch = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.goal, {
-			relation: [{ object: root.guid, predicate: predicates.enum['is-part-of'] }]
-		})
-	)(connection);
-	const secondBranch = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.goal, {
-			relation: [{ object: root.guid, predicate: predicates.enum['is-part-of'] }]
-		})
-	)(connection);
-	const leaf = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.goal, {
-			relation: [
-				{ object: firstBranch.guid, predicate: predicates.enum['is-part-of'] },
-				{ object: secondBranch.guid, predicate: predicates.enum['is-part-of'] }
-			]
-		})
-	)(connection);
+	connection,
+	containers,
+	relations
+}) => {
+	const root = containers.add({ type: payloadTypes.enum.goal }, { own_matrix: true });
+	const firstBranch = containers.add({ type: payloadTypes.enum.goal });
+	const secondBranch = containers.add({ type: payloadTypes.enum.goal });
+	const leaf = containers.add({ type: payloadTypes.enum.goal });
+	relations.add(firstBranch, predicates.enum['is-part-of'], root);
+	relations.add(secondBranch, predicates.enum['is-part-of'], root);
+	relations.add(leaf, predicates.enum['is-part-of'], firstBranch);
+	relations.add(leaf, predicates.enum['is-part-of'], secondBranch);
+	await containers.persist();
+	await relations.persist();
 	expect(await sourcesOf(connection, leaf.guid)).toEqual([root.guid]);
 });
 
 test('managed_by parity: measure keeps only its own matrix under an inheriting program', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
-	const program = await createContainer(newTestContainer(organization, payloadTypes.enum.program))(
-		connection
-	);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, {
-			ownMatrix: true,
-			relation: [{ object: program.guid, predicate: predicates.enum['is-part-of-program'] }]
-		})
-	)(connection);
+	connection,
+	containers,
+	relations
+}) => {
+	const program = containers.add({ type: payloadTypes.enum.program });
+	const measure = containers.add({ type: payloadTypes.enum.measure }, { own_matrix: true });
+	relations.add(measure, predicates.enum['is-part-of-program'], program);
+	await containers.persist();
+	await relations.persist();
 	expect(await sourcesOf(connection, measure.guid)).toEqual([measure.guid]);
 });
 
 test('managed_by parity: the organizational unit never accompanies a decoupled ancestor', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
-	const unit = await newDecoupledUnit(connection, organization);
-	const program = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
-	)(connection);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, {
-			organizationalUnit: unit.guid,
-			relation: [{ object: program.guid, predicate: predicates.enum['is-part-of-program'] }]
-		})
-	)(connection);
+	connection,
+	containers,
+	relations
+}) => {
+	const unit = addDecoupledUnit(containers);
+	const program = containers.add({ type: payloadTypes.enum.program }, { own_matrix: true });
+	const measure = containers.add(
+		{ type: payloadTypes.enum.measure },
+		{ organizational_unit: unit.guid }
+	);
+	relations.add(measure, predicates.enum['is-part-of-program'], program);
+	await containers.persist();
+	await relations.persist();
 	expect(await sourcesOf(connection, measure.guid)).toEqual([program.guid]);
 });
 
 test('managed_by parity: measure governed by the organization when its program inherits', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
-	const program = await createContainer(newTestContainer(organization, payloadTypes.enum.program))(
-		connection
-	);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, {
-			relation: [{ object: program.guid, predicate: predicates.enum['is-part-of-program'] }]
-		})
-	)(connection);
+	connection,
+	containers,
+	organization,
+	relations
+}) => {
+	const program = containers.add({ type: payloadTypes.enum.program });
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	relations.add(measure, predicates.enum['is-part-of-program'], program);
+	await containers.persist();
+	await relations.persist();
 	expect(await sourcesOf(connection, measure.guid)).toEqual([organization]);
 });
 
 test('managed_by parity: measure falls back to the organization when its program inherits again', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
-	const program = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
-	)(connection);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, {
-			relation: [{ object: program.guid, predicate: predicates.enum['is-part-of-program'] }]
-		})
-	)(connection);
+	connection,
+	containers,
+	organization,
+	relations
+}) => {
+	const program = containers.add({ type: payloadTypes.enum.program }, { own_matrix: true });
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	relations.add(measure, predicates.enum['is-part-of-program'], program);
+	await containers.persist();
+	await relations.persist();
 	expect(await sourcesOf(connection, measure.guid)).toEqual([program.guid]);
 
 	const persistedProgram = await getContainerByGuid(program.guid)(connection);
@@ -839,17 +758,16 @@ test('managed_by parity: measure falls back to the organization when its program
 });
 
 test('managed_by parity: measure falls back to the organization when it is detached from its program', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
-	const program = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
-	)(connection);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, {
-			relation: [{ object: program.guid, predicate: predicates.enum['is-part-of-program'] }]
-		})
-	)(connection);
+	connection,
+	containers,
+	organization,
+	relations
+}) => {
+	const program = containers.add({ type: payloadTypes.enum.program }, { own_matrix: true });
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	relations.add(measure, predicates.enum['is-part-of-program'], program);
+	await containers.persist();
+	await relations.persist();
 	expect(await sourcesOf(connection, measure.guid)).toEqual([program.guid]);
 
 	const persistedMeasure = await getContainerByGuid(measure.guid)(connection);
@@ -858,17 +776,16 @@ test('managed_by parity: measure falls back to the organization when it is detac
 });
 
 test('managed_by parity: measure falls back to the organization when its program is deleted', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
-	const program = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
-	)(connection);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, {
-			relation: [{ object: program.guid, predicate: predicates.enum['is-part-of-program'] }]
-		})
-	)(connection);
+	connection,
+	containers,
+	organization,
+	relations
+}) => {
+	const program = containers.add({ type: payloadTypes.enum.program }, { own_matrix: true });
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	relations.add(measure, predicates.enum['is-part-of-program'], program);
+	await containers.persist();
+	await relations.persist();
 	expect(await sourcesOf(connection, measure.guid)).toEqual([program.guid]);
 
 	const persistedProgram = await getContainerByGuid(program.guid)(connection);
@@ -877,16 +794,16 @@ test('managed_by parity: measure falls back to the organization when its program
 });
 
 test('managed_by parity: the sources follow the container into another organizational unit', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
-	const formerUnit = await newDecoupledUnit(connection, organization);
-	const currentUnit = await newDecoupledUnit(connection, organization);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, {
-			organizationalUnit: formerUnit.guid
-		})
-	)(connection);
+	connection,
+	containers
+}) => {
+	const formerUnit = addDecoupledUnit(containers);
+	const currentUnit = addDecoupledUnit(containers);
+	const measure = containers.add(
+		{ type: payloadTypes.enum.measure },
+		{ organizational_unit: formerUnit.guid }
+	);
+	await containers.persist();
 	expect(await sourcesOf(connection, measure.guid)).toEqual([formerUnit.guid]);
 
 	const persistedMeasure = await getContainerByGuid(measure.guid)(connection);
@@ -897,78 +814,56 @@ test('managed_by parity: the sources follow the container into another organizat
 });
 
 test('managed_by parity: goal governed by the program matrix two levels up', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
-	const program = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
-	)(connection);
-	const goal = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.goal, {
-			relation: [{ object: program.guid, predicate: predicates.enum['is-part-of-program'] }]
-		})
-	)(connection);
-	const subgoal = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.goal, {
-			relation: [{ object: goal.guid, predicate: predicates.enum['is-part-of'] }]
-		})
-	)(connection);
+	connection,
+	containers,
+	relations
+}) => {
+	const program = containers.add({ type: payloadTypes.enum.program }, { own_matrix: true });
+	const goal = containers.add({ type: payloadTypes.enum.goal });
+	const subgoal = containers.add({ type: payloadTypes.enum.goal });
+	relations.add(goal, predicates.enum['is-part-of-program'], program);
+	relations.add(subgoal, predicates.enum['is-part-of'], goal);
+	await containers.persist();
+	await relations.persist();
 	expect(await sourcesOf(connection, subgoal.guid)).toEqual([program.guid]);
 });
 
 test('managed_by parity: cyclic relations do not prevent computation', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
-	const goal = await createContainer(newTestContainer(organization, payloadTypes.enum.goal))(
-		connection
-	);
-	const otherGoal = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.goal, {
-			relation: [{ object: goal.guid, predicate: predicates.enum['is-part-of'] }]
-		})
-	)(connection);
-	const persistedGoal = await getContainerByGuid(goal.guid)(connection);
-	await updateContainer(
-		modifiedContainer.parse({
-			...persistedGoal,
-			relation: [
-				...persistedGoal.relation,
-				{
-					object: otherGoal.guid,
-					position: 0,
-					predicate: predicates.enum['is-part-of'],
-					subject: goal.guid
-				}
-			]
-		})
-	)(connection);
+	connection,
+	containers,
+	organization,
+	relations
+}) => {
+	const goal = containers.add({ type: payloadTypes.enum.goal });
+	const otherGoal = containers.add({ type: payloadTypes.enum.goal });
+	relations.add(otherGoal, predicates.enum['is-part-of'], goal);
+	relations.add(goal, predicates.enum['is-part-of'], otherGoal);
+	await containers.persist();
+	await relations.persist();
 	expect(await sourcesOf(connection, goal.guid)).toEqual([organization]);
 	expect(await sourcesOf(connection, otherGoal.guid)).toEqual([organization]);
 });
 
 test('managed_by parity: section governed by the matrix of its measure', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, { ownMatrix: true })
-	)(connection);
-	const section = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.text, {
-			relation: [{ object: measure.guid, predicate: predicates.enum['is-section-of'] }]
-		})
-	)(connection);
+	connection,
+	containers,
+	relations
+}) => {
+	const measure = containers.add({ type: payloadTypes.enum.measure }, { own_matrix: true });
+	const section = containers.add({ type: payloadTypes.enum.text });
+	relations.add(section, predicates.enum['is-section-of'], measure);
+	await containers.persist();
+	await relations.persist();
 	expect(await sourcesOf(connection, section.guid)).toEqual([measure.guid]);
 });
 
 test('a decoupled container names the area it would fall back to', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, { ownMatrix: true })
-	)(connection);
+	connection,
+	containers,
+	organization
+}) => {
+	const measure = containers.add({ type: payloadTypes.enum.measure }, { own_matrix: true });
+	await containers.persist();
 	const subject = await newTestUser(connection);
 
 	const grants = await computeUserGrants(connection, subject, [measure.guid]);
@@ -977,30 +872,28 @@ test('a decoupled container names the area it would fall back to', async ({
 	expect(grants.get(measure.guid)?.dormant).toBe(organization);
 });
 
-test('the area lies dormant only while a chain stays open', async ({ connection }: Fixtures) => {
+test('the area lies dormant only while a chain stays open', async ({
+	connection,
+	containers,
+	relations
+}) => {
 	// a decoupled program on one chain, an inheriting program topping out on
 	// the other: the organization applies while the measure inherits and lies
 	// dormant once it decouples; a decoupled unit takes the organization's place
-	const organization = uuid();
-	const unit = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.organizational_unit, { ownMatrix: true })
-	)(connection);
-	const decoupledProgram = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
-	)(connection);
-	const inheritingProgram = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.program)
-	)(connection);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, {
-			ownMatrix: true,
-			organizationalUnit: unit.guid,
-			relation: [
-				{ object: decoupledProgram.guid, predicate: predicates.enum['is-part-of-program'] },
-				{ object: inheritingProgram.guid, predicate: predicates.enum['is-part-of-program'] }
-			]
-		})
-	)(connection);
+	const unit = addDecoupledUnit(containers);
+	const decoupledProgram = containers.add(
+		{ type: payloadTypes.enum.program },
+		{ own_matrix: true }
+	);
+	const inheritingProgram = containers.add({ type: payloadTypes.enum.program });
+	const measure = containers.add(
+		{ type: payloadTypes.enum.measure },
+		{ organizational_unit: unit.guid, own_matrix: true }
+	);
+	relations.add(measure, predicates.enum['is-part-of-program'], decoupledProgram);
+	relations.add(measure, predicates.enum['is-part-of-program'], inheritingProgram);
+	await containers.persist();
+	await relations.persist();
 	const subject = await newTestUser(connection);
 
 	const decoupled = (await computeUserGrants(connection, subject, [measure.guid])).get(
@@ -1020,30 +913,21 @@ test('the area lies dormant only while a chain stays open', async ({ connection 
 
 // The units above a container's unit: a unit's matrix governs the contents
 // of the units below it, so what governs a unit governs its contents too.
-async function newUnitBelow(
-	connection: Fixtures['connection'],
-	organization: string,
-	parent: string,
-	ownMatrix: boolean
-) {
-	return createContainer(
-		newTestContainer(organization, payloadTypes.enum.organizational_unit, {
-			ownMatrix,
-			relation: [{ object: parent, predicate: predicates.enum['is-part-of'] }]
-		})
-	)(connection);
-}
-
 test('a decoupled unit governs the contents of the units below it', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
+	connection,
+	containers,
+	relations
+}) => {
 	const subject = await newTestUser(connection);
-	const unit = await newDecoupledUnit(connection, organization);
-	const subunit = await newUnitBelow(connection, organization, unit.guid, false);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, { organizationalUnit: subunit.guid })
-	)(connection);
+	const unit = addDecoupledUnit(containers);
+	const subunit = containers.add({ type: payloadTypes.enum.organizational_unit });
+	const measure = containers.add(
+		{ type: payloadTypes.enum.measure },
+		{ organizational_unit: subunit.guid }
+	);
+	relations.add(subunit, predicates.enum['is-part-of'], unit);
+	await containers.persist();
+	await relations.persist();
 	await setContainerGrants(unit.guid, subject, { self: [], subordinates: ['read', 'update'] })(
 		connection
 	);
@@ -1064,15 +948,20 @@ test('a decoupled unit governs the contents of the units below it', async ({
 });
 
 test('the nearest unit above with a matrix governs the contents alone', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
+	connection,
+	containers,
+	relations
+}) => {
 	const subject = await newTestUser(connection);
-	const unit = await newDecoupledUnit(connection, organization);
-	const subunit = await newUnitBelow(connection, organization, unit.guid, true);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, { organizationalUnit: subunit.guid })
-	)(connection);
+	const unit = addDecoupledUnit(containers);
+	const subunit = addDecoupledUnit(containers);
+	const measure = containers.add(
+		{ type: payloadTypes.enum.measure },
+		{ organizational_unit: subunit.guid }
+	);
+	relations.add(subunit, predicates.enum['is-part-of'], unit);
+	await containers.persist();
+	await relations.persist();
 	await setContainerGrants(unit.guid, subject, { self: [], subordinates: ['update'] })(connection);
 	await setContainerGrants(subunit.guid, subject, { self: [], subordinates: ['read'] })(connection);
 
@@ -1085,12 +974,16 @@ test('the nearest unit above with a matrix governs the contents alone', async ({
 });
 
 test('a decoupled unit below a decoupled unit is governed by its own matrix alone', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
+	connection,
+	containers,
+	relations
+}) => {
 	const subject = await newTestUser(connection);
-	const unit = await newDecoupledUnit(connection, organization);
-	const subunit = await newUnitBelow(connection, organization, unit.guid, true);
+	const unit = addDecoupledUnit(containers);
+	const subunit = addDecoupledUnit(containers);
+	relations.add(subunit, predicates.enum['is-part-of'], unit);
+	await containers.persist();
+	await relations.persist();
 	await setContainerGrants(unit.guid, subject, { self: ['read'], subordinates: ['update'] })(
 		connection
 	);
@@ -1107,13 +1000,19 @@ test('a decoupled unit below a decoupled unit is governed by its own matrix alon
 });
 
 test('an inheriting unit follows the nearest unit above with a matrix', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
+	connection,
+	containers,
+	organization,
+	relations
+}) => {
 	const subject = await newTestUser(connection);
-	const unit = await newDecoupledUnit(connection, organization);
-	const middle = await newUnitBelow(connection, organization, unit.guid, false);
-	const subunit = await newUnitBelow(connection, organization, middle.guid, false);
+	const unit = addDecoupledUnit(containers);
+	const middle = containers.add({ type: payloadTypes.enum.organizational_unit });
+	const subunit = containers.add({ type: payloadTypes.enum.organizational_unit });
+	relations.add(middle, predicates.enum['is-part-of'], unit);
+	relations.add(subunit, predicates.enum['is-part-of'], middle);
+	await containers.persist();
+	await relations.persist();
 	await setContainerGrants(unit.guid, subject, { self: [], subordinates: ['update'] })(connection);
 	await setContainerGrants(organization, subject, { self: [], subordinates: ['delete'] })(
 		connection
@@ -1128,14 +1027,17 @@ test('an inheriting unit follows the nearest unit above with a matrix', async ({
 });
 
 test('an inheriting unit without a unit above with a matrix follows the organization', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
+	connection,
+	containers,
+	organization,
+	relations
+}) => {
 	const subject = await newTestUser(connection);
-	const unit = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.organizational_unit)
-	)(connection);
-	const subunit = await newUnitBelow(connection, organization, unit.guid, false);
+	const unit = containers.add({ type: payloadTypes.enum.organizational_unit });
+	const subunit = containers.add({ type: payloadTypes.enum.organizational_unit });
+	relations.add(subunit, predicates.enum['is-part-of'], unit);
+	await containers.persist();
+	await relations.persist();
 	await setContainerGrants(organization, subject, { self: [], subordinates: ['delete'] })(
 		connection
 	);
@@ -1147,18 +1049,20 @@ test('an inheriting unit without a unit above with a matrix follows the organiza
 });
 
 test('administrators of a unit above administer the contents of the units below', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
+	connection,
+	containers,
+	relations
+}) => {
 	const subject = await newTestUser(connection);
-	const unit = await newDecoupledUnit(connection, organization);
-	const subunit = await newUnitBelow(connection, organization, unit.guid, true);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, {
-			ownMatrix: true,
-			organizationalUnit: subunit.guid
-		})
-	)(connection);
+	const unit = addDecoupledUnit(containers);
+	const subunit = addDecoupledUnit(containers);
+	const measure = containers.add(
+		{ type: payloadTypes.enum.measure },
+		{ organizational_unit: subunit.guid, own_matrix: true }
+	);
+	relations.add(subunit, predicates.enum['is-part-of'], unit);
+	await containers.persist();
+	await relations.persist();
 	await setContainerGrants(unit.guid, subject, {
 		self: ['read', 'update', 'manage-users'],
 		subordinates: ['read', 'update', 'create', 'delete', 'manage-users']
@@ -1172,17 +1076,22 @@ test('administrators of a unit above administer the contents of the units below'
 });
 
 test('creating within a unit is judged by what governs its contents', async ({
-	connection
-}: Fixtures) => {
+	connection,
+	containers,
+	relations
+}) => {
 	// the stub of a new container takes the grants of its unit, which must be
 	// the ones its contents are governed by — Niels' finding on nested units
-	const organization = uuid();
 	const subject = await newTestUser(connection);
-	const unit = await newDecoupledUnit(connection, organization);
-	const subunit = await newUnitBelow(connection, organization, unit.guid, false);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, { organizationalUnit: subunit.guid })
-	)(connection);
+	const unit = addDecoupledUnit(containers);
+	const subunit = containers.add({ type: payloadTypes.enum.organizational_unit });
+	const measure = containers.add(
+		{ type: payloadTypes.enum.measure },
+		{ organizational_unit: subunit.guid }
+	);
+	relations.add(subunit, predicates.enum['is-part-of'], unit);
+	await containers.persist();
+	await relations.persist();
 	await setContainerGrants(unit.guid, subject, {
 		self: [],
 		subordinates: ['read', 'update', 'create']
@@ -1191,7 +1100,10 @@ test('creating within a unit is judged by what governs its contents', async ({
 	const subunitGrant = (await computeUserGrants(connection, subject, [subunit.guid])).get(
 		subunit.guid
 	);
-	const stub = grantForNewContainer({ ...subunit, user_grant: subunitGrant });
+	const stub = grantForNewContainer({
+		...(await getContainerByGuid(subunit.guid)(connection)),
+		user_grant: subunitGrant
+	});
 	const created = (await computeUserGrants(connection, subject, [measure.guid])).get(measure.guid);
 
 	expect(stub?.subordinates).toEqual(['read', 'update', 'create']);
@@ -1201,29 +1113,22 @@ test('creating within a unit is judged by what governs its contents', async ({
 
 // A team is a unit marked as such; it holds rows like a user does and the
 // subjects on its own matrix hold whatever the team holds.
-async function newTestTeam(
-	connection: Fixtures['connection'],
-	organization: string,
-	members: string[]
-) {
-	return createContainer(
-		newTestContainer(organization, payloadTypes.enum.organizational_unit, {
-			payload: {
-				organizationalUnitType: organizationalUnitType.enum['organizational_unit_type.team']
-			},
-			user: members.map((subject) => ({ predicate: predicates.enum['is-member-of'], subject }))
-		})
-	)(connection);
+function addTeam(containers: ContainerFixtures, members: string[]) {
+	return containers.add(
+		{
+			organizationalUnitType: organizationalUnitType.enum['organizational_unit_type.team'],
+			type: payloadTypes.enum.organizational_unit
+		},
+		{ user: members.map((subject) => ({ predicate: predicates.enum['is-member-of'], subject })) }
+	);
 }
 
-test('members hold the rows of their team', async ({ connection }: Fixtures) => {
-	const organization = uuid();
+test('members hold the rows of their team', async ({ connection, containers, organization }) => {
 	const member = await newTestUser(connection);
 	const other = await newTestUser(connection);
-	const team = await newTestTeam(connection, organization, [member]);
-	const measure = await createContainer(newTestContainer(organization, payloadTypes.enum.measure))(
-		connection
-	);
+	const team = addTeam(containers, [member]);
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	await containers.persist();
 	await setContainerGrants(organization, team.guid, {
 		self: [],
 		subordinates: ['read', 'update', 'create']
@@ -1247,14 +1152,14 @@ test('members hold the rows of their team', async ({ connection }: Fixtures) => 
 });
 
 test('a team row on a decoupled container acts for its members', async ({
-	connection
-}: Fixtures) => {
-	const organization = uuid();
+	connection,
+	containers,
+	organization
+}) => {
 	const member = await newTestUser(connection);
-	const team = await newTestTeam(connection, organization, [member]);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, { ownMatrix: true })
-	)(connection);
+	const team = addTeam(containers, [member]);
+	const measure = containers.add({ type: payloadTypes.enum.measure }, { own_matrix: true });
+	await containers.persist();
 	await setContainerGrants(measure.guid, team.guid, {
 		self: ['read', 'update'],
 		subordinates: ['read']
@@ -1275,13 +1180,15 @@ test('a team row on a decoupled container acts for its members', async ({
 	});
 });
 
-test('rows held directly and through a team add up', async ({ connection }: Fixtures) => {
-	const organization = uuid();
+test('rows held directly and through a team add up', async ({
+	connection,
+	containers,
+	organization
+}) => {
 	const member = await newTestUser(connection);
-	const team = await newTestTeam(connection, organization, [member]);
-	const measure = await createContainer(newTestContainer(organization, payloadTypes.enum.measure))(
-		connection
-	);
+	const team = addTeam(containers, [member]);
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	await containers.persist();
 	await setContainerGrants(organization, member, { self: [], subordinates: ['read'] })(connection);
 	await setContainerGrants(organization, team.guid, {
 		self: [],
@@ -1293,27 +1200,33 @@ test('rows held directly and through a team add up', async ({ connection }: Fixt
 	expect(grants.get(measure.guid)?.self).toEqual(['read', 'update']);
 });
 
-test('the rows of a deleted team no longer reach its members', async ({ connection }: Fixtures) => {
-	const organization = uuid();
+test('the rows of a deleted team no longer reach its members', async ({
+	connection,
+	containers,
+	organization
+}) => {
 	const member = await newTestUser(connection);
-	const team = await newTestTeam(connection, organization, [member]);
-	const measure = await createContainer(newTestContainer(organization, payloadTypes.enum.measure))(
-		connection
-	);
+	const team = addTeam(containers, [member]);
+	const measure = containers.add({ type: payloadTypes.enum.measure });
+	await containers.persist();
 	await setContainerGrants(organization, team.guid, { self: [], subordinates: ['read'] })(
 		connection
 	);
-	await deleteContainer(team)(connection);
+	await deleteContainer(await getContainerByGuid(team.guid)(connection))(connection);
 
 	const grants = await computeUserGrants(connection, member, [measure.guid]);
 	expect(grants.get(measure.guid)?.subordinates).toEqual([]);
 	expect(await getAllGrantsOfUser(member)(connection)).toEqual([]);
 });
 
-test('the session carries the rows of the teams of a user', async ({ connection }: Fixtures) => {
-	const organization = uuid();
+test('the session carries the rows of the teams of a user', async ({
+	connection,
+	containers,
+	organization
+}) => {
 	const member = await newTestUser(connection);
-	const team = await newTestTeam(connection, organization, [member]);
+	const team = addTeam(containers, [member]);
+	await containers.persist();
 	await setContainerGrants(organization, member, { self: [], subordinates: ['read'] })(connection);
 	await setContainerGrants(organization, team.guid, { self: [], subordinates: ['read', 'update'] })(
 		connection

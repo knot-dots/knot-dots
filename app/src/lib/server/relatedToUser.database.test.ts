@@ -8,51 +8,13 @@ const { enqueueIndexingEvent, enqueueIndexingEvents } = vi.hoisted(() => ({
 
 vi.mock('$lib/server/indexingQueue', () => ({ enqueueIndexingEvent, enqueueIndexingEvents }));
 
-import { type Fixtures, test } from '$lib/fixtures';
+import { type Fixtures, realm, test } from '$lib/fixtures';
+import { organizationalUnitType, payloadTypes, predicates } from '$lib/models';
 import {
-	type AnyPayload,
-	newContainer,
-	organizationalUnitType,
-	payloadTypes,
-	predicates
-} from '$lib/models';
-import {
-	createContainer,
 	createOrUpdateUser,
 	getAllContainersRelatedToUser,
 	setContainerGrants
 } from '$lib/server/db';
-
-const realm = 'test';
-
-function newTestContainer(
-	organization: string,
-	type: AnyPayload['type'],
-	options: {
-		ownMatrix?: boolean;
-		payload?: Record<string, unknown>;
-		user?: { predicate: string; subject: string }[];
-	} = {}
-) {
-	return {
-		...newContainer.parse({
-			managed_by: organization,
-			organization,
-			organizational_unit: null,
-			payload: {
-				...(type === payloadTypes.enum.organizational_unit
-					? { name: 'Lorem ipsum' }
-					: { title: 'Lorem ipsum' }),
-				...options.payload,
-				type
-			},
-			realm,
-			relation: [],
-			user: options.user ?? []
-		}),
-		own_matrix: options.ownMatrix ?? false
-	};
-}
 
 async function newTestUser(connection: Fixtures['connection']) {
 	const guid = uuid();
@@ -62,31 +24,22 @@ async function newTestUser(connection: Fixtures['connection']) {
 	return guid;
 }
 
-async function setUp(connection: Fixtures['connection']) {
-	const organization = uuid();
+test('a row of the team on a measure relates the measure to the members', async ({
+	connection,
+	containers
+}) => {
 	const member = await newTestUser(connection);
 	const other = await newTestUser(connection);
-	const team = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.organizational_unit, {
-			payload: {
-				organizationalUnitType: organizationalUnitType.enum['organizational_unit_type.team']
-			},
-			user: [{ predicate: predicates.enum['is-member-of'], subject: member }]
-		})
-	)(connection);
-	return { member, organization, other, team };
-}
-
-test('a row of the team on a measure relates the measure to the members', async ({
-	connection
-}: Fixtures) => {
-	const { member, organization, other, team } = await setUp(connection);
-	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, { ownMatrix: true })
-	)(connection);
-	const unrelated = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, { ownMatrix: true })
-	)(connection);
+	const team = containers.add(
+		{
+			organizationalUnitType: organizationalUnitType.enum['organizational_unit_type.team'],
+			type: payloadTypes.enum.organizational_unit
+		},
+		{ user: [{ predicate: predicates.enum['is-member-of'], subject: member }] }
+	);
+	const measure = containers.add({ type: payloadTypes.enum.measure }, { own_matrix: true });
+	const unrelated = containers.add({ type: payloadTypes.enum.measure }, { own_matrix: true });
+	await containers.persist();
 	await setContainerGrants(measure.guid, team.guid, {
 		self: ['read'],
 		subordinates: ['read']
