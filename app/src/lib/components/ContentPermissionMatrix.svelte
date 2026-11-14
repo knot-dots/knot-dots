@@ -471,10 +471,10 @@
 			{#if adminsExpanded}
 				{#each [...admins.map(userSubject), ...adminTeams.map(teamSubject)] as subject (subject.guid)}
 					<tr>
-						<td class="col-name" class:locked={!viewOnly}>
+						<td class="col-name" class:locked={editable}>
 							{@render subjectName(subject, false)}
 						</td>
-						<td class="col-role" class:locked={!viewOnly}>
+						<td class="col-role" class:locked={editable}>
 							<BadgeDropdown
 								allowEmpty={false}
 								value={memberRoles.enum.administrator}
@@ -487,7 +487,7 @@
 							{#each group.kinds as kind (kind)}
 								<td
 									class="col-grant"
-									class:locked={!viewOnly}
+									class:locked={editable}
 									class:col-group-start={kind === group.kinds[0]}
 								>
 									<PermissionCheckbox
@@ -501,7 +501,7 @@
 								</td>
 							{/each}
 						{/each}
-						<td class="col-actions" class:locked={!viewOnly}></td>
+						<td class="col-actions" class:locked={editable}></td>
 					</tr>
 				{/each}
 			{/if}
@@ -563,7 +563,7 @@
 				{#each ownRows as subject (subject.guid)}
 					{@const set = visibleSetFor(subject.guid)}
 					{@const self = isSelf(subject)}
-					{@const locked = !viewOnly && (inherits || (editable && self))}
+					{@const locked = editable && (inherits || self)}
 					{@const cellState = inherits ? 'inactive' : editable && !self ? 'editable' : 'readonly'}
 					<tr>
 						<td class="col-name" class:locked>
@@ -678,10 +678,10 @@
 					{#each sectionRows(section) as { set, subject } (subject.guid)}
 						{@const cellState = section.active ? 'readonly' : 'inactive'}
 						<tr>
-							<td class="col-name" class:locked={!viewOnly}>
+							<td class="col-name" class:locked={editable}>
 								{@render subjectName(subject, false)}
 							</td>
-							<td class="col-role" class:locked={!viewOnly}>
+							<td class="col-role" class:locked={editable}>
 								<BadgeDropdown
 									allowEmpty={false}
 									value={memberRoleMatchingGrantSet(set) ?? undefined}
@@ -695,7 +695,7 @@
 									{@const checked = set[group.target].includes(kind)}
 									<td
 										class="col-grant"
-										class:locked={!viewOnly}
+										class:locked={editable}
 										class:col-group-start={kind === group.kinds[0]}
 									>
 										<PermissionCheckbox
@@ -713,7 +713,7 @@
 									</td>
 								{/each}
 							{/each}
-							<td class="col-actions" class:locked={!viewOnly}></td>
+							<td class="col-actions" class:locked={editable}></td>
 						</tr>
 					{:else}
 						<tr class="empty-row">
@@ -821,8 +821,9 @@
 		padding: 0.625rem 0.5rem;
 	}
 
-	/* the hatched cells mark locked rows; the pattern of the Figma component
-	   (#fff5f5/#ffebeb), overlaid at 75% like in the design */
+	/* the hatched cells mark the rows locked in edit mode, outside of it the
+	   table reads plain; the pattern of the Figma component (#fff5f5/#ffebeb),
+	   overlaid at 75% like in the design */
 	td.locked {
 		background: repeating-linear-gradient(
 			45deg,
