@@ -1,6 +1,16 @@
 import { beforeEach, expect, test, vi } from 'vitest';
 import { anyContainer, emptyGrantRecords, type AnyPayload, type Container } from '$lib/models';
 
+// Categories are identified by the GUID of their category container and
+// their values by the GUID of their term container.
+const sdg = vi.hoisted(() => ({
+	climateAction: '00000000-0000-4000-8000-0000000000c2',
+	climateTarget: '00000000-0000-4000-8000-0000000000c3',
+	key: '00000000-0000-4000-8000-0000000000c1',
+	retired: '00000000-0000-4000-8000-0000000000c4',
+	unknown: '00000000-0000-4000-8000-0000000000c5'
+}));
+
 const mocks = vi.hoisted(() => ({
 	containers: new Map<string, Container<AnyPayload>>(),
 	createAuthorizedContainer: vi.fn(),
@@ -53,12 +63,16 @@ vi.mock('$lib/server/mcp/categories', async (importOriginal) => ({
 	loadMcpCategoryContext: async ({ types }: { types: string[] }) => {
 		const { filterCategoryContext } = await import('$lib/categoryOptions');
 		const context = {
-			keys: ['sdg'],
-			labels: new Map([['sdg', 'Sustainable Development Goal']]),
-			objectTypesPerKey: { sdg: ['goal'] },
+			keys: [sdg.key],
+			labels: new Map([[sdg.key, 'Sustainable Development Goal']]),
+			objectTypesPerKey: { [sdg.key]: ['goal'] },
 			options: {
-				sdg: [
-					{ label: 'Climate action', subOptions: [{ label: 'Target', value: '13.2' }], value: '13' }
+				[sdg.key]: [
+					{
+						label: 'Climate action',
+						subOptions: [{ label: 'Target', value: sdg.climateTarget }],
+						value: sdg.climateAction
+					}
 				]
 			}
 		};
@@ -198,14 +212,14 @@ beforeEach(() => {
 });
 
 test('appends a collection that follows a filter to the sections of a program', async () => {
-	const output = await add({ categories: { sdg: ['13'] }, types: ['goal'] });
+	const output = await add({ categories: { [sdg.key]: [sdg.climateAction] }, types: ['goal'] });
 
 	expect(createdData()).toMatchObject({
 		payload: {
 			filter: {
 				organization: ['current'],
 				organizationalUnit: [],
-				sdg: ['13'],
+				[sdg.key]: [sdg.climateAction],
 				type: ['goal']
 			},
 			item: [],
@@ -230,7 +244,7 @@ test('appends a collection that follows a filter to the sections of a program', 
 			additionalFilters: {},
 			allowSearch: false,
 			allowSort: false,
-			categories: { sdg: ['13'] },
+			categories: { [sdg.key]: [sdg.climateAction] },
 			description: null,
 			guid: createdGuid,
 			items: [],
@@ -284,8 +298,8 @@ test('rejects items the user cannot read', async () => {
 });
 
 test('rejects category values the organization does not offer', async () => {
-	await expect(add({ categories: { sdg: ['99'] }, types: ['goal'] })).rejects.toThrow(
-		'Unknown value of category sdg: 99.'
+	await expect(add({ categories: { [sdg.key]: [sdg.unknown] }, types: ['goal'] })).rejects.toThrow(
+		`Unknown value of category ${sdg.key}: ${sdg.unknown}.`
 	);
 	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
 });
@@ -294,7 +308,7 @@ test('rejects a parent whose detail view shows no sections, like a text section'
 	mocks.containers.set(goalGuid, container(goalGuid, { title: 'Less traffic', type: 'effect' }));
 
 	await expect(add({ parentGuid: goalGuid, types: ['goal'] })).rejects.toThrow(
-		'A effect cannot be the is-section-of parent of a custom_collection.'
+		'An effect cannot be the is-section-of parent of a custom_collection.'
 	);
 	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
 });
@@ -318,7 +332,7 @@ test('appends a collection to an organizational unit within the unit', async () 
 test.each([
 	['neither types nor items', {}],
 	['both types and items', { items: [goalGuid], types: ['goal'] }],
-	['categories with items', { categories: { sdg: ['13'] }, items: [goalGuid] }],
+	['categories with items', { categories: { [sdg.key]: [sdg.climateAction] }, items: [goalGuid] }],
 	['an empty selection', { items: [] }]
 ])('rejects %s in the contract', (_, input) => {
 	expect(
@@ -337,7 +351,7 @@ test('changes the given settings and keeps the others', async () => {
 			filter: {
 				organization: ['current'],
 				organizationalUnit: [''],
-				sdg: ['13'],
+				[sdg.key]: [sdg.climateAction],
 				status: ['status.in_implementation'],
 				type: ['goal']
 			},
@@ -345,7 +359,10 @@ test('changes the given settings and keeps the others', async () => {
 		})
 	);
 
-	const output = await update({ categories: { sdg: ['13.2'] }, title: 'Climate targets' });
+	const output = await update({
+		categories: { [sdg.key]: [sdg.climateTarget] },
+		title: 'Climate targets'
+	});
 
 	expect(mocks.updateContainer).toHaveBeenCalledExactlyOnceWith(
 		expect.objectContaining({ guid: sectionGuid }),
@@ -355,7 +372,7 @@ test('changes the given settings and keeps the others', async () => {
 		filter: {
 			organization: ['current'],
 			organizationalUnit: [''],
-			sdg: ['13.2'],
+			[sdg.key]: [sdg.climateTarget],
 			status: ['status.in_implementation'],
 			type: ['goal']
 		},
@@ -374,7 +391,7 @@ test('changes the given settings and keeps the others', async () => {
 	);
 	expect(output.section).toMatchObject({
 		additionalFilters: { status: ['status.in_implementation'] },
-		categories: { sdg: ['13.2'] },
+		categories: { [sdg.key]: [sdg.climateTarget] },
 		organizationScope: { includeSubordinateOrganizationalUnits: false, type: 'current' },
 		parentGuid: programGuid,
 		revision: 3,
@@ -412,7 +429,7 @@ test('switches to a fixed selection and keeps the filter', async () => {
 test.each([
 	['an empty selection', { items: [] }],
 	['types', { types: ['measure'] }],
-	['categories', { categories: { sdg: ['13'] } }],
+	['categories', { categories: { [sdg.key]: [sdg.climateAction] } }],
 	['the organization scope', { includeSubordinateOrganizationalUnits: false }]
 ])('switches a fixed selection back to the filter for %s', async (_, settings) => {
 	mocks.containers.set(sectionGuid, collection({ filter: { type: ['goal'] }, item: [goalGuid] }));
@@ -461,13 +478,16 @@ test('replaces an organization scope chosen in the web application', async () =>
 });
 
 test('keeps stored category values the organization no longer offers', async () => {
-	mocks.containers.set(sectionGuid, collection({ filter: { sdg: ['retired'], type: ['goal'] } }));
+	mocks.containers.set(
+		sectionGuid,
+		collection({ filter: { [sdg.key]: [sdg.retired], type: ['goal'] } })
+	);
 
-	await update({ categories: { sdg: ['retired', '13'] } });
+	await update({ categories: { [sdg.key]: [sdg.retired, sdg.climateAction] } });
 
-	expect(updatedPayload().filter).toMatchObject({ sdg: ['retired', '13'] });
-	await expect(update({ categories: { sdg: ['99'] } })).rejects.toThrow(
-		'Unknown value of category sdg: 99.'
+	expect(updatedPayload().filter).toMatchObject({ [sdg.key]: [sdg.retired, sdg.climateAction] });
+	await expect(update({ categories: { [sdg.key]: [sdg.unknown] } })).rejects.toThrow(
+		`Unknown value of category ${sdg.key}: ${sdg.unknown}.`
 	);
 });
 
@@ -533,7 +553,7 @@ test('requires at least one setting to change in the contract', () => {
 
 test.each([
 	[{ items: [goalGuid], types: ['goal'] }, false],
-	[{ categories: { sdg: ['13'] }, items: [goalGuid] }, false],
+	[{ categories: { [sdg.key]: [sdg.climateAction] }, items: [goalGuid] }, false],
 	[{ includeSubordinateOrganizationalUnits: true, items: [goalGuid] }, false],
 	[{ items: [], types: ['goal'] }, true]
 ])(
