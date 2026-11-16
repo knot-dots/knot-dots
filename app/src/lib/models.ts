@@ -1756,9 +1756,39 @@ export function isIndicatorCollectionContainer(
 
 const initialIndicatorCollectionPayload = indicatorCollectionPayload;
 
+const indicatorDashboardHeightValues = ['1/4', '2/4', '4/4'] as const;
+
+export const indicatorDashboardHeights = z.enum(indicatorDashboardHeightValues);
+
+const indicatorDashboardViewValues = ['stat', 'chart'] as const;
+
+export const indicatorDashboardViews = z.enum(indicatorDashboardViewValues);
+
+const indicatorDashboardWidthValues = ['2/6', '3/6', '4/6', '6/6'] as const;
+
+export const indicatorDashboardWidths = z.enum(indicatorDashboardWidthValues);
+
+const indicatorDashboardItem = z.strictObject({
+	height: indicatorDashboardHeights.default(indicatorDashboardHeights.enum['4/4']),
+	indicator: z.uuid(),
+	view: indicatorDashboardViews.default(indicatorDashboardViews.enum.chart),
+	width: indicatorDashboardWidths.default(indicatorDashboardWidths.enum['2/6'])
+});
+
+export type IndicatorDashboardItem = z.infer<typeof indicatorDashboardItem>;
+
+export function indicatorDashboardItemFor(indicator: string): IndicatorDashboardItem {
+	return indicatorDashboardItem.parse({ indicator });
+}
+
+function deduplicateByIndicator(items: IndicatorDashboardItem[]) {
+	const seen = new Set<string>();
+	return items.filter(({ indicator }) => !seen.has(indicator) && seen.add(indicator));
+}
+
 const indicatorDashboardPayload = z.strictObject({
 	...sectionStyle.shape,
-	item: z.array(z.uuid()).transform(deduplicate).default([]),
+	item: z.array(indicatorDashboardItem).transform(deduplicateByIndicator).default([]),
 	title: z.string(),
 	type: z.literal(payloadTypes.enum.indicator_dashboard),
 	visibility: visibility.default(visibility.enum['organization'])
