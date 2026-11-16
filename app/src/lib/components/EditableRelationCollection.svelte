@@ -2,6 +2,7 @@
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import CirclePlus from '~icons/flowbite/circle-plus-solid';
+	import Collection from '~icons/knotdots/collection';
 	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
@@ -9,6 +10,7 @@
 	import Card from '$lib/components/Card.svelte';
 	import Carousel from '$lib/components/Carousel.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
+	import RelationCollectionPicker from '$lib/components/RelationCollectionPicker.svelte';
 	import {
 		type AnyPayload,
 		type Container,
@@ -19,6 +21,7 @@
 		payloadTypes,
 		type RelationCollectionPayload
 	} from '$lib/models';
+	import { isAllowedRelation } from '$lib/relations';
 	import { ability, addItemState, mayCreateContainer, newContainer } from '$lib/stores';
 
 	interface Props {
@@ -47,6 +50,19 @@
 
 	let mayAddItem = $derived(
 		editable && $mayCreateContainer(container.payload.payloadType, container)
+	);
+
+	let pickerDialog = $state<HTMLDialogElement>();
+
+	// Existing objects become the subject of the relation, like new ones.
+	let mayAddExistingItems = $derived(
+		editable &&
+			$ability.can('update', container) &&
+			isAllowedRelation(
+				container.payload.payloadType,
+				container.payload.predicate,
+				parentContainer.payload.type
+			)
 	);
 
 	function addItem() {
@@ -113,6 +129,19 @@
 				</li>
 			{/if}
 
+			{#if mayAddExistingItems}
+				<li>
+					<button
+						class="action-button action-button--size-l"
+						onclick={() => pickerDialog?.showModal()}
+						type="button"
+						{@attach tooltip($_('relation_collection.add_existing_items'))}
+					>
+						<Collection />
+					</button>
+				</li>
+			{/if}
+
 			<li>
 				<ContainerSettingsDropdown bind:container bind:parentContainer bind:relatedContainers />
 			</li>
@@ -154,6 +183,15 @@
 			</li>
 		{/if}
 	</ul>
+{/if}
+
+{#if mayAddExistingItems}
+	<RelationCollectionPicker
+		bind:container
+		bind:dialog={pickerDialog}
+		{parentContainer}
+		bind:relatedContainers
+	/>
 {/if}
 
 <style>

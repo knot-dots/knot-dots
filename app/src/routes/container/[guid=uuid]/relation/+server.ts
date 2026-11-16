@@ -17,7 +17,7 @@ import {
 	relation,
 	taskCategories
 } from '$lib/models';
-import { isProtectedContainerRelationPredicate } from '$lib/relations';
+import { isAllowedRelation, isProtectedContainerRelationPredicate } from '$lib/relations';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
 import { authorizeContainerRelationChanges } from '$lib/server/containerRelations';
 import {
@@ -275,11 +275,33 @@ export const POST = (async ({ locals, params, request }) => {
 		});
 
 		const removed = authorized.filter(({ deleted }) => deleted);
+		const upserted = authorized.filter(({ deleted }) => !deleted);
+
+		// New relations must follow the directory of allowed relations.
+		// Relations that exist already can still be reordered, and taking a
+		// relation away is always possible.
+		const containerByGuid = new Map(containers.map((c) => [c.guid, c]));
+		if (
+			upserted.some(({ object, predicate, subject }) => {
+				const subjectContainer = containerByGuid.get(subject);
+				const objectContainer = containerByGuid.get(object);
+				return (
+					subjectContainer !== undefined &&
+					objectContainer !== undefined &&
+					!subjectContainer.relation.some(
+						(r) => r.object === object && r.predicate === predicate && r.subject === subject
+					) &&
+					!isAllowedRelation(subjectContainer.payload.type, predicate, objectContainer.payload.type)
+				);
+			})
+		) {
+			error(422, { message: unwrapFunctionStore(_)('error.unprocessable_entity') });
+		}
+
 		if (removed.length > 0) {
 			await deleteManyContainerRelations(removed)(tx);
 		}
 
-		const upserted = authorized.filter(({ deleted }) => !deleted);
 		if (upserted.length > 0) {
 			await updateManyContainerRelations(upserted)(tx);
 		}

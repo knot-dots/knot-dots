@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { payloadTypes, predicates, type PayloadType, type Predicate } from '$lib/models';
+import { predicates, type Predicate } from '$lib/models';
+import { sectionParentTypes } from '$lib/relations';
 import { containerSummary, getContainerOutput } from '$lib/server/mcp/contracts/containers';
 import { mcpPayloadTypes } from '$lib/server/mcp/contracts/payloads';
 import {
@@ -11,26 +12,7 @@ export const createContainerToolName = 'create_container';
 
 // Containers whose detail view in the web application shows sections, where
 // sections can be added through MCP as well.
-export const mcpSectionParentTypes = [
-	payloadTypes.enum.event,
-	payloadTypes.enum.goal,
-	payloadTypes.enum.help,
-	payloadTypes.enum.indicator,
-	payloadTypes.enum.knowledge,
-	payloadTypes.enum.measure,
-	payloadTypes.enum.organization,
-	payloadTypes.enum.organizational_unit,
-	payloadTypes.enum.page,
-	payloadTypes.enum.post,
-	payloadTypes.enum.program,
-	payloadTypes.enum.report,
-	payloadTypes.enum.resource_data,
-	payloadTypes.enum.resource_v2,
-	payloadTypes.enum.rule,
-	payloadTypes.enum.simple_measure,
-	payloadTypes.enum.task,
-	payloadTypes.enum.teaser
-] as const satisfies readonly PayloadType[];
+export const mcpSectionParentTypes = sectionParentTypes;
 
 export const mcpParentRelationPredicates = z.enum([
 	predicates.enum['is-part-of'],
@@ -43,7 +25,7 @@ export const mcpParentRelationPredicates = z.enum([
 export type McpParentRelationPredicate = z.infer<typeof mcpParentRelationPredicates>;
 
 const parentRelationPredicate = mcpParentRelationPredicates.describe(
-	`Structural relation from the new container to the parent. is-part-of-program makes a goal, measure, simple measure, knowledge or rule part of a program, and also a section of it, which shows it in the program; other types cannot be part of a program. is-part-of-measure needs a measure or simple measure. is-part-of places a goal below a goal, a measure, simple measure or task below a goal or measure, knowledge below knowledge, an effect below a measure or simple measure, and an objective below a goal. A term, a value of a category, is either part of a category (is-part-of-category) or below a term that is (is-part-of); categories take no parent. is-section-of adds a text section to a container of type ${mcpSectionParentTypes.join(', ')}; a section of an organizational unit belongs to that unit. The server assigns the position, which is the sort order among the children of the parent.`
+	`Structural relation from the new container to the parent. is-part-of-program makes a goal, measure, simple measure, knowledge or rule part of a program, and also a section of it, which shows it in the program; other types cannot be part of a program. is-part-of-measure makes a goal, measure, simple measure or task belong to a measure or simple measure. is-part-of places a goal below a goal, measure or simple measure, a measure or simple measure below a goal or measure, a task below a goal, measure, simple measure or task, knowledge below knowledge, a rule below a goal, an effect below a goal, measure or simple measure, and an objective below a goal. A term, a value of a category, is either part of a category (is-part-of-category) or below a term that is (is-part-of); categories take no parent. is-section-of adds a text section to a container of type ${mcpSectionParentTypes.join(', ')}; a section of an organizational unit belongs to that unit. The server assigns the position, which is the sort order among the children of the parent.`
 );
 
 function uniqueBy<T>(key: (value: T) => string, message: string) {
