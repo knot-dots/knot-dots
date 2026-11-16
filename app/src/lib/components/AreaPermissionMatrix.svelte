@@ -291,7 +291,7 @@
 			{#each rows as subject (subject.guid)}
 				{@const set = visibleSetFor(subject.guid)}
 				{@const self = isSelf(subject)}
-				{@const locked = !editable || self}
+				{@const locked = editable && self}
 				<tr>
 					<td class="col-name" class:locked>
 						<span class="user-cell">
@@ -443,8 +443,9 @@
 		padding: 0.625rem 0.5rem;
 	}
 
-	/* hatched rows mark the matrix as read-only; the pattern of the Figma
-	   component (#fff5f5/#ffebeb), overlaid at 75% like in the design */
+	/* hatched rows stay locked in edit mode, outside of it the table reads
+	   plain; the pattern of the Figma component (#fff5f5/#ffebeb), overlaid
+	   at 75% like in the design */
 	td.locked {
 		background: repeating-linear-gradient(
 			45deg,

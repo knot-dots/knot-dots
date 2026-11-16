@@ -152,6 +152,10 @@
 		);
 	});
 
+	// the matrix holds the rows of the selected context alone, while the user
+	// table also lists the people of the units below it
+	const matrixUsers = $derived(users.filter((user) => roleFor(user, data.container)));
+
 	function roleFor(user: User, container: Container<AnyPayload>): Role | undefined {
 		if (isAdminOf(user, container)) return 'administrator';
 		if (isHeadOf(user, container)) return 'head';
@@ -356,7 +360,7 @@
 							? () => inviteDialog.showModal()
 							: undefined}
 						teams={data.teams}
-						{users}
+						users={matrixUsers}
 					/>
 				{:else}
 					<AreaPermissionMatrix
@@ -367,7 +371,7 @@
 							? () => inviteDialog.showModal()
 							: undefined}
 						teams={data.teams}
-						{users}
+						users={matrixUsers}
 					/>
 				{/if}
 				<ContextTabs slug="user-management" />
