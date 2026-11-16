@@ -20,6 +20,7 @@ import {
 	type MeasurePayload,
 	type NewContainer
 } from '$lib/models';
+import { isAllowedRelation } from '$lib/relations';
 import {
 	ContainerCreationError,
 	createAuthorizedContainer,
@@ -33,7 +34,6 @@ import { summarizeContainer } from '$lib/server/mcp/containers';
 import {
 	createContainersToolName,
 	createContainerToolName,
-	mcpSectionParentTypes,
 	type CreateContainersInput,
 	type CreateContainersOutput,
 	type McpParentRelationPredicate,
@@ -137,41 +137,10 @@ export function createAndRecordContainer({
 	};
 }
 
-// Parent types allowed for is-part-of, following the parents the web
-// application offers for each type.
-const isPartOfParentTypes: Partial<Record<PayloadType, readonly PayloadType[]>> = {
-	[payloadTypes.enum.effect]: [payloadTypes.enum.measure, payloadTypes.enum.simple_measure],
-	[payloadTypes.enum.goal]: [payloadTypes.enum.goal],
-	[payloadTypes.enum.knowledge]: [payloadTypes.enum.knowledge],
-	[payloadTypes.enum.objective]: [payloadTypes.enum.goal],
-	[payloadTypes.enum.measure]: [payloadTypes.enum.goal, payloadTypes.enum.measure],
-	[payloadTypes.enum.simple_measure]: [payloadTypes.enum.goal, payloadTypes.enum.measure],
-	[payloadTypes.enum.task]: [payloadTypes.enum.goal, payloadTypes.enum.measure]
-};
-
-// Section types MCP can create, and the containers whose detail view in the
-// web application shows sections.
+// Sections MCP can create.
 const sectionTypes: readonly PayloadType[] = [
 	payloadTypes.enum.custom_collection,
 	payloadTypes.enum.text
-];
-const sectionParentTypes: readonly PayloadType[] = mcpSectionParentTypes;
-
-// Types that can be part of a program, as in the web application. The
-// detail view of a program follows is-section-of only, so like the web
-// application the server makes a part of a program a section of it as well.
-const programPartTypes: readonly PayloadType[] = [
-	payloadTypes.enum.goal,
-	payloadTypes.enum.knowledge,
-	payloadTypes.enum.measure,
-	payloadTypes.enum.rule,
-	payloadTypes.enum.simple_measure
-];
-
-// Containers that can scope the templates of measures, as isMeasureTemplateScope.
-const measureTemplateScopeTypes: readonly PayloadType[] = [
-	payloadTypes.enum.measure,
-	payloadTypes.enum.simple_measure
 ];
 
 // The position after the existing children of the parent.
@@ -191,7 +160,7 @@ function nextPosition(
 }
 
 // Structural relations drive hierarchy, grants and ownership, so the parent
-// must be of a type the relation is meant for.
+// must be of a type the directory of allowed relations lists for the relation.
 function isValidParent(
 	type: PayloadType,
 	predicate: McpParentRelationPredicate,
@@ -200,24 +169,10 @@ function isValidParent(
 	if (!mayHaveStructuralParent(type) || type === payloadTypes.enum.category) {
 		return false;
 	}
-	// As in the web application, a term is part of a category or below a term.
-	if (type === payloadTypes.enum.term) {
-		return predicate === predicates.enum['is-part-of-category']
-			? parentType === payloadTypes.enum.category
-			: predicate === predicates.enum['is-part-of'] && parentType === payloadTypes.enum.term;
+	if (predicate === predicates.enum['is-section-of'] && !sectionTypes.includes(type)) {
+		return false;
 	}
-	switch (predicate) {
-		case predicates.enum['is-part-of-category']:
-			return false;
-		case predicates.enum['is-part-of-program']:
-			return parentType === payloadTypes.enum.program && programPartTypes.includes(type);
-		case predicates.enum['is-part-of-measure']:
-			return measureTemplateScopeTypes.includes(parentType);
-		case predicates.enum['is-part-of']:
-			return isPartOfParentTypes[type]?.includes(parentType) ?? false;
-		case predicates.enum['is-section-of']:
-			return sectionTypes.includes(type) && sectionParentTypes.includes(parentType);
-	}
+	return isAllowedRelation(type, predicate, parentType);
 }
 
 // The input of create_container for any payload type, so that the tools for
