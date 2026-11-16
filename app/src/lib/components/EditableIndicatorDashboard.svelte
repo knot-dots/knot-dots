@@ -66,12 +66,10 @@
 	let selectedIndicators = $derived(container.payload.item.map(({ indicator }) => indicator));
 
 	// A string compares by value, so replacing the container with an equal copy, as dragging the
-	// section does, fetches nothing again. Neither does changing how an indicator shows.
-	let itemKey = $derived(selectedIndicators.join());
+	// section does, fetches nothing again. Neither does changing how an indicator shows, nor moving
+	// a card, since the key is sorted.
+	let itemKey = $derived(selectedIndicators.toSorted().join());
 
-	// Every indicator shows the actual data, objectives and effects of the organization or
-	// organizational unit the section belongs to, like its detail view does. The dashboard yields
-	// all of them with its indicators in one request.
 	const itemsResource = resource(
 		[() => container.guid, () => itemKey, () => inViewportOnce],
 		async ([guid, itemKey, inViewportOnce], _, { signal }) => {
