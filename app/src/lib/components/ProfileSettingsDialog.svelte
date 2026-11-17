@@ -120,11 +120,19 @@
 								<p><strong>{key}</strong></p>
 								<ul>
 									{#each value as flag (flag)}
-										<li>
-											<label>
-												<input type="checkbox" name="feature" value={flag} bind:group={features} />
-												{$_(flag)}
-											</label>
+										<li class="feature-flag">
+											<input
+												id="feature-{flag}"
+												type="checkbox"
+												name="feature"
+												value={flag}
+												bind:group={features}
+												aria-describedby="feature-{flag}-description"
+											/>
+											<label for="feature-{flag}">{$_(`feature_flag.${flag}.title`)}</label>
+											<p id="feature-{flag}-description">
+												{$_(`feature_flag.${flag}.description`)}
+											</p>
 										</li>
 									{/each}
 								</ul>
@@ -184,6 +192,24 @@
 
 	li {
 		padding: 0.25rem 0;
+	}
+
+	/* The description sits in the second column so that it lines up with the title. */
+	.feature-flag {
+		align-items: baseline;
+		column-gap: 0.5rem;
+		display: grid;
+		font-size: 0.875rem;
+		grid-template-columns: auto 1fr;
+	}
+
+	.feature-flag > input {
+		margin: 0;
+	}
+
+	.feature-flag > p {
+		color: var(--color-text-system-subtle);
+		grid-column: 2;
 	}
 
 	.button-primary {
