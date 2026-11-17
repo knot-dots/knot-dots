@@ -3,15 +3,9 @@
 	import ArrowLeft from '~icons/flowbite/arrow-left-outline';
 	import ArrowRight from '~icons/flowbite/arrow-right-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
-	import CardHeight1 from '~icons/knotdots/card-height-1';
-	import CardHeight2 from '~icons/knotdots/card-height-2';
-	import CardHeight4 from '~icons/knotdots/card-height-4';
-	import CardWidth2 from '~icons/knotdots/card-width-2';
-	import CardWidth3 from '~icons/knotdots/card-width-3';
-	import CardWidth4 from '~icons/knotdots/card-width-4';
-	import CardWidth6 from '~icons/knotdots/card-width-6';
 	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import ViewToggle from '$lib/components/ViewToggle.svelte';
+	import { heightIcons, widthIcons } from '$lib/indicatorDashboardIcons';
 	import {
 		type IndicatorDashboardItem,
 		indicatorDashboardHeights,
@@ -30,15 +24,6 @@
 	}
 
 	let { count, item, onchange, onmove, onremove, position }: Props = $props();
-
-	const heightIcons = { '1/4': CardHeight1, '2/4': CardHeight2, '4/4': CardHeight4 };
-
-	const widthIcons = {
-		'2/6': CardWidth2,
-		'3/6': CardWidth3,
-		'4/6': CardWidth4,
-		'6/6': CardWidth6
-	};
 </script>
 
 <CascadingMenu strategy="fixed" title={$_('container_settings_dropdown.title')}>

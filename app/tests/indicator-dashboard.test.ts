@@ -242,6 +242,153 @@ test('Cards are set up and arranged from their menu', async ({
 	await expect(cards).toHaveCount(1);
 });
 
+test.describe('on six columns', () => {
+	test.use({ viewport: { height: 1200, width: 1600 } });
+
+	test('Cards are arranged by dragging them, and stay in place meanwhile', async ({
+		isMobile,
+		landingPage,
+		otherIndicator,
+		testIndicator,
+		testOrganization
+	}) => {
+		test.skip(isMobile, 'Cards are arranged from their menu on touch screens');
+		const page = landingPage.page;
+
+		await landingPage.goto(`/${testOrganization.guid}`);
+		await landingPage.header.editModeToggle.check();
+
+		const section = await landingPage.addSection('Indicator dashboard');
+		await section.getByRole('button', { name: 'Add items', exact: true }).click();
+		const dialog = page.getByRole('dialog');
+		for (const indicator of [testIndicator, otherIndicator]) {
+			await dialog.getByRole('searchbox').fill(indicator.payload.title);
+			await dialog.getByRole('article').filter({ hasText: indicator.payload.title }).click();
+		}
+		await dialog.getByRole('button', { name: 'Apply (2)' }).click();
+		await expect(dialog).not.toBeVisible();
+
+		const cards = section.getByRole('listitem', { name: /position \d of 2/ });
+		await expect(cards).toHaveCount(2);
+		const first = cards.filter({ hasText: testIndicator.payload.title });
+		const other = cards.filter({ hasText: otherIndicator.payload.title });
+
+		// A small card leaves a gap below it.
+		await other.getByRole('heading').hover();
+		await other.getByRole('button', { name: 'Settings' }).click();
+		await other
+			.getByRole('radiogroup', { name: 'Height' })
+			.getByText('small', { exact: true })
+			.click();
+		await other.getByRole('button', { name: 'Close' }).click();
+		await page.mouse.move(0, 0);
+
+		// While a card is dragged, the cards stay in place and the gaps take it.
+		const before = (await first.boundingBox())!;
+		await page.mouse.move(before.x + before.width / 2, before.y + before.height - 20);
+		await page.mouse.down();
+		await page.mouse.move(before.x + before.width / 2 + 20, before.y + before.height - 40, {
+			steps: 5
+		});
+		const gap = section.getByText('Drop here').first();
+		await expect(gap).toBeVisible();
+		expect(await first.boundingBox()).toEqual(before);
+		const target = (await gap.boundingBox())!;
+		await page.mouse.move(target.x + target.width / 2, target.y + target.height / 2, {
+			steps: 10
+		});
+		const saved = page.waitForResponse(
+			(response) => response.url().endsWith('/revision') && response.request().method() === 'POST'
+		);
+		await page.mouse.up();
+
+		// The card takes the size of the gap and comes after the card above it.
+		await expect(cards.nth(1)).toContainText(testIndicator.payload.title);
+		await expect.poll(async () => (await first.boundingBox())?.height).toBeLessThan(before.height);
+		expect((await saved).ok()).toBe(true);
+		await page.reload();
+		await landingPage.header.editModeToggle.check();
+		await expect(cards.nth(1)).toContainText(testIndicator.payload.title);
+
+		// Alt and an arrow key move the focused card, which keeps the focus.
+		await first.focus();
+		await first.press('Alt+ArrowLeft');
+		await expect(cards.nth(0)).toContainText(testIndicator.payload.title);
+		await expect(first).toBeFocused();
+
+		// Without edit mode, cards cannot be dragged.
+		await landingPage.header.editModeToggle.uncheck();
+		await expect(section.getByRole('listitem').first()).toHaveAttribute('draggable', 'false');
+	});
+
+	test('Cards are resized with their handles', async ({
+		isMobile,
+		landingPage,
+		testIndicator,
+		testOrganization
+	}) => {
+		test.skip(isMobile, 'Cards are resized from their menu on touch screens');
+		const page = landingPage.page;
+
+		await landingPage.goto(`/${testOrganization.guid}`);
+		await landingPage.header.editModeToggle.check();
+
+		const section = await landingPage.addSection('Indicator dashboard');
+		await section.getByRole('button', { name: 'Add items', exact: true }).click();
+		const dialog = page.getByRole('dialog');
+		await dialog.getByRole('searchbox').fill(testIndicator.payload.title);
+		await dialog.getByRole('article').filter({ hasText: testIndicator.payload.title }).click();
+		await dialog.getByRole('button', { name: 'Apply (1)' }).click();
+		await expect(dialog).not.toBeVisible();
+
+		const card = section.getByRole('listitem', { name: /position 1 of 1/ });
+		const before = (await card.boundingBox())!;
+		const dragWidth = async (by: number) => {
+			await card.hover();
+			const handle = (await card.getByRole('button', { name: 'Drag width' }).boundingBox())!;
+			await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2);
+			await page.mouse.down();
+			await page.mouse.move(handle.x + handle.width / 2 + by, handle.y + handle.height / 2, {
+				steps: 8
+			});
+		};
+
+		// The tooltip names the width the card snaps to; Escape keeps the card as it is.
+		await dragWidth(before.width / 2);
+		await expect(page.getByText('3 columns', { exact: true })).toBeVisible();
+		await page.keyboard.press('Escape');
+		await page.mouse.up();
+		expect((await card.boundingBox())?.width).toBe(before.width);
+
+		// Releasing the handle takes the width it snaps to.
+		await dragWidth(before.width / 2);
+		const saved = page.waitForResponse(
+			(response) => response.url().endsWith('/revision') && response.request().method() === 'POST'
+		);
+		await page.mouse.up();
+		await expect.poll(async () => (await card.boundingBox())?.width).toBeGreaterThan(before.width);
+		expect((await saved).ok()).toBe(true);
+
+		// The open menu hides the handles, so they do not lie over it.
+		await card.getByRole('heading').hover();
+		await card.getByRole('button', { name: 'Settings' }).click();
+		await expect(card.getByRole('group')).toBeVisible();
+		await expect(card.getByRole('button', { name: 'Drag width' })).toBeHidden();
+		await page.keyboard.press('Escape');
+
+		// Escape also cancels while the menu button keeps the focus.
+		const wider = (await card.boundingBox())!;
+		await dragWidth(wider.width / 2);
+		await page.keyboard.press('Escape');
+		await page.mouse.up();
+		expect((await card.boundingBox())?.width).toBe(wider.width);
+
+		// Without edit mode, cards have no handles.
+		await landingPage.header.editModeToggle.uncheck();
+		await expect(section.getByRole('button', { name: 'Drag width' })).toHaveCount(0);
+	});
+});
+
 test('Indicators show the data of the organization when the section belongs to it', async ({
 	landingPage,
 	organizationalUnitWithActualData,
