@@ -7,6 +7,7 @@ import {
 	getPayloadSchema,
 	isCustomCollectionContainer,
 	predicates,
+	visibility,
 	type AnyPayload,
 	type Container
 } from '$lib/models';
@@ -20,11 +21,16 @@ import {
 import type { McpAuth } from '$lib/server/mcp/auth';
 import { findUnknownCategory, loadMcpCategoryContext } from '$lib/server/mcp/categories';
 import { mcpPayloadTypes, withoutLegacyFields } from '$lib/server/mcp/contracts/payloads';
+import { isMcpDataViewSectionType } from '$lib/server/mcp/contracts/sections';
 import {
 	updateContainerToolName,
 	type UpdateContainerInput
 } from '$lib/server/mcp/contracts/update';
-import { findVisibleContainer, payloadValidationMessage } from '$lib/server/mcp/creation';
+import {
+	findVisibleContainer,
+	payloadValidationMessage,
+	publicVisibilityRefusal
+} from '$lib/server/mcp/creation';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
 import { runAsRequestUser } from '$lib/server/requestUser';
 import type { User } from '$lib/stores';
@@ -69,6 +75,9 @@ export function updateMcpContainer(input: UpdateContainerInput & McpAuth) {
 				throw new McpUpdateError(
 					'Change custom collection sections with update_custom_collection_section.'
 				);
+			}
+			if (current && isMcpDataViewSectionType(current.payload.type)) {
+				throw new McpUpdateError(`Change ${current.payload.type} sections with update_section.`);
 			}
 			if (!current || !mcpPayloadTypes.safeParse(current.payload.type).success) {
 				throw new McpUpdateError(notFound);
@@ -136,6 +145,12 @@ export function writeMcpRevision({
 	user: User;
 }) {
 	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>> => {
+		const isPublic = (value: AnyPayload) =>
+			'visibility' in value && value.visibility === visibility.enum.public;
+		if (isPublic(next) && !isPublic(current.payload)) {
+			throw new McpUpdateError(publicVisibilityRefusal);
+		}
+
 		let payload: AnyPayload;
 		try {
 			payload = authorizeContainerUpdate({
