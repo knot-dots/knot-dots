@@ -18,13 +18,15 @@
 
 	interface Props {
 		columns: number;
+		// Where the other cards land that the resized card moves
+		displaced: Rect[];
 		// Where the card lands with the height and width it snaps to
 		preview: Rect;
 		resizing: Resizing;
 		widthText: (width: IndicatorDashboardItem['width']) => string;
 	}
 
-	let { columns, preview, resizing, widthText }: Props = $props();
+	let { columns, displaced, preview, resizing, widthText }: Props = $props();
 
 	const { atMax, axis, height, pointer, width } = $derived(resizing);
 
@@ -59,6 +61,15 @@
 </div>
 
 <div aria-hidden="true" class="guides system-layout">
+	{#each displaced as { height, left, top, width }, k (k)}
+		<div
+			class="displaced"
+			style:height="{height}px"
+			style:left="{left}px"
+			style:top="{top}px"
+			style:width="{width}px"
+		></div>
+	{/each}
 	<div
 		class={[
 			'preview',
@@ -135,6 +146,13 @@
 			left 0.12s ease,
 			top 0.12s ease,
 			width 0.12s ease;
+	}
+
+	/* The other cards that move: an outline only, so the resized card stands out */
+	.displaced {
+		border: 1px dashed var(--color-border-accent-strong);
+		border-radius: var(--card-border-radius);
+		position: absolute;
 	}
 
 	.preview.is-at-max {

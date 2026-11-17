@@ -4,6 +4,8 @@ import {
 	dropIntoGap,
 	type Gap,
 	gapsOf,
+	insertionOf,
+	isStacked,
 	layout,
 	type Placement,
 	rowHeightFor,
@@ -253,4 +255,49 @@ test('on four columns, a card that fills the end of its row keeps its width', ()
 
 test('on two columns, the width of a card cannot be dragged', () => {
 	expect(widths('l/2', 0, 2)).toEqual([]);
+});
+
+// The edge of a card where the line shows, such as "right of B"
+const insertion = (items: string, from: number, to: number, columns = 6) => {
+	const found = insertionOf(cards(items), from, to, columns);
+	return found && `${found.edge} of ${'ABCDE'[found.beside]}`;
+};
+
+test('a card moved along a row lands beside the card before it there', () => {
+	expect(insertion('l/2 l/2 l/2', 0, 1)).toBe('right of B');
+	expect(insertion('l/2 l/2 l/2', 0, 2)).toBe('right of C');
+	expect(insertion('l/2 l/2 l/2', 2, 0)).toBe('left of A');
+});
+
+test('a card that fits a stack lands below or above the card it joins', () => {
+	// A l, B m and C m stacked, D s
+	expect(insertion('l/2 m/2 s/2 s/2', 3, 2)).toBe('bottom of B');
+	expect(insertion('l/2 m/2 m/2 s/2', 3, 1)).toBe('top of B');
+});
+
+test('a card too tall for the stack lands beside it, not where it was dropped', () => {
+	// D dropped before C, the lower card of the stack, stays right of the stack; C leaves it.
+	expect(insertion('l/2 m/2 m/2 l/2', 3, 2)).toBe('right of B');
+});
+
+test('a card that starts a row lands below the card that takes the row above', () => {
+	expect(insertion('l/full l/2 l/2', 2, 1)).toBe('bottom of A');
+	expect(insertion('l/full l/2 l/2', 2, 0)).toBe('top of A');
+});
+
+test('on two columns, a card lands below or above another', () => {
+	expect(insertion('l/2 l/2 l/2', 0, 1, 2)).toBe('bottom of B');
+	expect(insertion('l/2 l/2 l/2', 2, 0, 2)).toBe('top of A');
+});
+
+test('the only card has nowhere to land', () => {
+	expect(insertion('l/2', 0, 0)).toBeUndefined();
+});
+
+test('cards that take the whole row or are part of a stack have their neighbors above and below', () => {
+	const stacked = (items: string, columns: number) =>
+		cards(items).map((_, i) => isStacked(layout(cards(items), columns), i, columns));
+	expect(stacked('l/2 m/2 m/2 l/2', 6)).toEqual([false, true, true, false]);
+	expect(stacked('l/full l/2', 6)).toEqual([true, false]);
+	expect(stacked('l/2 l/2', 2)).toEqual([true, true]);
 });

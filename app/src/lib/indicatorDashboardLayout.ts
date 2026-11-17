@@ -265,3 +265,62 @@ export function widthSteps(
 export function rowSpanOf(height: Item['height']) {
 	return rowsByHeight[height];
 }
+
+// Where a line shows that a dragged card will land: at an edge of one of the cards shown
+export type Insertion = { beside: number; edge: 'bottom' | 'left' | 'right' | 'top' };
+
+// The place the card at `from` takes when it moves to `to`, told by a card next to it there: the
+// card it lands below or above in a stack or a row of its own, else the card it lands beside.
+// The layout decides, not the card the pointer is over, since a card that does not fit a stack
+// lands beside it.
+export function insertionOf(
+	items: Item[],
+	from: number,
+	to: number,
+	columns: number
+): Insertion | undefined {
+	const rest = items.map((_, i) => i).toSpliced(from, 1);
+	const placements = layout(
+		rest.toSpliced(to, 0, from).map((i) => items[i]),
+		columns
+	);
+	const landing = placements[to];
+	const before = to > 0 ? { index: rest[to - 1], ...placements[to - 1] } : undefined;
+	const after = to < rest.length ? { index: rest[to], ...placements[to + 1] } : undefined;
+	const beside = (a: Placement, b: Placement) =>
+		a.column + a.columnSpan === b.column && a.row < b.row + b.rowSpan && b.row < a.row + a.rowSpan;
+
+	if (before && before.column === landing.column && before.row + before.rowSpan === landing.row) {
+		return { beside: before.index, edge: 'bottom' };
+	}
+	if (after && after.column === landing.column && landing.row + landing.rowSpan === after.row) {
+		return { beside: after.index, edge: 'top' };
+	}
+	if (before && beside(before, landing)) {
+		return { beside: before.index, edge: 'right' };
+	}
+	if (after && beside(landing, after)) {
+		return { beside: after.index, edge: 'left' };
+	}
+	return before
+		? { beside: before.index, edge: 'right' }
+		: after
+			? { beside: after.index, edge: 'left' }
+			: undefined;
+}
+
+// Whether the cards before and after the one at `index` are above and below it rather than
+// beside it: it takes the whole row, or it is part of a stack.
+export function isStacked(placements: Placement[], index: number, columns: number) {
+	const { column, columnSpan, row, rowSpan } = placements[index];
+	if (columnSpan >= columns) {
+		return true;
+	}
+	return [placements[index - 1], placements[index + 1]].some(
+		(other) =>
+			other &&
+			other.column === column &&
+			other.columnSpan === columnSpan &&
+			(other.row + other.rowSpan === row || row + rowSpan === other.row)
+	);
+}

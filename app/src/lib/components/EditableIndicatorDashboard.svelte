@@ -24,6 +24,8 @@
 		type Gap,
 		gapsOf,
 		gridGap,
+		insertionOf,
+		isStacked,
 		layout,
 		type Placement,
 		rowHeightFor,
@@ -311,12 +313,21 @@
 				return;
 			}
 			event.preventDefault();
-			const { left, width } = (event.currentTarget as HTMLElement).getBoundingClientRect();
-			dropTarget =
-				position === dragged.position
-					? undefined
-					: { after: event.clientX > left + width / 2, position };
+			const { height, left, top, width } = (
+				event.currentTarget as HTMLElement
+			).getBoundingClientRect();
+			// Where the cards are below each other, the upper and the lower half decide.
+			const after = isStacked(placements, position, columns)
+				? event.clientY > top + height / 2
+				: event.clientX > left + width / 2;
+			dropTarget = position === dragged.position ? undefined : { after, position };
 		};
+	}
+
+	// The position the card at `from` takes when it is dropped before or after another
+	function positionFor(from: number, target: { after: boolean; position: number }) {
+		const to = target.position + (target.after ? 1 : 0);
+		return from < to ? to - 1 : to;
 	}
 
 	function dropOnCard(event: DragEvent) {
@@ -325,10 +336,7 @@
 		}
 		event.preventDefault();
 		const from = dragged.position;
-		let to = dropTarget.position + (dropTarget.after ? 1 : 0);
-		if (from < to) {
-			to--;
-		}
+		const to = positionFor(from, dropTarget);
 		stopDragging();
 		if (to === from) {
 			return;
@@ -526,18 +534,21 @@
 		columns > 2 ? ['width', 'height', 'both'] : ['height']
 	);
 
-	let preview = $derived(
+	// Where the cards land with the height and width the resized card snaps to
+	let previewPlacements = $derived(
 		resizing &&
-			rectOf(
-				layout(
-					items.map(({ item }, k) =>
-						k === resizing?.position
-							? { ...item, height: resizing.height, width: resizing.width }
-							: item
-					),
-					columns
-				)[resizing.position]
+			layout(
+				items.map(({ item }, k) =>
+					k === resizing?.position
+						? { ...item, height: resizing.height, width: resizing.width }
+						: item
+				),
+				columns
 			)
+	);
+
+	let preview = $derived(
+		resizing && previewPlacements && rectOf(previewPlacements[resizing.position])
 	);
 
 	let placements = $derived(
@@ -545,6 +556,34 @@
 			items.map(({ item }) => item),
 			columns
 		)
+	);
+
+	// The line shows where the layout places the dragged card, which is not always where the
+	// pointer is, as with a card too tall for the stack it is dropped into.
+	let insertion = $derived(
+		dragged && dropTarget && 'position' in dropTarget
+			? insertionOf(
+					items.map(({ item }) => item),
+					dragged.position,
+					positionFor(dragged.position, dropTarget),
+					columns
+				)
+			: undefined
+	);
+
+	// The other cards that the resized card moves, where they land
+	let displaced = $derived(
+		(previewPlacements ?? []).flatMap((placement, k) => {
+			const shown = placements[k];
+			return k === resizing?.position ||
+				!shown ||
+				(placement.column === shown.column &&
+					placement.columnSpan === shown.columnSpan &&
+					placement.row === shown.row &&
+					placement.rowSpan === shown.rowSpan)
+				? []
+				: [rectOf(placement)];
+		})
 	);
 
 	async function confirm(selected: string[]) {
@@ -718,10 +757,10 @@
 						{$_('indicator_dashboard.drop_here')}
 					</div>
 				{/each}
-				{#if dropTarget && 'position' in dropTarget}
-					{@const { column, columnSpan, row, rowSpan } = placements[dropTarget.position]}
+				{#if insertion}
+					{@const { column, columnSpan, row, rowSpan } = placements[insertion.beside]}
 					<div
-						class={['insertion', dropTarget.after ? 'insertion--after' : 'insertion--before']}
+						class={['insertion', `insertion--${insertion.edge}`]}
 						style:grid-column="{column} / span {columnSpan}"
 						style:grid-row="{row} / span {rowSpan}"
 					></div>
@@ -730,7 +769,7 @@
 		{/if}
 
 		{#if resizing && preview}
-			<IndicatorDashboardResize {columns} {preview} {resizing} {widthText} />
+			<IndicatorDashboardResize {columns} {displaced} {preview} {resizing} {widthText} />
 		{/if}
 	</div>
 {:else if mayUpdate && container.payload.item.length === 0}
@@ -906,7 +945,7 @@
 		background-color: var(--color-background-accent-default);
 	}
 
-	/* A bar in the middle of the gap between two cards */
+	/* A bar in the middle of the gap between two cards, beside or below each other */
 	.insertion {
 		position: relative;
 	}
@@ -914,19 +953,38 @@
 	.insertion::before {
 		background-color: var(--color-background-accent-strong);
 		border-radius: 2px;
-		bottom: 0;
 		content: '';
 		position: absolute;
+	}
+
+	.insertion--left::before,
+	.insertion--right::before {
+		bottom: 0;
 		top: 0;
 		width: 4px;
 	}
 
-	.insertion--before::before {
+	.insertion--top::before,
+	.insertion--bottom::before {
+		height: 4px;
+		left: 0;
+		right: 0;
+	}
+
+	.insertion--left::before {
 		left: calc(-0.5rem - 2px);
 	}
 
-	.insertion--after::before {
+	.insertion--right::before {
 		right: calc(-0.5rem - 2px);
+	}
+
+	.insertion--top::before {
+		top: calc(-0.5rem - 2px);
+	}
+
+	.insertion--bottom::before {
+		bottom: calc(-0.5rem - 2px);
 	}
 
 	/* The cards are placed once the width of the grid is known, so they do not jump. */
