@@ -2085,6 +2085,14 @@ export function isObjectiveCollectionContainer(
 
 const initialObjectiveCollectionPayload = objectiveCollectionPayload;
 
+export const favorite = z.object({
+	href: z.url({ protocol: /^knotdots$/ }),
+	icon: z.url().optional(),
+	title: z.string().trim()
+});
+
+export type Favorite = z.infer<typeof favorite>;
+
 export const organizationPayload = z.strictObject({
 	...detailViewStyle.shape,
 	cityAndMunicipalityTypeBBSR: z.string().optional(),
@@ -2097,15 +2105,7 @@ export const organizationPayload = z.strictObject({
 		.optional(),
 	default: z.boolean().default(false),
 	description: z.string().trim().optional(),
-	favorite: z
-		.array(
-			z.object({
-				href: z.string(),
-				icon: z.url().optional(),
-				title: z.string().trim()
-			})
-		)
-		.default([]),
+	favorite: z.array(favorite).default([]),
 	federalState: z.string().optional(),
 	geometry: z.uuid().optional(),
 	image: z.url().optional(),
@@ -2114,15 +2114,7 @@ export const organizationPayload = z.strictObject({
 	officialMunicipalityKey: z.string().length(8).optional(),
 	officialRegionalCode: z.string().length(12).optional(),
 	organizationCategory: organizationCategories.optional(),
-	platformFavorite: z
-		.array(
-			z.object({
-				href: z.string(),
-				icon: z.url().optional(),
-				title: z.string().trim()
-			})
-		)
-		.optional(),
+	platformFavorite: z.array(favorite).optional(),
 	propertiesConfiguration: propertiesConfiguration.default({}),
 	showPlatformFavorite: z.boolean().default(true),
 	slug: z
@@ -2158,15 +2150,7 @@ export const organizationalUnitPayload = z.strictObject({
 		.default({}),
 	cityAndMunicipalityTypeBBSR: z.string().optional(),
 	description: z.string().trim().optional(),
-	favorite: z
-		.array(
-			z.object({
-				href: z.string(),
-				icon: z.url().optional(),
-				title: z.string().trim()
-			})
-		)
-		.default([]),
+	favorite: z.array(favorite).default([]),
 	federalState: z.string().optional(),
 	geometry: z.uuid().optional(),
 	image: z.url().optional(),
@@ -3515,16 +3499,7 @@ export const user = z.object({
 	guid: z.uuid(),
 	realm: z.string().max(1024),
 	settings: z.object({
-		favorite: z
-			.array(
-				z.object({
-					href: z.string(),
-					icon: z.url().optional(),
-					title: z.string().trim()
-				})
-			)
-			.default([])
-			.optional(),
+		favorite: z.array(favorite).default([]).optional(),
 		features: z.array(z.string()).transform(deduplicate).optional()
 	})
 });

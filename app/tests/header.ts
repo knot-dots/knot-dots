@@ -19,8 +19,33 @@ export default class Header {
 		return this.locator.getByRole('checkbox', { name: 'Edit mode' });
 	}
 
+	get settingsMenu() {
+		return this.locator.getByRole('group').filter({ hasText: 'Settings' });
+	}
+
 	get userFavoriteToggle() {
 		return this.locator.getByRole('button', { name: /Add to sidebar|Remove from sidebar/ });
+	}
+
+	/**
+	 * Toggles the current page in the favorites of the organization or organizational unit and
+	 * waits until they are saved.
+	 */
+	async toggleFavorite(name: 'Add to sidebar' | 'Remove from sidebar') {
+		await this.openSettingsMenu();
+		const saved = this.page.waitForResponse(
+			(r) => r.url().includes('/revision') && r.request().method() === 'POST'
+		);
+		await this.settingsMenu.getByRole('button', { name }).click();
+		expect((await saved).ok()).toBe(true);
+	}
+
+	async openSettingsMenu() {
+		const button = this.locator.getByRole('button', { name: 'Settings' });
+		// The header of the previous page may linger briefly after navigating.
+		await expect(button).toHaveCount(1);
+		await button.click();
+		await expect(this.settingsMenu).toBeVisible();
 	}
 
 	async openWorkspaceMenu(currentWorkspace: string) {

@@ -91,3 +91,103 @@ test('users can manage their own favorites', async ({ dotsBoard, isMobile, testO
 	await dotsBoard.header.userFavoriteToggle.click();
 	await expect(dotsBoard.sidebar.userPanel.getByRole('link', { name: 'dots' })).not.toBeVisible();
 });
+
+test('organization admins can toggle favorites of the organization', async ({
+	dotsBoard,
+	isMobile,
+	testOrganization
+}) => {
+	test.skip(isMobile, 'Sidebar hidden on mobile');
+
+	const { header, page, sidebar } = dotsBoard;
+	const favorites = sidebar.favorites(sidebar.organizationPanel);
+	const path = `/${testOrganization.guid}/goals/level`;
+
+	await page.goto(path);
+	await expect(favorites.filter({ hasText: 'Goals' })).toHaveCount(0);
+
+	await header.toggleFavorite('Add to sidebar');
+	await expect(favorites.filter({ hasText: 'Goals' })).toHaveAttribute(
+		'href',
+		new URL(path, page.url()).toString()
+	);
+
+	// The stored favorite is recognized as that of the page after reloading it.
+	await page.reload();
+	await header.toggleFavorite('Remove from sidebar');
+	await expect(favorites.filter({ hasText: 'Goals' })).toHaveCount(0);
+
+	await page.reload();
+	await expect(favorites.filter({ hasText: 'Goals' })).toHaveCount(0);
+});
+
+test('organization admins can toggle favorites of an organizational unit', async ({
+	dotsBoard,
+	isMobile,
+	testOrganization,
+	testOrganizationalUnit
+}) => {
+	test.skip(isMobile, 'Sidebar hidden on mobile');
+
+	const { header, page, sidebar } = dotsBoard;
+	const favorites = sidebar.favorites(sidebar.organizationalUnitPanel);
+	const path = `/${testOrganizationalUnit.guid}/goals/level`;
+
+	await page.goto(path);
+	await expect(favorites.filter({ hasText: 'Goals' })).toHaveCount(0);
+
+	await header.toggleFavorite('Add to sidebar');
+	await expect(favorites.filter({ hasText: 'Goals' })).toHaveAttribute(
+		'href',
+		new URL(path, page.url()).toString()
+	);
+
+	// The favorite belongs to the organizational unit, not to the organization.
+	await page.goto(`/${testOrganization.guid}/goals/level`);
+	await expect(
+		sidebar.favorites(sidebar.organizationPanel).filter({ hasText: 'Goals' })
+	).toHaveCount(0);
+
+	// The stored favorite is recognized as that of the page after returning to it.
+	await page.goto(path);
+	await header.toggleFavorite('Remove from sidebar');
+	await expect(favorites.filter({ hasText: 'Goals' })).toHaveCount(0);
+
+	await page.reload();
+	await expect(favorites.filter({ hasText: 'Goals' })).toHaveCount(0);
+});
+
+test('organization admins can reorder favorites of the organization', async ({
+	dotsBoard,
+	isMobile,
+	testOrganization
+}) => {
+	test.skip(isMobile, 'Drag-and-drop is not supported on mobile');
+
+	const { header, page, sidebar } = dotsBoard;
+	const favorites = sidebar.favorites(sidebar.organizationPanel);
+	const goals = favorites.filter({ hasText: 'Goals' });
+	const measures = favorites.filter({ hasText: 'Measures' });
+
+	await page.goto(`/${testOrganization.guid}/goals/level`);
+	await header.toggleFavorite('Add to sidebar');
+	await page.goto(`/${testOrganization.guid}/measures/catalog`);
+	await header.toggleFavorite('Add to sidebar');
+	await expect(favorites).toHaveText(['Goals', 'Measures']);
+
+	await header.editModeToggle.check();
+	await sidebar.moveFavorite(measures, goals);
+	await expect(favorites).toHaveText(['Measures', 'Goals']);
+	await header.editModeToggle.uncheck();
+
+	// The reordered favorites keep linking to their pages and are recognized as theirs.
+	await page.reload();
+	await expect(favorites).toHaveText(['Measures', 'Goals']);
+	await goals.click();
+	await page.waitForURL(`**/${testOrganization.guid}/goals/level`);
+	await header.toggleFavorite('Remove from sidebar');
+	await measures.click();
+	await page.waitForURL(`**/${testOrganization.guid}/measures/catalog`);
+	await header.toggleFavorite('Remove from sidebar');
+	await expect(favorites).toHaveCount(0);
+});

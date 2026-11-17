@@ -1,10 +1,7 @@
 import { createContext } from 'svelte';
+import type { Favorite } from '$lib/models';
 
-export interface Favorite {
-	href: string;
-	icon?: string;
-	title: string;
-}
+export type { Favorite };
 
 export const [getFavoriteListContext, setFavoriteListContext] = createContext<{
 	organization: Favorite[];

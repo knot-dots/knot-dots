@@ -16,6 +16,7 @@
 	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import { getFavoriteListContext } from '$lib/contexts/favoriteList';
+	import { createFavoriteURL } from '$lib/favorites';
 	import {
 		type AnyPayload,
 		type Container,
@@ -119,22 +120,20 @@
 
 	let favoritesList = getFavoriteListContext();
 
-	let href = $derived(
-		page.url.searchParams.size
-			? `${page.url.pathname}?${page.url.searchParams.toString()}`
-			: page.url.pathname
+	let href = $derived(createFavoriteURL(page));
+
+	// Favorites of organizational units are toggled in the list of the organizational unit,
+	// others in that of the organization.
+	let favoriteListKey = $derived<'organization' | 'organizationalUnit'>(
+		page.data.currentOrganizationalUnit ? 'organizationalUnit' : 'organization'
 	);
 
-	let isFavorite = $derived(
-		[...favoritesList.organization, ...favoritesList.organizationalUnit].findIndex(
-			(f) => f.href === href
-		) > -1
-	);
+	let isFavorite = $derived(favoritesList[favoriteListKey].findIndex((f) => f.href === href) > -1);
 
 	let isPlatformFavorite = $derived(favoritesList.platform.findIndex((f) => f.href === href) > -1);
 
 	async function toggleFavorite() {
-		const key = page.data.currentOrganizationalUnit ? 'organizationalUnit' : 'organization';
+		const key = favoriteListKey;
 		const index = favoritesList[key].findIndex((f) => f.href === href);
 
 		favoritesList[key] =
