@@ -190,13 +190,6 @@
 		padding: 0.25rem 0;
 	}
 
-	input {
-		border: none;
-		border-radius: 4px;
-		color: var(--color-gray-700);
-		padding: 0.375rem;
-	}
-
 	.button-primary {
 		margin-left: auto;
 	}
