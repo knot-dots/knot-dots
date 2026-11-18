@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import { invalidateAll } from '$app/navigation';
+	import { invalidate, invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import { _ } from 'svelte-i18n';
 	import ArrowRightIcon from '~icons/flowbite/arrow-right-outline';
@@ -107,7 +107,7 @@
 			reportFailure();
 			return;
 		}
-		await invalidateAll();
+		await invalidate('members');
 	}
 
 	async function removeMember(member: User) {
@@ -121,7 +121,7 @@
 			reportFailure();
 			return;
 		}
-		await invalidateAll();
+		await invalidate('members');
 	}
 
 	function email(member: User) {

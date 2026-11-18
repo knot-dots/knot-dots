@@ -96,6 +96,7 @@ function enriched(
 
 function event(grants = emptyGrantRecords()) {
 	return {
+		depends: vi.fn(),
 		locals: {
 			features: [],
 			pool: {
@@ -117,8 +118,14 @@ beforeEach(() => {
 	getMembers.mockReset().mockResolvedValue([]);
 	getAllGrantsByContainers.mockReset().mockReturnValue(async () => []);
 	getAllRelatedUsersByContainers.mockReset().mockReturnValue(async () => []);
-	// the inherited sections name their source containers
-	getContainerByGuid.mockReset().mockReturnValue(async () => currentOrganization);
+	// the context comes fresh with the data; the inherited sections name their
+	// source containers
+	getContainerByGuid
+		.mockReset()
+		.mockImplementation(
+			(guid: string) => async () =>
+				guid === organizationalUnitGuid ? currentOrganizationalUnit : currentOrganization
+		);
 	getManyOrganizationalUnitContainers.mockReset().mockReturnValue(async () => []);
 	getManyTeamContainers.mockReset().mockReturnValue(async () => []);
 	getTeamMembersByTeams.mockReset().mockReturnValue(async () => new Map());

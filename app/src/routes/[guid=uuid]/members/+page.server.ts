@@ -8,7 +8,9 @@ import { getMembers } from '$lib/server/keycloak';
 import { loadMatrixSections, loadTeams } from '$lib/server/matrixSections';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ locals, parent }) => {
+export const load = (async ({ depends, locals, parent }) => {
+	depends('members');
+
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
 	const guid = currentOrganizationalUnit?.guid ?? currentOrganization.guid;
 

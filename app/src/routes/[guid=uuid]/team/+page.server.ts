@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor from '$lib/authorization';
 import { isTeamContainer, predicates, type User } from '$lib/models';
-import { getAllRelatedUsers } from '$lib/server/db';
+import { getAllRelatedUsers, getContainerByGuid } from '$lib/server/db';
 import { getMembers } from '$lib/server/keycloak';
 import type { PageServerLoad } from './$types';
 
@@ -10,9 +10,15 @@ import type { PageServerLoad } from './$types';
 // along with the area it belongs to (the unit it is part of, else the
 // organization). Editing follows manage-users on the team, which the
 // administrators of the units above and of the organization hold as well.
-export const load = (async ({ locals, parent }) => {
+export const load = (async ({ depends, locals, parent }) => {
+	depends('members');
+
 	const { currentOrganization, currentOrganizationalUnit, organizationalUnits } = await parent();
-	const container = currentOrganizationalUnit;
+	// the roster edits the unit's user list, so the unit comes fresh with this
+	// data rather than with the layout
+	const container = currentOrganizationalUnit
+		? await locals.pool.connect(getContainerByGuid(currentOrganizationalUnit.guid))
+		: undefined;
 
 	if (!container || !isTeamContainer(container)) {
 		error(404, unwrapFunctionStore(_)('error.not_found'));
