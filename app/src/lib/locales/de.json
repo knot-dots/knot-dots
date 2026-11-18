@@ -217,6 +217,8 @@
 	"feature_flag.Adoptions.title": "Regelwerke übernehmen",
 	"feature_flag.ImportFromCsv.description": "Ist-Werte von Indikatoren und Objekte aus einer CSV-Datei hochladen, statt sie einzeln einzutragen.",
 	"feature_flag.ImportFromCsv.title": "Import aus CSV-Dateien",
+	"feature_flag.indicator_dashboard.description": "Indikatoren als Abschnitt in einem Raster aus Karten zeigen, als Diagramm oder Kennzahl, und die Karten frei anordnen.",
+	"feature_flag.indicator_dashboard.title": "Indikatoren Dashboard",
 	"feature_flag.IOOI.description": "Ziele und Maßnahmen entlang der Wirkungskette Input, Output, Outcome, Impact darstellen und gewünschte Entwicklungen und Wirkungen als Tendenz angeben.",
 	"feature_flag.IOOI.title": "Wirkungslogik (IOOI)",
 	"feature_flag.MCP.description": "Externe KI-Assistenten mit knot dots verbinden und Berechtigungen im Benutzermenü verwalten.",
