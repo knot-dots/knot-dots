@@ -96,12 +96,12 @@ test.describe('Table', () => {
 			dotsBoard.page
 				.getByRole('navigation', { name: 'Breadcrumb' })
 				.getByRole('listitem')
-				.nth(1)
+				.nth(2)
 				.getByRole('link')
 		).toHaveText(testProgram.payload.title);
 
 		await expect(
-			dotsBoard.page.getByRole('navigation', { name: 'Breadcrumb' }).getByRole('listitem').nth(2)
+			dotsBoard.page.getByRole('navigation', { name: 'Breadcrumb' }).getByRole('listitem').nth(3)
 		).toHaveText('Table');
 		await expect(
 			dotsBoard.page

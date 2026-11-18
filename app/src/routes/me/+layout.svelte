@@ -30,7 +30,8 @@
 	});
 
 	let lastOverlay = $state({
-		url: undefined
+		url: undefined,
+		pageTitle: undefined
 	});
 
 	setLastOverlayContext(lastOverlay);

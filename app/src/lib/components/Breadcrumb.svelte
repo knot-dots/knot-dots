@@ -4,7 +4,8 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
-	import { getOrganizationURL } from '$lib/models';
+	import { getLastOverlayContext } from '$lib/contexts/lastOverlay';
+	import { getOrganizationURL, paramsFromFragment } from '$lib/models';
 	import { isPartOf } from '$lib/relations';
 
 	const superordinateOrganizationalUnit = $derived(
@@ -12,6 +13,20 @@
 			? isPartOf(page.data.currentOrganizationalUnit, page.data.organizationalUnits)
 			: undefined
 	);
+
+	const lastOverlay = getLastOverlayContext();
+
+	const itemFromLastOverlay = $derived.by(() => {
+		if (!lastOverlay.url || !lastOverlay.pageTitle) {
+			return;
+		}
+
+		let params = paramsFromFragment(lastOverlay.url);
+
+		if (params.entries().some(([, v]) => v === page.params.contentGuid)) {
+			return { href: lastOverlay.url.toString().split('#')[0], title: lastOverlay.pageTitle };
+		}
+	});
 
 	const breadcrumb = $derived([
 		{
@@ -33,6 +48,7 @@
 			: []),
 		...(page.data.container && page.data.container.guid != page.params.guid
 			? [
+					...(itemFromLastOverlay ? [itemFromLastOverlay] : []),
 					{
 						href: resolve('/[guid=uuid]/[contentGuid=uuid]', {
 							guid: (page.data.currentOrganizationalUnit ?? page.data.currentOrganization).guid,
