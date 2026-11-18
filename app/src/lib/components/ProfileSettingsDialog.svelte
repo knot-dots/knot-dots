@@ -75,7 +75,7 @@
 
 		<div>
 			<fieldset class="data-grid">
-				<label for="givenName">
+				<label class="label" for="givenName">
 					{$_('given_name')}
 				</label>
 				<input
@@ -87,7 +87,7 @@
 					value={$user.givenName}
 				/>
 
-				<label for="familyName">
+				<label class="label" for="familyName">
 					{$_('family_name')}
 				</label>
 				<input
@@ -182,10 +182,6 @@
 		margin-bottom: 1rem;
 	}
 
-	fieldset :global(label) {
-		color: var(--color-gray-700);
-	}
-
 	li {
 		padding: 0.25rem 0;
 	}
@@ -207,10 +203,7 @@
 	}
 
 	.data-grid {
-		border: none;
-		border-radius: 0;
-		border-left: 2px solid var(--gray-200, #e5e7eb);
-		padding: 0.5rem 0 0.5rem 1.5rem;
+		padding: 0.5rem 0;
 	}
 
 	@container (min-inline-size: 20rem) {

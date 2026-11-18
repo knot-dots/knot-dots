@@ -29,11 +29,7 @@
 		<p class="dialog-actions">
 			<span>{title}</span>
 
-			<button
-				class="button-xs button-alternate-outline system-primary"
-				onclick={() => dialog.close()}
-				type="button"
-			>
+			<button class="action-button" onclick={() => dialog.close()} type="button">
 				<Close />
 				<span class="is-visually-hidden">{$_('close')}</span>
 			</button>
@@ -76,6 +72,6 @@
 	}
 
 	.details {
-		padding-bottom: 3rem;
+		padding: 1.5rem 5rem 3rem;
 	}
 </style>

@@ -1445,9 +1445,9 @@ h4.details-heading {
 	--dropdown-panel-max-width: 100%;
 	--form-control-background: var(--color-white);
 
-	border-left: solid 2px var(--color-gray-200);
+	border: none;
 	gap: 0.5rem;
-	padding-left: 1.5rem;
+	padding: 0;
 }
 
 .data-grid > .label {

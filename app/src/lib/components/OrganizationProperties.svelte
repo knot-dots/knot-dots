@@ -154,8 +154,6 @@
 	{/if}
 {/snippet}
 
-<div class="details-section">
-	<div class="data-grid">
-		{@render general()}
-	</div>
+<div class="data-grid">
+	{@render general()}
 </div>
