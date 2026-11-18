@@ -41,7 +41,7 @@
 					isThinking = false;
 					alert($_('ai_status.error'));
 					break;
-				case 'completed':
+				case 'complete':
 					isThinking = false;
 					toast({
 						icon: Check,
