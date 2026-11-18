@@ -670,6 +670,7 @@
 			}
 		}}
 		style:--columns={columns}
+		style:--grid-width="{gridWidth}px"
 		style:--row-height="{rowHeight}px"
 	>
 		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->

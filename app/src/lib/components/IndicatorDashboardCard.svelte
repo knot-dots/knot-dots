@@ -173,31 +173,48 @@
 		z-index: 1;
 	}
 
-	/* The pictogram of a stat, faint behind the content in the lower right corner, 8 or 16 px from
-	   the outer edge of the card as in the design (the border takes 1 px). It is 155 or 290 px at
-	   rows of 84 px and grows with the rows on large screens, but never wider than the card
-	   allows. A pictogram that is not square keeps its proportions in the corner. */
+	/* The pictogram of a stat, behind the content in the lower right corner, 8 or 16 px from the
+	   outer edge of the card as in the design (the border takes 1 px). It grows with the card, up
+	   to its height and to three fifths of its width, and keeps its proportions in the corner. */
 	.backdrop {
-		aspect-ratio: 1;
 		bottom: var(--backdrop-inset);
+		height: calc(100% - 2 * var(--backdrop-inset));
 		object-fit: contain;
 		object-position: right bottom;
-		opacity: 0.14;
 		pointer-events: none;
 		position: absolute;
 		right: var(--backdrop-inset);
-		width: min(var(--backdrop-size), 100% - 2 * var(--backdrop-inset));
-		z-index: -1;
+		width: 60%;
+		z-index: -2;
 	}
 
 	.backdrop--rows-2 {
 		--backdrop-inset: calc(0.5rem - 1px);
-		--backdrop-size: calc(var(--row-height, 84px) * 155 / 84);
 	}
 
 	.backdrop--rows-4 {
 		--backdrop-inset: calc(1rem - 1px);
-		--backdrop-size: calc(var(--row-height, 84px) * 290 / 84);
+	}
+
+	/* A veil of the surface lies over the pictogram, so the text keeps its contrast. Its width
+	   follows the grid, not the card: 812 px of the 899 px of a whole row in the design, of which
+	   the last two fifths fade from 85 to 15 percent. A narrow card shows its pictogram faintly, a card over the
+	   whole row shows it clearly at its right end. The veil never gets narrower than in the
+	   design, so on four and two columns, where the text reaches further into the card, the
+	   pictogram stays faint. */
+	.card:has(> .backdrop)::before {
+		--veil-width: max(812px, var(--grid-width, 100%) * 812 / 899);
+
+		background: linear-gradient(
+			to right,
+			rgb(from var(--color-surface-accent-default) r g b / 0.85) calc(var(--veil-width) * 0.61),
+			rgb(from var(--color-surface-accent-default) r g b / 0.15) var(--veil-width)
+		);
+		content: '';
+		inset: 0;
+		pointer-events: none;
+		position: absolute;
+		z-index: -1;
 	}
 
 	.top {
