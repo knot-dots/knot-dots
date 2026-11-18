@@ -14,7 +14,11 @@ import { getMembers } from '$lib/server/keycloak';
 import { loadMatrixSections } from '$lib/server/matrixSections';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ locals, params }) => {
+export const load = (async ({ depends, locals, params }) => {
+	// the matrix reloads this data alone after saving, not the page behind
+	// the overlay
+	depends('members');
+
 	const t = unwrapFunctionStore(_);
 
 	try {

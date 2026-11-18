@@ -2,8 +2,18 @@ import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor from '$lib/authorization';
 import { createFeatureDecisions } from '$lib/features';
-import { findDescendants, predicates, type User } from '$lib/models';
-import { getAllGrantsByContainers, getAllRelatedUsersByContainers } from '$lib/server/db';
+import {
+	findDescendants,
+	isOrganizationalUnitContainer,
+	isOrganizationContainer,
+	predicates,
+	type User
+} from '$lib/models';
+import {
+	getAllGrantsByContainers,
+	getAllRelatedUsersByContainers,
+	getContainerByGuid
+} from '$lib/server/db';
 import { getMembers } from '$lib/server/keycloak';
 import { loadMatrixSections, loadTeams } from '$lib/server/matrixSections';
 import type { PageServerLoad } from './$types';
@@ -15,7 +25,9 @@ const userPredicates = [
 	predicates.enum['is-head-of']
 ];
 
-export const load = (async ({ locals, parent }) => {
+export const load = (async ({ depends, locals, parent }) => {
+	depends('members');
+
 	const {
 		currentOrganization,
 		currentOrganizationalUnit,
@@ -42,7 +54,7 @@ export const load = (async ({ locals, parent }) => {
 	// an organizational unit inherits its matrices from the computed sources
 	// (a decoupled parent unit or the organization), shown with the same
 	// sections and toggle as measures and programs
-	const [members, { grants, relatedUsers, sections, teams }] = await Promise.all([
+	const [members, { container, grants, relatedUsers, sections, teams }] = await Promise.all([
 		getMembers(selectedContext.organization),
 		locals.pool.connect(async (connection) => {
 			const matrixEnabled = createFeatureDecisions(locals.features).usePermissionMatrix();
@@ -51,6 +63,9 @@ export const load = (async ({ locals, parent }) => {
 					? await loadMatrixSections(connection, currentOrganizationalUnit)
 					: undefined;
 			return {
+				// the matrix toggles the inheritance of the context, so it comes
+				// fresh with this data rather than with the layout
+				container: await getContainerByGuid(selectedContext.guid)(connection),
 				grants: await getAllGrantsByContainers([selectedContext.guid])(connection),
 				relatedUsers: await getAllRelatedUsersByContainers(
 					displayedContainerGuids,
@@ -64,6 +79,10 @@ export const load = (async ({ locals, parent }) => {
 		})
 	]);
 
+	if (!isOrganizationContainer(container) && !isOrganizationalUnitContainer(container)) {
+		error(404, unwrapFunctionStore(_)('error.not_found'));
+	}
+
 	const usersByGuid = new Map(relatedUsers.map((user) => [user.guid, user]));
 
 	const withEmail = (user: User) => ({
@@ -72,7 +91,7 @@ export const load = (async ({ locals, parent }) => {
 	});
 
 	return {
-		container: selectedContext,
+		container,
 		grants,
 		teams,
 		...(sections

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { SvelteMap } from 'svelte/reactivity';
-	import { invalidateAll } from '$app/navigation';
+	import { invalidate } from '$app/navigation';
 	import { page } from '$app/state';
 	import { _ } from 'svelte-i18n';
 	import CheckIcon from '~icons/flowbite/check-outline';
@@ -241,7 +241,7 @@
 			return false;
 		}
 
-		await invalidateAll();
+		await invalidate('members');
 		return true;
 	}
 
@@ -315,7 +315,7 @@
 			reportFailure();
 			return;
 		}
-		await invalidateAll();
+		await invalidate('members');
 	}
 
 	// whether the current user would lose access once the container inherits:
@@ -363,7 +363,7 @@
 			return;
 		}
 
-		await invalidateAll();
+		await invalidate('members');
 	}
 
 	function cellLabel(kind: GrantKind, groupLabel: string, checked: boolean) {

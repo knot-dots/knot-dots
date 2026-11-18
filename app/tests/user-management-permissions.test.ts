@@ -2,6 +2,7 @@ import {
 	containerOfType,
 	type NewContainer,
 	type OrganizationalUnitPayload,
+	organizationalUnitType,
 	payloadTypes,
 	predicates
 } from '$lib/models';
@@ -399,5 +400,40 @@ test.describe('Teams', () => {
 		const row = page.getByRole('row', { name: 'Unit team' });
 		await expect(row).toBeVisible();
 		await expect(row).toContainText(testOrganizationalUnit.payload.name);
+	});
+
+	test('adds a registered user to the roster right away', async ({
+		adminContext,
+		page,
+		testOrganization
+	}) => {
+		const newTeam = containerOfType(
+			payloadTypes.enum.organizational_unit,
+			testOrganization
+		) as NewContainer<OrganizationalUnitPayload>;
+		const team = await createContainer(adminContext, {
+			...newTeam,
+			payload: {
+				...newTeam.payload,
+				name: 'Roster team',
+				organizationalUnitType: organizationalUnitType.enum['organizational_unit_type.team']
+			}
+		});
+
+		await page.goto(`/${testOrganization.guid}/user-management?view=teams#team=${team.guid}`);
+		const overlay = page.locator('.overlay');
+		await overlay.getByRole('button', { name: 'Add item' }).click();
+
+		// Bob is registered in the organization, so he joins the roster through
+		// its user list rather than through an invitation
+		const rosterResponse = page.waitForResponse(
+			(r) => r.url().endsWith(`/container/${team.guid}/user`) && r.request().method() === 'POST'
+		);
+		await overlay.getByRole('option', { name: 'Bob Bow' }).click();
+		await rosterResponse;
+
+		const bobRow = overlay.getByRole('row', { name: 'Bob Bow' });
+		await expect(bobRow).toBeVisible();
+		await expect(bobRow.getByRole('button', { name: 'Remove' })).toBeVisible();
 	});
 });

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import { invalidateAll } from '$app/navigation';
+	import { invalidate, invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import { _ } from 'svelte-i18n';
 	import ArrowRightIcon from '~icons/flowbite/arrow-right-outline';
@@ -11,7 +11,6 @@
 	import tooltip from '$lib/attachments/tooltip';
 	import saveContainer from '$lib/client/saveContainer';
 	import saveContainerUser from '$lib/client/saveContainerUser';
-	import saveUser from '$lib/client/saveUser';
 	import Dropdown from '$lib/components/Dropdown.svelte';
 	import InviteUserDialog from '$lib/components/InviteUserDialog.svelte';
 	import SubjectCombobox, { type SubjectSuggestion } from '$lib/components/SubjectCombobox.svelte';
@@ -23,7 +22,8 @@
 		type OrganizationalUnitPayload,
 		organizationalUnitType,
 		predicates,
-		type User
+		type User,
+		userRelationsForMemberRole
 	} from '$lib/models';
 
 	interface Props {
@@ -94,20 +94,24 @@
 		await invalidateAll();
 	}
 
+	// the suggestions are registered users of the organization, so they join
+	// the roster directly without the invitation round trip
 	async function addMember(suggestion: SubjectSuggestion) {
 		if (suggestion.kind !== 'user') {
 			return;
 		}
-		const response = await saveUser({
-			container,
-			email: suggestion.email,
-			role: memberRoles.enum.observer
+		const response = await saveContainerUser({
+			...container,
+			user: [
+				...container.user.filter(({ subject }) => subject !== suggestion.guid),
+				...userRelationsForMemberRole(memberRoles.enum.observer, suggestion.guid)
+			]
 		});
 		if (!response.ok) {
 			reportFailure();
 			return;
 		}
-		await invalidateAll();
+		await invalidate('members');
 	}
 
 	async function removeMember(member: User) {
@@ -121,7 +125,7 @@
 			reportFailure();
 			return;
 		}
-		await invalidateAll();
+		await invalidate('members');
 	}
 
 	function email(member: User) {
