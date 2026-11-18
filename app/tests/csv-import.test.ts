@@ -26,7 +26,7 @@ test('import CSV creates objects of every type', async ({ page, testOrganization
 	].join('\n');
 
 	await page.goto(`/${testOrganization.guid}/import`);
-	await page.getByLabel('CSV file').setInputFiles({
+	await page.getByLabel('CSV file', { exact: true }).setInputFiles({
 		name: 'import.csv',
 		mimeType: 'text/csv',
 		buffer: Buffer.from(csvContent, 'utf-8')

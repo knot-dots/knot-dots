@@ -391,12 +391,16 @@
 			label: $_('custom_collection.settings.embed_objects'),
 			value: payloadTypes.enum.custom_collection
 		},
-		{
-			group: 'existing_objects',
-			icon: ChartMixed,
-			label: $_('indicator_dashboard'),
-			value: payloadTypes.enum.indicator_dashboard
-		},
+		...(createFeatureDecisions(page.data.features).useIndicatorDashboard()
+			? [
+					{
+						group: 'existing_objects' as const,
+						icon: ChartMixed,
+						label: $_('indicator_dashboard'),
+						value: payloadTypes.enum.indicator_dashboard
+					}
+				]
+			: []),
 		...(mayAddTeaserCollection
 			? [
 					{

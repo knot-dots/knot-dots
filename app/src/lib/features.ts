@@ -1,9 +1,10 @@
 // ComputedManagedBy, McpServer, MultipleProgramAssignment and PermissionMatrix
 // are managed per deployment via pod annotations (see $lib/server/podFeatures)
-// and deliberately absent from these user-facing rings.
+// and deliberately absent from these user-facing rings. New flags are named in
+// snake_case, like the keys of their translations.
 export const featureFlags = new Map([
 	['alpha', ['Adoptions', 'MCP', 'Mistral', 'OpenAI', 'Templating'] as const],
-	['beta', ['ImportFromCsv', 'IOOI', 'ResourceV2'] as const]
+	['beta', ['ImportFromCsv', 'indicator_dashboard', 'IOOI', 'ResourceV2'] as const]
 ]);
 
 export function createFeatureDecisions(features: string[]) {
@@ -31,6 +32,9 @@ export function createFeatureDecisions(features: string[]) {
 		},
 		useAdoptions() {
 			return features.includes('Adoptions');
+		},
+		useIndicatorDashboard() {
+			return features.includes('indicator_dashboard');
 		},
 		useComputedManagedBy() {
 			return features.includes('ComputedManagedBy');
