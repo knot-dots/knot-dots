@@ -34,10 +34,12 @@
 				type="button"
 				use:popover.button
 			>
-				<span class="badge badge--large truncated">
+				<span class="badge badge--large">
 					<OrganizationalUnit />
-					{const selected = options.find((o) => o.value == value)}
-					{#if selected}{selected.label}{:else}{$_('empty')}{/if}
+					<span class="truncated">
+						{const selected = options.find((o) => o.value == value)}
+						{#if selected}{selected.label}{:else}{$_('empty')}{/if}
+					</span>
 				</span>
 			</button>
 		{/snippet}
