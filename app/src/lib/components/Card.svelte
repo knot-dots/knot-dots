@@ -228,12 +228,11 @@
 		};
 	}
 
+	// Whether the overlay shows this container.
+	let active = $derived(paramsFromFragment(page.url).get(overlayKey.enum.view) === container.guid);
+
 	function computeHref(url: URL) {
 		const hashParams = paramsFromFragment(url);
-
-		if (hashParams.get(overlayKey.enum.view) === container.guid) {
-			return '#';
-		}
 
 		// Check for overlay indicators/resources
 		if (
@@ -268,7 +267,8 @@
 	}
 
 	function handleKeyUp(event: KeyboardEvent) {
-		if (event.key == 'Enter') {
+		// the browser already follows the link if Enter is pressed on it
+		if (event.key == 'Enter' && !previewLink?.contains(event.target as Node)) {
 			previewLink?.click();
 		}
 	}
@@ -279,6 +279,23 @@
 		);
 		if (!overlayContext) {
 			$overlayHistory = [anchorHashParams];
+		}
+	}
+
+	// Clicking the link of the container shown in the overlay closes the
+	// overlay. The link must not change its target for that: SvelteKit updates
+	// page.url before the browser follows a link to a fragment, so the browser
+	// would follow the changed target and the address bar would no longer
+	// match page.url.
+	function handleLinkClick(event: MouseEvent) {
+		const opensElsewhere =
+			event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
+
+		if (active && !href && !opensElsewhere) {
+			event.preventDefault();
+			goto('#', { keepFocus: true, noScroll: true });
+		} else {
+			updateOverlayHistory(event);
 		}
 	}
 
@@ -317,7 +334,7 @@
 	{title}
 	data-sveltekit-keepfocus
 	class="card"
-	class:is-active={paramsFromFragment(page.url).get(overlayKey.enum.view) === container.guid}
+	class:is-active={active}
 	class:is-highlighted={selected && highlightColor(container, selected)}
 	style:--highlight-color={selected && highlightColor(container, selected)}
 	style:--aura-color={auraColor}
@@ -357,7 +374,7 @@
 						if (onclick) {
 							onclick(e);
 						} else {
-							updateOverlayHistory(e);
+							handleLinkClick(e);
 						}
 					}}
 				>
@@ -456,7 +473,7 @@
 						<a
 							href={href ? href() : computeHref(page.url)}
 							bind:this={previewLink}
-							onclick={updateOverlayHistory}>{container.payload.title}</a
+							onclick={handleLinkClick}>{container.payload.title}</a
 						>
 					</h3>
 				</header>
