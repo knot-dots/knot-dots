@@ -161,7 +161,9 @@
 		page.data.currentOrganizationalUnit ?? page.data.currentOrganization
 	);
 
-	let selectedSort = $derived(page.url.searchParams.get('sort') ?? 'alpha');
+	let selectedSort = $derived(
+		(overlay ? paramsFromFragment(page.url) : page.url.searchParams).get('sort') ?? 'alpha'
+	);
 
 	let activeFilters = $derived.by(() => {
 		let count = 0;
