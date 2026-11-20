@@ -158,9 +158,11 @@ test.describe('Budget Table in Goal Detail View', () => {
 		const currentBudgetInput = currentBudgetSection.locator('input[inputmode="decimal"]').last();
 
 		// Type a value and wait for debounced save
-		const invalidateRequest = dotsBoard.page.waitForRequest(/x-sveltekit-invalidated/);
+		const saved = dotsBoard.page.waitForResponse(
+			(r) => r.url().includes('/revision') && r.request().method() === 'POST'
+		);
 		await currentBudgetInput.fill('75000');
-		await invalidateRequest;
+		await saved;
 
 		// Reload and verify persistence (data should be visible even when not in edit mode)
 		await dotsBoard.page.reload();

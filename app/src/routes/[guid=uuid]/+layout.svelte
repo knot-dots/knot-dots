@@ -54,9 +54,17 @@
 		user: [...($user.settings.favorite ?? [])]
 	});
 
+	// page.data is replaced whenever a load reruns, but the organization and the
+	// organizational unit in it stay the same objects until the server load reloads them
+	// or +layout.ts takes over a newer version saved in the browser. Their favorites are
+	// therefore only taken over when the objects are replaced, so that an earlier version
+	// doesn't undo favorites saved in the meantime.
+	const currentOrganization = $derived(page.data.currentOrganization);
+	const currentOrganizationalUnit = $derived(page.data.currentOrganizationalUnit);
+
 	$effect(() => {
-		favoriteList.organization = page.data.currentOrganization.payload.favorite;
-		favoriteList.organizationalUnit = page.data.currentOrganizationalUnit?.payload.favorite ?? [];
+		favoriteList.organization = currentOrganization.payload.favorite;
+		favoriteList.organizationalUnit = currentOrganizationalUnit?.payload.favorite ?? [];
 	});
 
 	setFavoriteListContext(favoriteList);

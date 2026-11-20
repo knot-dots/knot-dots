@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import Header from './header';
 
 test.use({ suiteId: 'title' });
 
@@ -32,6 +33,34 @@ test.describe('Document titles and breadcrumb', () => {
 		await expect(
 			page.getByRole('navigation', { name: 'Breadcrumb' }).getByRole('link')
 		).toHaveAttribute('href', new RegExp(`\\/${testOrganization.guid}$`));
+	});
+
+	test('title and breadcrumb show the new name of a renamed organization in another workspace', async ({
+		page,
+		testOrganization
+	}) => {
+		const header = new Header(page);
+		const name = `${testOrganization.payload.name} renamed`;
+
+		await page.goto(`/${testOrganization.guid}`);
+		await header.editModeToggle.check();
+		const saved = page.waitForResponse(
+			(r) => r.url().includes('/revision') && r.request().method() === 'POST'
+		);
+		await page.getByRole('heading', { level: 1, name: testOrganization.payload.name }).fill(name);
+		await saved;
+		await header.editModeToggle.uncheck();
+
+		await page.getByRole('button', { name: 'Choose workspace', exact: true }).click();
+		await page.getByRole('menuitem', { name: /^Goals\b/ }).click();
+		await expect(page).toHaveTitle(`${name} / Goals`);
+		await expect(
+			page
+				.getByRole('navigation', { name: 'Breadcrumb' })
+				.getByRole('listitem')
+				.first()
+				.getByRole('link', { name })
+		).toBeVisible();
 	});
 
 	test('title and breadcrumb update switching between workspaces of organization', async ({
