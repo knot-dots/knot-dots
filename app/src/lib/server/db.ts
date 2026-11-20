@@ -107,8 +107,12 @@ export async function getPool() {
 		// per connection and survives the reset, which restores the values the
 		// session was started with.
 		pool = await createPool('postgres://?options=-c%20jit%3Doff', {
+			// Keep connections open across short pauses between requests, so that
+			// a request doesn't have to wait for new ones to be established.
+			idleTimeout: 60_000,
 			interceptors: [createResultParserInterceptor()],
 			maxPoolSize: 50,
+			minPoolSize: 5,
 			tracing: true
 		});
 	}
