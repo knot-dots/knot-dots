@@ -19,7 +19,7 @@ import type { PageServerLoad } from './$types';
 
 // The table is an alternative view of the levels board and shows the same objects.
 export const load = (async ({ depends, locals, params, parent, url }) => {
-	depends('containers');
+	depends('app:containers');
 
 	const t = unwrapFunctionStore(_);
 

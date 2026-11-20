@@ -12,7 +12,7 @@ const DEFAULT_RELATION_TYPES = [
 ];
 
 export default (async function load({ depends, fetch, params, parent, url }) {
-	depends('containers');
+	depends('app:containers');
 
 	const query = new URLSearchParams([
 		...url.searchParams,

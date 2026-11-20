@@ -493,7 +493,7 @@
 		}
 
 		const updatedContainer = await response.json();
-		await invalidate('containers');
+		await invalidate('app:containers');
 		return { guid: updatedContainer.guid, revision: updatedContainer.revision };
 	}
 </script>

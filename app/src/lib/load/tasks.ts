@@ -30,7 +30,7 @@ export default function load(
 	options: { omitStatusFacet?: boolean } = {}
 ) {
 	return (async ({ depends, fetch, params, parent, url }) => {
-		depends('containers');
+		depends('app:containers');
 
 		const query = new URLSearchParams([...url.searchParams, ['type', payloadTypes.enum.task]]);
 		query.set('sort', url.searchParams.get('sort') ?? defaultSort);

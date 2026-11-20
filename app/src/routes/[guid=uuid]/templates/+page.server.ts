@@ -3,7 +3,7 @@ import { fetchTemplates } from '$lib/load/templates';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ depends, locals, parent, url }) => {
-	depends('containers');
+	depends('app:containers');
 
 	const {
 		categoryContext: rawCategoryContext,

@@ -83,7 +83,7 @@ export async function fetchResources({
 
 export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 	return (async ({ depends, locals, parent, url }) => {
-		depends('containers');
+		depends('app:containers');
 
 		const {
 			categoryContext: rawCategoryContext,

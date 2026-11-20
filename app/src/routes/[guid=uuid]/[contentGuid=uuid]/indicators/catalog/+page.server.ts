@@ -7,7 +7,7 @@ import { getAllContainerRevisionsByGuid, getAllContainersRelatedToProgram } from
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ depends, locals, params }) => {
-	depends('containers');
+	depends('app:containers');
 
 	const t = unwrapFunctionStore(_);
 

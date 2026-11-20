@@ -234,7 +234,7 @@
 			];
 
 			await syncParentRelations(nextTerms);
-			await invalidate('containers');
+			await invalidate('app:containers');
 			resetForm();
 		} catch (error) {
 			relatedContainers = previousRelatedContainers;

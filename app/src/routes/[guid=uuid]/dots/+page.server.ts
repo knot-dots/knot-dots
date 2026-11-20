@@ -32,7 +32,7 @@ const ALL_LEVEL_PAYLOAD_TYPES = [
 ];
 
 export const load: PageServerLoad = async ({ depends, fetch, params, parent, url }) => {
-	depends('containers');
+	depends('app:containers');
 
 	const baseQuery = createAllLevelQuery(url);
 	const [facetData, columnEntries, { categoryContext, currentOrganization }] = await Promise.all([

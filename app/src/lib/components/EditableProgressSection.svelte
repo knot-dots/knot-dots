@@ -55,7 +55,7 @@
 		if (response.ok) {
 			const updatedContainer = await response.json();
 			parentContainer.revision = updatedContainer.revision;
-			await invalidate('containers');
+			await invalidate('app:containers');
 		} else {
 			const error = await response.json();
 			alert(error.message);
@@ -69,7 +69,7 @@
 		if (response.ok) {
 			const updatedContainer = await response.json();
 			parentContainer.revision = updatedContainer.revision;
-			await invalidate('containers');
+			await invalidate('app:containers');
 		} else {
 			const error = await response.json();
 			alert(error.message);

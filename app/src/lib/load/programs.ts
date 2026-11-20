@@ -13,7 +13,7 @@ const DEFAULT_RELATION_TYPES = [
 
 export const loadPage = (limit: number) =>
 	(async ({ depends, fetch, params, parent, url }) => {
-		depends('containers');
+		depends('app:containers');
 
 		const query = new URLSearchParams([...url.searchParams, ['type', payloadTypes.enum.program]]);
 

@@ -38,7 +38,7 @@ export function loadColumnBoardPage<T extends Container<AnyPayload>, ColumnId ex
 	options: LoadColumnBoardOptions<ColumnId>
 ) {
 	return async ({ depends, fetch, params, parent, url }: ColumnBoardLoadEvent) => {
-		depends('containers');
+		depends('app:containers');
 
 		const columnIds = await options.getColumnIds({ url });
 		const baseQuery = options.createQuery(url);
