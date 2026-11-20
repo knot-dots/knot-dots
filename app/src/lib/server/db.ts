@@ -62,7 +62,7 @@ import {
 	type NewContainerWithGuid,
 	referenceCopyPredicates
 } from '$lib/server/containerCopyPlan';
-import { enqueueIndexingEvent } from '$lib/server/indexingQueue';
+import { enqueueIndexingEvent, enqueueIndexingEvents } from '$lib/server/indexingQueue';
 import { createGroup, deleteGroup, updateAccessSettings } from '$lib/server/keycloak';
 
 const createResultParserInterceptor = (): Interceptor => {
@@ -2591,9 +2591,7 @@ function affectedContainerGuids(relations: ReadonlyArray<Relation>) {
 
 async function enqueueContainerUpserts(guids: ReadonlyArray<string>) {
 	const timestamp = new Date().toISOString();
-	for (const guid of new Set(guids)) {
-		await enqueueIndexingEvent({ action: 'upsert', guid, timestamp });
-	}
+	await enqueueIndexingEvents(guids.map((guid) => ({ action: 'upsert', guid, timestamp })));
 }
 
 export function createManyContainerRelations(relations: ReadonlyArray<Relation>) {
@@ -2897,13 +2895,7 @@ export function createOrUpdateTaskPriority(taskPriority: TaskPriority[]) {
 			`);
 		});
 
-		for (const taskGuid of new Set(tasks)) {
-			await enqueueIndexingEvent({
-				action: 'upsert',
-				guid: taskGuid,
-				timestamp: new Date().toISOString()
-			});
-		}
+		await enqueueContainerUpserts(tasks);
 	};
 }
 
