@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import createColumnBoardPagination from '$lib/client/createColumnBoardPagination.svelte';
-	import fetchContainerPage from '$lib/client/fetchContainerPage';
+	import fetchContainerGroupPage from '$lib/client/fetchContainerGroupPage';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
@@ -11,7 +11,7 @@
 	import { type Container, type GoalPayload, titleForGoalCollection } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
-	import { createGoalLevelQuery } from './query';
+	import { createGoalLevelQuery, goalLevelColumnGroup } from './query';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -22,21 +22,16 @@
 		columns: () => data.columns,
 		created: () => $lastCreatedContainers,
 		deleted: () => $lastDeletedContainers,
-		fetchPage: async ({ columnId, offset, signal }) => {
-			const result = await fetchContainerPage<Container<GoalPayload>>({
+		fetchPage: ({ columnId, offset, signal }) =>
+			fetchContainerGroupPage<Container<GoalPayload>>({
 				contextGuid: page.params.guid,
 				fetch,
+				group: goalLevelColumnGroup(columnId),
 				limit: DEFAULT_PAGE_SIZE,
 				offset,
-				query: createGoalLevelQuery(page.url, columnId),
+				query: createGoalLevelQuery(page.url),
 				signal
-			});
-			return {
-				hasMore: result.page.hasMore,
-				items: result.containers,
-				nextOffset: result.page.nextOffset
-			};
-		},
+			}),
 		pageSize: DEFAULT_PAGE_SIZE,
 		resetKey: () => `${page.url.pathname}?${page.url.searchParams.toString()}`,
 		updated: () => $lastUpdatedContainers

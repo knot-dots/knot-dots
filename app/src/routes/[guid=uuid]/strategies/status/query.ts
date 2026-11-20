@@ -1,3 +1,4 @@
+import type { ContainerGroup } from '$lib/containerGroups';
 import { type Status, payloadTypes, predicates } from '$lib/models';
 import { strategyProgramTypes } from '$lib/workspaces';
 
@@ -8,7 +9,7 @@ export const DEFAULT_RELATION_TYPES = [
 	predicates.enum['is-superordinate-of']
 ];
 
-export function createStrategyStatusQuery(url: URL, status?: Status) {
+export function createStrategyStatusQuery(url: URL) {
 	const query = new URLSearchParams(url.searchParams);
 	query.delete('payloadType');
 	query.delete('type');
@@ -19,10 +20,6 @@ export function createStrategyStatusQuery(url: URL, status?: Status) {
 	}
 	query.append('type', payloadTypes.enum.program);
 
-	if (status) {
-		query.append('status', status);
-	}
-
 	if (url.searchParams.has('related-to') && !url.searchParams.has('relationType')) {
 		for (const relationType of DEFAULT_RELATION_TYPES) {
 			query.append('relationType', relationType);
@@ -30,4 +27,8 @@ export function createStrategyStatusQuery(url: URL, status?: Status) {
 	}
 
 	return query;
+}
+
+export function strategyStatusColumnGroup(status: Status): ContainerGroup {
+	return { status: [status] };
 }

@@ -1,3 +1,4 @@
+import type { ContainerGroup } from '$lib/containerGroups';
 import { type Level, payloadTypes, predicates } from '$lib/models';
 import { strategyProgramTypes } from '$lib/workspaces';
 
@@ -8,7 +9,7 @@ export const DEFAULT_RELATION_TYPES = [
 	predicates.enum['is-superordinate-of']
 ];
 
-export function createStrategyLevelQuery(url: URL, level?: Level) {
+export function createStrategyLevelQuery(url: URL) {
 	const query = new URLSearchParams(url.searchParams);
 	query.delete('payloadType');
 	query.delete('type');
@@ -19,10 +20,6 @@ export function createStrategyLevelQuery(url: URL, level?: Level) {
 	}
 	query.append('type', payloadTypes.enum.program);
 
-	if (level) {
-		query.append('level', level);
-	}
-
 	if (url.searchParams.has('related-to') && !url.searchParams.has('relationType')) {
 		for (const relationType of DEFAULT_RELATION_TYPES) {
 			query.append('relationType', relationType);
@@ -30,4 +27,8 @@ export function createStrategyLevelQuery(url: URL, level?: Level) {
 	}
 
 	return query;
+}
+
+export function strategyLevelColumnGroup(level: Level): ContainerGroup {
+	return { level: [level] };
 }

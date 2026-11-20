@@ -1,5 +1,6 @@
 import { filterCategoryContext, type CategoryContext } from '$lib/categoryOptions';
-import fetchContainerPage from '$lib/client/fetchContainerPage';
+import fetchContainerGroups from '$lib/client/fetchContainerGroups';
+import type { ContainerGroup } from '$lib/containerGroups';
 import type { AnyPayload, Container, PayloadType } from '$lib/models';
 
 type Column<T extends Container<AnyPayload>> = {
@@ -14,7 +15,8 @@ type Column<T extends Container<AnyPayload>> = {
 };
 
 interface LoadColumnBoardOptions<ColumnId extends string> {
-	createQuery: (url: URL, columnId?: ColumnId) => URLSearchParams;
+	columnGroup: (columnId: ColumnId) => ContainerGroup;
+	createQuery: (url: URL) => URLSearchParams;
 	defaultRelationTypes: string[];
 	facetKeys?: readonly string[];
 	getColumnIds: (context: { url: URL }) => Promise<readonly ColumnId[]> | readonly ColumnId[];
@@ -24,7 +26,7 @@ interface LoadColumnBoardOptions<ColumnId extends string> {
 }
 
 interface ColumnBoardLoadEvent {
-	depends: (dependency: string) => void;
+	depends: (...dependencies: `${string}:${string}`[]) => void;
 	fetch: typeof fetch;
 	params: { guid: string };
 	parent: () => Promise<{
@@ -41,32 +43,20 @@ export function loadColumnBoardPage<T extends Container<AnyPayload>, ColumnId ex
 		depends('app:containers');
 
 		const columnIds = await options.getColumnIds({ url });
-		const baseQuery = options.createQuery(url);
-		const [facetData, columnEntries, { categoryContext, currentOrganization }] = await Promise.all([
-			fetchContainerPage<T>({
+		const [{ facets, groups }, { categoryContext, currentOrganization }] = await Promise.all([
+			fetchContainerGroups<T>({
 				contextGuid: params.guid,
 				fetch,
-				limit: 1,
-				offset: 0,
-				query: baseQuery
+				groups: columnIds.map(options.columnGroup),
+				limit: options.limit,
+				query: options.createQuery(url)
 			}),
-			Promise.all(
-				columnIds.map(async (columnId) => {
-					const data = await fetchContainerPage<T>({
-						contextGuid: params.guid,
-						fetch,
-						limit: options.limit,
-						offset: 0,
-						query: options.createQuery(url, columnId)
-					});
-
-					return [columnId, { containers: data.containers, page: data.page }] as const;
-				})
-			),
 			parent()
 		]);
 
-		const columns = Object.fromEntries(columnEntries) as Record<ColumnId, Column<T>>;
+		const columns = Object.fromEntries(
+			columnIds.map((columnId, index) => [columnId, groups[index]])
+		) as Record<ColumnId, Column<T>>;
 		const columnValues = Object.values(columns) as Column<T>[];
 		const filteredCategoryContext = filterCategoryContext(categoryContext, options.payloadTypes);
 
@@ -87,10 +77,10 @@ export function loadColumnBoardPage<T extends Container<AnyPayload>, ColumnId ex
 							: []) as Array<[string, Map<string, number>]>),
 						...((options.omitStatusFacet
 							? []
-							: [['status', facetData.facets.get('status') ?? new Map()]]) as Array<
+							: [['status', facets.get('status') ?? new Map()]]) as Array<
 							[string, Map<string, number>]
 						>),
-						...[...facetData.facets].filter(([key]) =>
+						...[...facets].filter(([key]) =>
 							[...filteredCategoryContext.keys, ...(options.facetKeys ?? [])].includes(key)
 						)
 					])

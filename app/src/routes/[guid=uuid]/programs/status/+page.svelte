@@ -2,7 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import createColumnBoardPagination from '$lib/client/createColumnBoardPagination.svelte';
-	import fetchContainerPage from '$lib/client/fetchContainerPage';
+	import fetchContainerGroupPage from '$lib/client/fetchContainerGroupPage';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
@@ -13,7 +13,7 @@
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import { statusBackgrounds, statusHoverColors } from '$lib/theme/models';
-	import { createProgramStatusQuery } from './query';
+	import { createProgramStatusQuery, programStatusColumnGroup } from './query';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -23,21 +23,16 @@
 		columnIds: () => data.columnIds,
 		columns: () => data.columns,
 		created: () => $lastCreatedContainers,
-		fetchPage: async ({ columnId, offset, signal }) => {
-			const result = await fetchContainerPage<Container<ProgramPayload>>({
+		fetchPage: ({ columnId, offset, signal }) =>
+			fetchContainerGroupPage<Container<ProgramPayload>>({
 				contextGuid: page.params.guid,
 				fetch,
+				group: programStatusColumnGroup(columnId),
 				limit: DEFAULT_PAGE_SIZE,
 				offset,
-				query: createProgramStatusQuery(page.url, columnId),
+				query: createProgramStatusQuery(page.url),
 				signal
-			});
-			return {
-				hasMore: result.page.hasMore,
-				items: result.containers,
-				nextOffset: result.page.nextOffset
-			};
-		},
+			}),
 		pageSize: DEFAULT_PAGE_SIZE,
 		deleted: () => $lastDeletedContainers,
 		resetKey: () => `${page.url.pathname}?${page.url.searchParams.toString()}`,

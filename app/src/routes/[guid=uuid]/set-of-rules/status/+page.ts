@@ -7,14 +7,19 @@ import {
 	status
 } from '$lib/models';
 import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
-import { createProgramStatusQuery, DEFAULT_RELATION_TYPES } from './query';
-import type { PageServerLoad } from './$types';
+import {
+	createSetOfRulesStatusQuery,
+	DEFAULT_RELATION_TYPES,
+	setOfRulesStatusColumnGroup
+} from './query';
+import type { PageLoad } from './$types';
 
 export const load = loadColumnBoardPage<Container<ProgramPayload>, Status>({
-	createQuery: createProgramStatusQuery,
+	columnGroup: setOfRulesStatusColumnGroup,
+	createQuery: createSetOfRulesStatusQuery,
 	defaultRelationTypes: DEFAULT_RELATION_TYPES,
 	getColumnIds: () => status.options,
 	limit: DEFAULT_PAGE_SIZE,
 	omitStatusFacet: true,
 	payloadTypes: [payloadTypes.enum.program]
-}) satisfies PageServerLoad;
+}) satisfies PageLoad;

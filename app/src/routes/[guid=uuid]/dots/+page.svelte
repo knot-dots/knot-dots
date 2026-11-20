@@ -1,22 +1,20 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import createColumnBoardPagination from '$lib/client/createColumnBoardPagination.svelte';
-	import fetchContainerPage from '$lib/client/fetchContainerPage';
+	import fetchContainerGroupPage from '$lib/client/fetchContainerGroupPage';
 	import AllPage from '$lib/components/AllPage.svelte';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
+	import { matchesContainerGroup } from '$lib/containerGroups';
 	import {
 		type AnyPayload,
 		type Container,
 		isGoalContainer,
 		isMeasureContainer,
 		isProgramContainer,
-		isReportContainer,
-		isRuleContainer,
-		isSimpleMeasureContainer,
 		isTemplateContainer,
 		titleForGoalCollection,
 		titleForMeasureCollection,
@@ -24,7 +22,7 @@
 	} from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
-	import { type AllLevelColumnId, createAllLevelQuery } from './query';
+	import { type AllLevelColumnId, allLevelColumnGroup, createAllLevelQuery } from './query';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -36,21 +34,16 @@
 		created: () => $lastCreatedContainers,
 		createdFilter: (container) => !isTemplateContainer(container),
 		deleted: () => $lastDeletedContainers,
-		fetchPage: async ({ columnId, offset, signal }) => {
-			const result = await fetchContainerPage<Container<AnyPayload>>({
+		fetchPage: ({ columnId, offset, signal }) =>
+			fetchContainerGroupPage<Container<AnyPayload>>({
 				contextGuid: page.params.guid,
 				fetch,
+				group: allLevelColumnGroup(columnId),
 				limit: DEFAULT_PAGE_SIZE,
 				offset,
-				query: createAllLevelQuery(page.url, columnId),
+				query: createAllLevelQuery(page.url),
 				signal
-			});
-			return {
-				hasMore: result.page.hasMore,
-				items: result.containers,
-				nextOffset: result.page.nextOffset
-			};
-		},
+			}),
 		pageSize: DEFAULT_PAGE_SIZE,
 		resetKey: () => `${page.url.pathname}?${page.url.searchParams.toString()}`,
 		updated: () => $lastUpdatedContainers
@@ -74,22 +67,12 @@
 		visibleColumnIds.filter((columnId) => columnId.startsWith('implementation-')).length
 	);
 
-	function columnForItem(container: Container<AnyPayload>): AllLevelColumnId {
-		if (isProgramContainer(container) || isReportContainer(container)) {
-			return 'programs';
-		}
-		if (isGoalContainer(container)) {
-			return `goals-${container.payload.hierarchyLevel}` as AllLevelColumnId;
-		}
-		if (isMeasureContainer(container) || isSimpleMeasureContainer(container)) {
-			const hierarchyLevel =
-				'hierarchyLevel' in container.payload ? container.payload.hierarchyLevel : 1;
-			return `implementation-${hierarchyLevel}` as AllLevelColumnId;
-		}
-		if (isRuleContainer(container)) {
-			return 'implementation-1';
-		}
-		return 'programs';
+	const columnGroups = $derived(
+		data.columnIds.map((columnId) => [columnId, allLevelColumnGroup(columnId)] as const)
+	);
+
+	function columnForItem(container: Container<AnyPayload>) {
+		return columnGroups.find(([, group]) => matchesContainerGroup(container, group))?.[0];
 	}
 
 	function addItemUrl(columnId: AllLevelColumnId) {
