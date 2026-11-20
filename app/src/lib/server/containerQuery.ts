@@ -63,6 +63,7 @@ const querySchema = z.object({
 	categoryMatch: z.array(z.enum(['any', 'all'])).default(['all']),
 	contextGuid: z.array(z.uuid()).default([]),
 	excludeRelation: z.array(predicates).default([]),
+	facets: z.array(z.stringbool()).default([]),
 	federalState: z.array(z.string()).default([]),
 	guid: z.array(z.uuid()).default([]),
 	hierarchyLevel: z.array(z.coerce.number().int().gte(1).lte(6)).default([]),
@@ -108,11 +109,19 @@ const querySchema = z.object({
 
 type ContainerQueryParams = Omit<
 	z.infer<typeof querySchema>,
-	'availableIn' | 'categoryMatch' | 'contextGuid' | 'sort' | 'template' | 'templateRoot' | 'terms'
+	| 'availableIn'
+	| 'categoryMatch'
+	| 'contextGuid'
+	| 'facets'
+	| 'sort'
+	| 'template'
+	| 'templateRoot'
+	| 'terms'
 > & {
 	availableIn: string | undefined;
 	categoryMatch: 'any' | 'all';
 	contextGuid: string | undefined;
+	facets: boolean;
 	sort: 'alpha' | 'date' | 'modified' | 'priority' | 'relevance';
 	template: boolean;
 	templateRoot: boolean | undefined;
@@ -159,6 +168,7 @@ function parseContainerQuery(url: URL): ContainerQueryParams {
 		availableIn: parseResult.data.availableIn[0],
 		categoryMatch: parseResult.data.categoryMatch[0] ?? 'all',
 		contextGuid: parseResult.data.contextGuid[0],
+		facets: parseResult.data.facets[0] ?? true,
 		sort: parseResult.data.sort[0] ?? 'alpha',
 		template: parseResult.data.template[0] ?? false,
 		templateRoot: parseResult.data.templateRoot[0],
@@ -379,7 +389,7 @@ export async function loadContainerV2(params: {
 		const filters = buildFilters(scopedQuery, customCategories, { ...ouOverrides, includeGuids });
 		const result = await getManyContainersWithES(scopedQuery.organization, filters, query.sort, {
 			customCategoryKeys: queriedCategoryContext.keys,
-			includeFacets: true
+			includeFacets: query.facets
 		});
 		rawContainers = result.containers;
 		esFacets = result.facets;
@@ -406,9 +416,11 @@ export async function loadContainerV2(params: {
 
 	const allVisible = filterVisible(rawContainers, params.locals.user);
 	const page = paginate(allVisible, query.limit, query.offset, allVisible.length);
-	const facets = esFacets
-		? baseFacetMap(esFacets, queriedCategoryContext)
-		: computeFacetCount(baseFacetMap({}, queriedCategoryContext), allVisible);
+	const facets = !query.facets
+		? new Map<string, Map<string, number>>()
+		: esFacets
+			? baseFacetMap(esFacets, queriedCategoryContext)
+			: computeFacetCount(baseFacetMap({}, queriedCategoryContext), allVisible);
 
 	return {
 		containers: page.containers,

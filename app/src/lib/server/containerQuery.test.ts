@@ -101,3 +101,27 @@ test('passes templateRoot to Elasticsearch only for template queries', async () 
 		})
 	).rejects.toMatchObject({ status: 400 });
 });
+
+test('omits facets if they are not requested', async () => {
+	const connect = vi.fn(async (operation: (connection: object) => Promise<unknown>) =>
+		operation({})
+	);
+	getManyContainersWithES.mockResolvedValue({
+		containers: [],
+		facets: { status: { 'status.idea': 1 } },
+		total: 0
+	});
+
+	const response = await loadContainerV2({
+		locals: { pool: { connect }, user: { isAuthenticated: false } } as never,
+		url: new URL('http://localhost/container/v2?facets=false&type=goal')
+	});
+
+	expect(getManyContainersWithES).toHaveBeenCalledWith(
+		[],
+		expect.objectContaining({ type: ['goal'] }),
+		'alpha',
+		expect.objectContaining({ includeFacets: false })
+	);
+	expect(response.facets).toEqual({});
+});

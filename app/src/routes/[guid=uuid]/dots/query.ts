@@ -59,6 +59,11 @@ export function createAllLevelQuery(url: URL, columnId?: AllLevelColumnId) {
 
 	query.set('template', 'false');
 
+	// The facets of the board are taken from the query without a column.
+	if (columnId) {
+		query.set('facets', 'false');
+	}
+
 	return query;
 }
 
