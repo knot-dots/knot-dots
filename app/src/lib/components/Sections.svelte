@@ -209,7 +209,6 @@
 					]
 				}))
 			];
-			await handleSort(sections);
 
 			await tick();
 
@@ -222,6 +221,8 @@
 				);
 				titleElement?.focus();
 			}
+
+			await handleSort(sections);
 		};
 	}
 
