@@ -9,6 +9,7 @@ import {
 	type CategoryContext,
 	filterCategoryContext
 } from '$lib/categoryOptions';
+import { containerGroup, matchesContainerGroup } from '$lib/containerGroups';
 import {
 	administrativeTypes,
 	type AnyPayload,
@@ -54,6 +55,11 @@ export type ContainerV2Response = {
 		nextOffset: number | null;
 	};
 	facets: Record<string, Record<string, number>>;
+};
+
+export type ContainerGroupsV2Response = {
+	facets: ContainerV2Response['facets'];
+	groups: Pick<ContainerV2Response, 'containers' | 'page'>[];
 };
 
 const querySchema = z.object({
@@ -314,6 +320,50 @@ export async function loadContainerV2(params: {
 	url: URL;
 }): Promise<ContainerV2Response> {
 	const query = parseContainerQuery(params.url);
+	const { containers, facets } = await searchContainers(params, query);
+	const page = paginate(containers, query.limit, query.offset, containers.length);
+
+	return {
+		containers: page.containers,
+		page: page.page,
+		facets: mapToRecord(facets)
+	};
+}
+
+// Loads the first pages of several groups of the containers matching a query,
+// such as the columns of a board, with a single search. The facets are those
+// of all containers matching the query.
+export async function loadContainerGroupsV2(params: {
+	locals: App.Locals;
+	url: URL;
+}): Promise<ContainerGroupsV2Response> {
+	const query = parseContainerQuery(params.url);
+	const groupsResult = z
+		.array(containerGroup)
+		.min(1)
+		.safeParse(params.url.searchParams.getAll('group'));
+
+	if (!groupsResult.success) {
+		error(400, { message: groupsResult.error.message });
+	}
+
+	const { containers, facets } = await searchContainers(params, query);
+
+	return {
+		facets: mapToRecord(facets),
+		groups: groupsResult.data.map((group) => {
+			const groupContainers = containers.filter((container) =>
+				matchesContainerGroup(container, group)
+			);
+			return paginate(groupContainers, query.limit, query.offset, groupContainers.length);
+		})
+	};
+}
+
+async function searchContainers(
+	params: { locals: App.Locals; url: URL },
+	query: ContainerQueryParams
+) {
 	const applicationContext = query.contextGuid
 		? await loadApplicationContext({
 				locals: params.locals,
@@ -414,17 +464,12 @@ export async function loadContainerV2(params: {
 					);
 	}
 
-	const allVisible = filterVisible(rawContainers, params.locals.user);
-	const page = paginate(allVisible, query.limit, query.offset, allVisible.length);
+	const containers = filterVisible(rawContainers, params.locals.user);
 	const facets = !query.facets
 		? new Map<string, Map<string, number>>()
 		: esFacets
 			? baseFacetMap(esFacets, queriedCategoryContext)
-			: computeFacetCount(baseFacetMap({}, queriedCategoryContext), allVisible);
+			: computeFacetCount(baseFacetMap({}, queriedCategoryContext), containers);
 
-	return {
-		containers: page.containers,
-		page: page.page,
-		facets: mapToRecord(facets)
-	};
+	return { containers, facets };
 }
