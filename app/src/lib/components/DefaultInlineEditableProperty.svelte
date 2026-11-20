@@ -144,8 +144,10 @@
 	{:else if schemaInfo.baseSchema instanceof z.ZodLiteral}
 		<span
 			{@attach tooltip($_(propertyRegistry.get(schema)?.label ?? ''))}
-			class="badge badge--large">{$_(String(value))}</span
+			class="badge badge--large"
 		>
+			<span class="truncated">{$_(String(value))}</span>
+		</span>
 	{/if}
 {:else}
 	{#if value === undefined}
@@ -174,7 +176,7 @@
 			class="badge badge--large"
 		>
 			<Icon />
-			{$_(String(value))}
+			<span class="truncated">{$_(String(value))}</span>
 		</span>
 	{:else if schemaInfo.baseSchema instanceof z.ZodStringFormat && schemaInfo.baseSchema.def.format == 'date'}
 		<span
@@ -198,7 +200,7 @@
 			class="badge badge--large"
 		>
 			<Icon />
-			{$_(String(value))}
+			<span class="truncated">{$_(String(value))}</span>
 		</span>
 	{:else}
 		<span
@@ -206,7 +208,7 @@
 			class="badge badge--large"
 		>
 			<Icon />
-			{value}
+			<span class="truncated">{value}</span>
 		</span>
 	{/if}
 {/if}

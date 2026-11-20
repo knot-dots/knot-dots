@@ -127,8 +127,11 @@
 			<ul {@attach tooltip($_('program'))} class="value module-goal-setting">
 				{#each selected as selectedOption (selectedOption.value)}
 					<li class="badge badge--large">
-						<a href={overlayURL(page.url, overlayKey.enum.view, selectedOption.value)}>
-							<span class="truncated">{selectedOption.label}</span>
+						<a
+							class="truncated"
+							href={overlayURL(page.url, overlayKey.enum.view, selectedOption.value)}
+						>
+							{selectedOption.label}
 						</a>
 					</li>
 				{:else}
@@ -163,8 +166,10 @@
 						type="button"
 						use:popover.button
 					>
-						<span class="badge badge--large truncated">
-							{#if selected}{selected.label}{:else}{$_('empty')}{/if}
+						<span class="badge badge--large">
+							<span class="truncated">
+								{#if selected}{selected.label}{:else}{$_('empty')}{/if}
+							</span>
 						</span>
 					</button>
 				{/snippet}
@@ -173,7 +178,7 @@
 			<span {@attach tooltip($_('program'))} class="badge badge--large module-goal-setting">
 				{#if selected}
 					{#if selected.href}
-						<a href={selected.href}>{selected.label}</a>
+						<a class="truncated" href={selected.href}>{selected.label}</a>
 					{:else}
 						{selected.label}
 					{/if}

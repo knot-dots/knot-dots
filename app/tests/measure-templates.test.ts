@@ -3,7 +3,7 @@ import MeasurePage from './measure-page';
 
 test.use({ suiteId: 'measure-templates', storageState: 'tests/.auth/orgadmin.json' });
 
-test('measure templates support overlay and fullscreen navigation and exclude program templates', async ({
+test('measure templates exclude program templates', async ({
 	dotsBoard,
 	testMeasure,
 	measureGoalTemplate,
@@ -25,15 +25,6 @@ test('measure templates support overlay and fullscreen navigation and exclude pr
 	await expect(
 		dotsBoard.overlay.locator.getByTitle(programReportTemplate.payload.title, { exact: true })
 	).not.toBeVisible();
-	await dotsBoard.overlay.fullScreenButton.click();
-	await expect(dotsBoard.page).toHaveURL(new RegExp(`/${testMeasure.guid}/templates/catalog`));
-	await expect(
-		dotsBoard.page.getByRole('main').getByTitle(measureGoalTemplate.payload.title, { exact: true })
-	).toBeVisible();
-	await dotsBoard.page.getByRole('link', { name: 'Back to overlay' }).first().click();
-	await expect(
-		dotsBoard.overlay.locator.getByTitle(measureGoalTemplate.payload.title, { exact: true })
-	).toBeVisible();
 });
 
 test('measure creation requires its own template and preserves program management', async ({

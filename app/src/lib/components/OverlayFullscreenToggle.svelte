@@ -77,7 +77,10 @@
 		class="action-button"
 		aria-label={$_('full_screen')}
 		{href}
-		onclick={() => (lastOverlay.url = page.url)}
+		onclick={() => {
+			lastOverlay.url = page.url;
+			lastOverlay.pageTitle = page.data.title;
+		}}
 	>
 		<Maximize />
 	</a>

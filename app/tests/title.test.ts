@@ -152,4 +152,74 @@ test.describe('Document titles and breadcrumb', () => {
 		await expect(firstBreadcrumbItem).toHaveText(defaultOrganization.payload.name);
 		await expect(lastBreadcrumbItem).toHaveText('My measures');
 	});
+
+	test.use({ storageState: 'tests/.auth/orgadmin.json' });
+
+	test('origin workspace link appears in breadcrumb after switching to full-screen', async ({
+		dotsBoard,
+		testProgram
+	}) => {
+		await dotsBoard.goto(`/${testProgram.organization}`);
+		await dotsBoard.card(testProgram.payload.title).click();
+		await expect(dotsBoard.overlay.title).toHaveText(testProgram.payload.title);
+
+		await dotsBoard.overlay.fullScreenButton.click();
+		await expect(dotsBoard.overlay.locator.first()).not.toBeVisible();
+		await expect(dotsBoard.page.getByRole('main').getByRole('heading', { level: 1 })).toHaveText(
+			testProgram.payload.title
+		);
+
+		await expect(
+			dotsBoard.page
+				.getByRole('navigation', { name: 'Breadcrumb' })
+				.getByRole('link', { name: 'dots' })
+		).toBeVisible();
+	});
+
+	test('origin workspace link stays in breadcrumb when switching object workspaces', async ({
+		dotsBoard,
+		testProgram
+	}) => {
+		await dotsBoard.goto(`/${testProgram.organization}`);
+		await dotsBoard.card(testProgram.payload.title).click();
+		await expect(dotsBoard.overlay.title).toHaveText(testProgram.payload.title);
+
+		await dotsBoard.overlay.fullScreenButton.click();
+		await expect(dotsBoard.overlay.locator.first()).not.toBeVisible();
+		await expect(dotsBoard.page.getByRole('main').getByRole('heading', { level: 1 })).toHaveText(
+			testProgram.payload.title
+		);
+
+		await dotsBoard.page.getByRole('button', { name: 'All', exact: true }).click();
+		await dotsBoard.page.getByRole('menuitem', { name: 'Measures' }).click();
+
+		await expect(dotsBoard.page.getByRole('button', { name: 'Measures' })).toBeVisible();
+		await expect(
+			dotsBoard.page
+				.getByRole('navigation', { name: 'Breadcrumb' })
+				.getByRole('link', { name: 'dots' })
+		).toBeVisible();
+	});
+
+	test('origin worksapce link disappears from breadcrumb after navigating somewhere else', async ({
+		dotsBoard,
+		testProgram
+	}) => {
+		await dotsBoard.goto(`/${testProgram.organization}`);
+		await dotsBoard.card(testProgram.payload.title).click();
+		await expect(dotsBoard.overlay.title).toHaveText(testProgram.payload.title);
+
+		await dotsBoard.overlay.fullScreenButton.click();
+		await expect(dotsBoard.overlay.locator.first()).not.toBeVisible();
+		await expect(dotsBoard.page.getByRole('main').getByRole('heading', { level: 1 })).toHaveText(
+			testProgram.payload.title
+		);
+
+		await dotsBoard.page.goto(`/${testProgram.organization}`);
+		await expect(
+			dotsBoard.page
+				.getByRole('navigation', { name: 'Breadcrumb' })
+				.getByRole('link', { name: 'dots' })
+		).not.toBeVisible();
+	});
 });
