@@ -221,6 +221,10 @@ test.describe('Budget Table in Goal Detail View', () => {
 		await expect(leftAddButton).toBeVisible();
 		await expect(rightAddButton).toBeVisible();
 
+		// Wait for the year columns to load before adding more
+		await expect(table.getByRole('columnheader', { name: '2025' })).toBeVisible();
+		await expect(table.getByRole('columnheader', { name: '2026' })).toBeVisible();
+
 		// Click right + button to add a year column
 		await rightAddButton.click();
 		await expect(table.getByRole('columnheader', { name: '2027' })).toBeVisible();
