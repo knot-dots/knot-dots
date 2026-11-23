@@ -9,7 +9,11 @@ import {
 	payloadTypes,
 	predicates
 } from '$lib/models';
-import { getAllContainerRevisionsByGuid, getAllRelatedContainers } from '$lib/server/db';
+import {
+	getAllContainerRevisionsByGuid,
+	getAllContainersRelatedToProgram,
+	getAllRelatedContainers
+} from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ depends, locals, params, url }) => {
@@ -29,25 +33,42 @@ export const load = (async ({ depends, locals, params, url }) => {
 			error(404, { message: t('error.not_found') });
 		}
 
-		const containers = await locals.pool.connect(
-			getAllRelatedContainers(
-				[container.organization],
-				container.guid,
-				[predicates.enum['is-part-of-program']],
-				{
-					terms: url.searchParams.get('terms') ?? '',
-					type: [
-						payloadTypes.enum.effect,
-						payloadTypes.enum.goal,
-						payloadTypes.enum.indicator,
-						payloadTypes.enum.measure,
-						payloadTypes.enum.simple_measure,
-						payloadTypes.enum.task
-					]
-				},
-				url.searchParams.get('sort') ?? ''
-			)
-		);
+		const containers = url.searchParams.has('related-to')
+			? await locals.pool.connect(
+					getAllRelatedContainers(
+						[container.organization],
+						url.searchParams.get('related-to') as string,
+						[predicates.enum['is-part-of']],
+						{
+							type: [
+								payloadTypes.enum.effect,
+								payloadTypes.enum.goal,
+								payloadTypes.enum.indicator,
+								payloadTypes.enum.measure,
+								payloadTypes.enum.simple_measure,
+								payloadTypes.enum.task
+							]
+						},
+						url.searchParams.get('sort') ?? ''
+					)
+				)
+			: await locals.pool.connect(
+					getAllContainersRelatedToProgram(
+						container.guid,
+						{
+							terms: url.searchParams.get('terms') ?? '',
+							type: [
+								payloadTypes.enum.effect,
+								payloadTypes.enum.goal,
+								payloadTypes.enum.indicator,
+								payloadTypes.enum.measure,
+								payloadTypes.enum.simple_measure,
+								payloadTypes.enum.task
+							]
+						},
+						url.searchParams.get('sort') ?? ''
+					)
+				);
 
 		return {
 			container,
