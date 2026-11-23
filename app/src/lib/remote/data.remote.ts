@@ -59,11 +59,15 @@ export const fetchContainersRelatedToProgram = query(
 	async ({ guid, params }) => {
 		const { locals } = getRequestEvent();
 		const relatedContainers = await locals.pool.connect(
-			getAllContainersRelatedToProgram(guid, {
-				customCategories: params.customCategories,
-				statuses: params.statuses,
-				...(params.terms ? { terms: params.terms } : undefined)
-			})
+			getAllContainersRelatedToProgram(
+				guid,
+				{
+					customCategories: params.customCategories,
+					statuses: params.statuses,
+					...(params.terms ? { terms: params.terms } : undefined)
+				},
+				''
+			)
 		);
 		return filterVisible(relatedContainers, locals.user);
 	}

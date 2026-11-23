@@ -2320,7 +2320,8 @@ export function getAllContainersRelatedToProgram(
 		template?: boolean;
 		terms?: string;
 		type?: PayloadType[];
-	}
+	},
+	sort: string
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const predicate = [
@@ -2351,17 +2352,12 @@ export function getAllContainersRelatedToProgram(
 				? await connection.any(sql.typeAlias('container')`
 					SELECT c.*
 					FROM container c
-					LEFT JOIN container_relation cr ON c.guid = cr.subject
-						AND cr.predicate = 'is-part-of-program'
-						AND cr.object = ${guid}
-						AND cr.valid_currently
-						AND NOT cr.deleted
 					WHERE c.guid IN (${sql.join(
 						relationPathResult.flatMap((r) => Object.values(r)),
 						sql.fragment`, `
 					)})
 						AND ${prepareWhereCondition(filters)}
-					ORDER BY cr.predicate, cr.position, cr.subject, cr.object;
+					ORDER BY ${prepareOrderByExpression(sort)};
 				`)
 				: [];
 

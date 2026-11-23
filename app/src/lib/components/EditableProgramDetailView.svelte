@@ -42,16 +42,19 @@
 
 	let categoryContext = $derived(page.data.categoryContext);
 
+	let overlay = getContext('overlay');
+
+	// Search and filters are kept in the URL fragment in an overlay and in the
+	// query string on a page.
+	let viewParams = $derived(overlay ? paramsFromFragment(page.url) : page.url.searchParams);
+
 	let relatedContainersQuery = resource(
-		[() => guid, () => paramsFromFragment(page.url).toString()],
-		async ([guid, urlHash], _, { signal }) => {
-			const hashParams = new URLSearchParams(urlHash);
-			const terms = hashParams.get('terms') ?? '';
-			const statuses = hashParams.getAll('status');
-			const customCategories = extractCustomCategoryFiltersFromParams(
-				hashParams,
-				categoryContext.keys
-			);
+		[() => guid, () => viewParams.toString()],
+		async ([guid, serializedParams], _, { signal }) => {
+			const params = new URLSearchParams(serializedParams);
+			const terms = params.get('terms') ?? '';
+			const statuses = params.getAll('status');
+			const customCategories = extractCustomCategoryFiltersFromParams(params, categoryContext.keys);
 			return fetchRelatedContainers(guid, { terms, statuses, ...customCategories }, 'alpha', {
 				signal
 			});
@@ -85,8 +88,6 @@
 			sections
 		)
 	);
-
-	let overlay = getContext('overlay');
 
 	function byPayloadType(payloadType: PayloadType, url: URL) {
 		const params = overlay ? paramsFromFragment(url) : page.url.searchParams;
@@ -126,9 +127,7 @@
 	<EditableContainerDetailView bind:container {footer} {relatedContainers} {revisions}>
 		{#snippet data()}
 			{const filterActive = $derived(
-				[paramsFromFragment(page.url), page.url.searchParams].some((params) =>
-					['type', 'terms', 'status', ...categoryContext.keys].some((key) => params.has(key))
-				)
+				['type', 'terms', 'status', ...categoryContext.keys].some((key) => viewParams.has(key))
 			)}
 			<Sections bind:container {relatedContainers} sortable={!filterActive} />
 		{/snippet}

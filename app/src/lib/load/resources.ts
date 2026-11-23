@@ -59,14 +59,18 @@ export async function fetchResources({
 	if (programGuid) {
 		// Get all containers related to the program (goals, measures, etc.)
 		const relatedContainers = await pool.connect(
-			getAllContainersRelatedToProgram(programGuid, {
-				type: [
-					payloadTypes.enum.goal,
-					payloadTypes.enum.measure,
-					payloadTypes.enum.simple_measure,
-					payloadTypes.enum.resource_data
-				]
-			})
+			getAllContainersRelatedToProgram(
+				programGuid,
+				{
+					type: [
+						payloadTypes.enum.goal,
+						payloadTypes.enum.measure,
+						payloadTypes.enum.simple_measure,
+						payloadTypes.enum.resource_data
+					]
+				},
+				''
+			)
 		);
 
 		// Extract unique resource GUIDs from resource_data containers
