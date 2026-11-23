@@ -36,7 +36,9 @@ export const load = (async ({ depends, locals, params, parent, url }) => {
 			error(404, { message: t('error.not_found') });
 		}
 
-		const related = await locals.pool.connect(getAllContainersRelatedToProgram(container.guid, {}));
+		const related = await locals.pool.connect(
+			getAllContainersRelatedToProgram(container.guid, {}, '')
+		);
 
 		// Search and filters apply to the indicators only. The other containers
 		// connect the indicators with the program and are needed by the cards.

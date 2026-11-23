@@ -585,10 +585,15 @@ test('a container in several programs appears among the members of each', async 
 	await containers.persist();
 	await relations.persist();
 
-	const relatedToFirst = await getAllContainersRelatedToProgram(firstProgram.guid, {})(connection);
+	const relatedToFirst = await getAllContainersRelatedToProgram(
+		firstProgram.guid,
+		{},
+		''
+	)(connection);
 	const relatedToSecond = await getAllContainersRelatedToProgram(
 		secondProgram.guid,
-		{}
+		{},
+		''
 	)(connection);
 	expect(relatedToFirst.map(({ guid }) => guid)).toContain(measure.guid);
 	expect(relatedToSecond.map(({ guid }) => guid)).toContain(measure.guid);
@@ -650,7 +655,7 @@ test('deleting a shared goal itself takes its children along and leaves both pro
 	await expect(getContainerByGuid(sharedGoal.guid)(connection)).rejects.toThrow();
 	await expect(getContainerByGuid(childOfShared.guid)(connection)).rejects.toThrow();
 	for (const program of [firstProgram, secondProgram]) {
-		const members = await getAllContainersRelatedToProgram(program.guid, {})(connection);
+		const members = await getAllContainersRelatedToProgram(program.guid, {}, '')(connection);
 		expect(members.map(({ guid }) => guid)).not.toContain(sharedGoal.guid);
 	}
 });
@@ -1133,13 +1138,17 @@ test('omitting the template filter returns a complete mixed program hierarchy', 
 	await containers.persist();
 	await relations.persist();
 
-	const all = await getAllContainersRelatedToProgram(program.guid, {})(connection);
-	const templates = await getAllContainersRelatedToProgram(program.guid, { template: true })(
-		connection
-	);
-	const nonTemplates = await getAllContainersRelatedToProgram(program.guid, { template: false })(
-		connection
-	);
+	const all = await getAllContainersRelatedToProgram(program.guid, {}, '')(connection);
+	const templates = await getAllContainersRelatedToProgram(
+		program.guid,
+		{ template: true },
+		''
+	)(connection);
+	const nonTemplates = await getAllContainersRelatedToProgram(
+		program.guid,
+		{ template: false },
+		''
+	)(connection);
 
 	expect(all.map(({ guid }) => guid)).toEqual(
 		expect.arrayContaining([program.guid, measure.guid, section.guid])

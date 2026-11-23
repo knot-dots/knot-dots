@@ -104,7 +104,9 @@ export const GET = (async ({ locals, params, url }) => {
 
 			if (isIndicatorContainer(container) && parseResult.data.program.length > 0) {
 				const [containersRelatedToProgram, containersRelatedToIndicator] = await Promise.all([
-					locals.pool.connect(getAllContainersRelatedToProgram(parseResult.data.program[0], {})),
+					locals.pool.connect(
+						getAllContainersRelatedToProgram(parseResult.data.program[0], {}, '')
+					),
 					locals.pool.connect(
 						getAllContainersRelatedToIndicators(
 							indicators,
@@ -173,11 +175,15 @@ export const GET = (async ({ locals, params, url }) => {
 			].some((p) => parseResult.data.relationType.includes(p))
 		) {
 			containers = await locals.pool.connect(
-				getAllContainersRelatedToProgram(container.guid, {
-					customCategories,
-					terms: parseResult.data.terms[0],
-					type: parseResult.data.payloadType
-				})
+				getAllContainersRelatedToProgram(
+					container.guid,
+					{
+						customCategories,
+						terms: parseResult.data.terms[0],
+						type: parseResult.data.payloadType
+					},
+					''
+				)
 			);
 		} else if (isContainerWithEffect(container)) {
 			containers = await locals.pool.connect(
