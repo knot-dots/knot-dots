@@ -450,29 +450,19 @@ if (browser) {
 				containers: result.data.containers
 			});
 		} else if (hashParams.has(overlayKey.enum['measure-iooi'])) {
-			const revisions = await fetchContainerRevisions(
-				hashParams.get(overlayKey.enum['measure-iooi']) as string
+			const result = await preloadData(
+				resolve('/[guid=uuid]/[contentGuid=uuid]/iooi/board', {
+					guid: (values.data.currentOrganizationalUnit ?? values.data.currentOrganization).guid,
+					contentGuid: hashParams.get(overlayKey.enum['measure-iooi']) as string
+				})
 			);
-			const container = revisions[revisions.length - 1];
-			const containers = await fetchRelatedContainers(
-				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
-				{
-					organization: [container.organization],
-					payloadType: [
-						payloadTypes.enum.effect,
-						payloadTypes.enum.indicator,
-						payloadTypes.enum.resource_data,
-						payloadTypes.enum.resource_data_collection
-					],
-					relationType: [predicates.enum['is-part-of'], predicates.enum['is-section-of']],
-					terms: hashParams.get('terms') ?? ''
-				},
-				hashParams.get('sort') ?? 'alpha'
-			);
+			if (result.type !== 'loaded' || result.status !== 200) {
+				return;
+			}
 			setOverlayIfLatest({
 				key: overlayKey.enum['measure-iooi'],
-				container,
-				containers
+				container: result.data.container,
+				containers: result.data.containers
 			});
 		} else if (hashParams.has(overlayKey.enum.tasks)) {
 			const result = await preloadData(

@@ -58,13 +58,19 @@ export const load = (async ({ depends, locals, params, url }) => {
 			({ guid }) => guid === url.searchParams.get('related-to')
 		);
 
+		// Selecting an objective or effect hides those not connected to it.
+		// Indicators and resource data stay, the cards and the input column
+		// depend on them.
 		if (
 			selectedContainer &&
 			(isEffectContainer(selectedContainer) || isObjectiveContainer(selectedContainer))
 		) {
-			containers = [
-				...findConnected(selectedContainer, containers, [predicates.enum['contributes-to']])
-			];
+			const connected = findConnected(selectedContainer, containers, [
+				predicates.enum['contributes-to']
+			]);
+			containers = containers.filter(
+				(c) => (!isEffectContainer(c) && !isObjectiveContainer(c)) || connected.has(c)
+			);
 		}
 
 		return {
