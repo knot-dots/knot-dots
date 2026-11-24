@@ -170,6 +170,16 @@ test('an effect for an existing indicator is measured by it and part of the targ
 	]);
 });
 
+test('an effect without a description has none in its payload', () => {
+	const [effect] = newEffectContainers(measure, {
+		description: ' ',
+		indicator: { kind: 'existing', container: indicator },
+		value: { kind: 'tendency', trendValue: 1 }
+	});
+
+	expect(effect.payload).not.toHaveProperty('description');
+});
+
 test('an effect is sent after the new indicator it refers to by its guid', () => {
 	const [newIndicator, effect] = newEffectContainers(measure, {
 		description: 'More people cycle.',

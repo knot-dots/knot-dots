@@ -140,9 +140,9 @@
 
 	let isValidValue = $derived(value !== undefined && effectValue.safeParse(value).success);
 
+	// The description is optional. An existing indicator brings its own title.
 	let canSubmit = $derived(
-		description.trim() !== '' &&
-			isValidValue &&
+		isValidValue &&
 			(selection?.kind === 'existing' ||
 				(title.trim() !== '' && (kind === effectKinds.enum.binary || unit !== '')))
 	);

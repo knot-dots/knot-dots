@@ -171,7 +171,7 @@ export function newEffectContainers(
 		organizational_unit: target.organizational_unit,
 		payload: {
 			...effectValuePayload(value),
-			description,
+			...(description.trim() ? { description } : undefined),
 			...(iooiType ? { iooiType } : undefined),
 			title: indicator.container.payload.title,
 			type: payloadTypes.enum.effect

@@ -198,7 +198,7 @@ test.describe('Creating effects', () => {
 		});
 	});
 
-	test('an effect with values for a suggested indicator shows its chart', async ({
+	test('an effect with values and without description shows its chart', async ({
 		dotsBoard,
 		measureEffectCollection,
 		testIndicator,
@@ -211,7 +211,6 @@ test.describe('Creating effects', () => {
 		const dialog = await measurePage.createEffect();
 		const suggestion = await findSuggestion(dialog, testIndicator.payload.title);
 		await suggestion.getByText(testIndicator.payload.title).click();
-		await dialog.getByRole('textbox', { name: 'Description' }).fill('More people cycle.');
 		await chooseKind(dialog, 'Number values');
 		await dialog.getByRole('spinbutton', { name: 'Planned values' }).fill('25');
 		await dialog.getByRole('spinbutton', { name: 'Achieved values' }).fill('10');
@@ -222,6 +221,7 @@ test.describe('Creating effects', () => {
 			achievedValues: [[year, 10]],
 			plannedValues: [[year, 25]]
 		});
+		expect(effect.payload).not.toHaveProperty('description');
 
 		// The chart needs the indicator, which the card has before a reload too.
 		await expect(
