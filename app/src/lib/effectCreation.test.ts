@@ -39,11 +39,15 @@ test('planned values are sorted and accompanied by achieved values for the same 
 			plannedValues: [
 				[2030, 50],
 				[2026, 10]
+			],
+			achievedValues: [
+				[2026, 8],
+				[2031, 60]
 			]
 		})
 	).toEqual({
 		achievedValues: [
-			[2026, 0],
+			[2026, 8],
 			[2030, 0]
 		],
 		plannedValues: [
@@ -180,7 +184,7 @@ test('an effect is sent after the new indicator it refers to by its guid', () =>
 				unit: 'unit.percent'
 			})
 		},
-		value: { kind: 'series', plannedValues: [[2030, 30]] }
+		value: { kind: 'series', plannedValues: [[2030, 30]], achievedValues: [[2030, 0]] }
 	});
 
 	expect(newIndicator).toMatchObject({

@@ -36,7 +36,8 @@ export const effectValue = z.discriminatedUnion('kind', [
 			.min(1)
 			.refine((values) => new Set(values.map(([y]) => y)).size === values.length, {
 				message: 'Years must be unique.'
-			})
+			}),
+		achievedValues: effectPayload.shape.achievedValues.unwrap()
 	}),
 	z.object({
 		kind: z.literal(effectKinds.enum.binary),
@@ -96,8 +97,8 @@ export function effectKindOptions({
 	];
 }
 
-// The detail view of an effect expects achieved values for the same years as
-// the planned values.
+// The detail view of an effect expects achieved values for exactly the years
+// of the planned values.
 export function effectValuePayload(
 	value: EffectValue
 ): Partial<
@@ -108,8 +109,9 @@ export function effectValuePayload(
 			return { trendValue: value.trendValue };
 		case effectKinds.enum.series: {
 			const plannedValues = value.plannedValues.toSorted(([a], [b]) => a - b);
+			const achievedValues = new Map(value.achievedValues);
 			return {
-				achievedValues: plannedValues.map(([y]) => [y, 0]),
+				achievedValues: plannedValues.map(([y]) => [y, achievedValues.get(y) ?? 0]),
 				plannedValues
 			};
 		}

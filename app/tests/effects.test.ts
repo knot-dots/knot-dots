@@ -21,6 +21,13 @@ async function findSuggestion(dialog: Locator, title: string) {
 	return dialog.getByRole('article').filter({ hasText: title });
 }
 
+async function chooseKind(dialog: Locator, kind: string) {
+	await dialog
+		.getByRole('radiogroup', { name: 'Data type' })
+		.getByText(kind, { exact: true })
+		.click();
+}
+
 async function confirm(page: Page, dialog: Locator, { newIndicator }: { newIndicator: boolean }) {
 	const responsePromise = page.waitForResponse(
 		(response) =>
@@ -65,8 +72,7 @@ test.describe('Creating effects', () => {
 		await expect(dialog.getByRole('button', { name: 'Confirm', exact: true })).toBeDisabled();
 
 		await dialog.getByRole('textbox', { name: 'Description' }).fill('More people cycle.');
-		await dialog.getByRole('button', { name: 'Type of effect' }).click();
-		await dialog.getByRole('radio', { name: 'Tendency', exact: true }).click();
+		await chooseKind(dialog, 'Tendency');
 		await dialog
 			.getByText('This tends to have an increasing effect on the indicator', { exact: true })
 			.click();
@@ -153,7 +159,7 @@ test.describe('Creating effects', () => {
 			}
 		},
 		{
-			kind: 'Number series/value',
+			kind: 'Number values',
 			fillValue: async (dialog: Locator) => {
 				await dialog.getByRole('button', { name: 'Unit' }).click();
 				await dialog.getByRole('radio', { name: 'km', exact: true }).click();
@@ -182,9 +188,8 @@ test.describe('Creating effects', () => {
 			).toBeVisible();
 
 			await dialog.getByRole('textbox', { name: 'Description' }).fill('Something changes.');
-			await dialog.getByRole('button', { name: 'Type of effect' }).click();
-			await dialog.getByRole('radio', { name: kind, exact: true }).click();
-			await dialog.getByRole('textbox', { name: 'Title' }).fill(title);
+			await chooseKind(dialog, kind);
+			await dialog.getByRole('textbox', { name: 'Title of the effect' }).fill(title);
 			await fillValue(dialog);
 
 			const { indicator } = await confirm(dotsBoard.page, dialog, { newIndicator: true });
@@ -193,7 +198,7 @@ test.describe('Creating effects', () => {
 		});
 	});
 
-	test('an effect with planned values for a suggested indicator shows its chart', async ({
+	test('an effect with values for a suggested indicator shows its chart', async ({
 		dotsBoard,
 		measureEffectCollection,
 		testIndicator,
@@ -207,10 +212,16 @@ test.describe('Creating effects', () => {
 		const suggestion = await findSuggestion(dialog, testIndicator.payload.title);
 		await suggestion.getByText(testIndicator.payload.title).click();
 		await dialog.getByRole('textbox', { name: 'Description' }).fill('More people cycle.');
-		await dialog.getByRole('button', { name: 'Type of effect' }).click();
-		await dialog.getByRole('radio', { name: 'Number series/value', exact: true }).click();
+		await chooseKind(dialog, 'Number values');
 		await dialog.getByRole('spinbutton', { name: 'Planned values' }).fill('25');
-		await confirm(dotsBoard.page, dialog, { newIndicator: false });
+		await dialog.getByRole('spinbutton', { name: 'Achieved values' }).fill('10');
+		const { effect } = await confirm(dotsBoard.page, dialog, { newIndicator: false });
+
+		const year = new Date().getFullYear();
+		expect(effect.payload).toMatchObject({
+			achievedValues: [[year, 10]],
+			plannedValues: [[year, 25]]
+		});
 
 		// The chart needs the indicator, which the card has before a reload too.
 		await expect(

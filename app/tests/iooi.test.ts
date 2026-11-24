@@ -326,8 +326,10 @@ test.describe('Measure IOOI Board', () => {
 				dialog.getByRole('heading', { name: 'Create a new effect with an existing indicator' })
 			).toBeVisible();
 			await dialog.getByRole('textbox', { name: 'Description' }).fill(`Effect in ${iooiType}`);
-			await dialog.getByRole('button', { name: 'Type of effect' }).click();
-			await dialog.getByRole('radio', { name: 'Tendency', exact: true }).click();
+			await dialog
+				.getByRole('radiogroup', { name: 'Data type' })
+				.getByText('Tendency', { exact: true })
+				.click();
 			await dialog
 				.getByText('This tends to have an increasing effect on the indicator', { exact: true })
 				.click();
