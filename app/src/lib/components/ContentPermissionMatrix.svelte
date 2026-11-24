@@ -1,0 +1,1046 @@
+<script lang="ts">
+	import { SvelteMap } from 'svelte/reactivity';
+	import { invalidateAll } from '$app/navigation';
+	import { page } from '$app/state';
+	import { _ } from 'svelte-i18n';
+	import CheckIcon from '~icons/flowbite/check-outline';
+	import ChevronDownIcon from '~icons/flowbite/chevron-down-outline';
+	import ChevronRightIcon from '~icons/flowbite/chevron-right-outline';
+	import InfoIcon from '~icons/flowbite/info-circle-outline';
+	import TrashBinIcon from '~icons/flowbite/trash-bin-outline';
+	import UserIcon from '~icons/flowbite/user-outline';
+	import RoleIcon from '~icons/knotdots/arrow-circle-down-outline';
+	import tooltip from '$lib/attachments/tooltip';
+	import saveGrantInheritance from '$lib/client/saveGrantInheritance';
+	import saveGrants from '$lib/client/saveGrants';
+	import saveUser from '$lib/client/saveUser';
+	import CreateTeamDialog from '$lib/components/CreateTeamDialog.svelte';
+	import BadgeDropdown, { type BadgeDropdownValue } from '$lib/components/BadgeDropdown.svelte';
+	import ConfirmInheritDialog from '$lib/components/ConfirmInheritDialog.svelte';
+	import PermissionCheckbox from '$lib/components/PermissionCheckbox.svelte';
+	import SubjectCombobox, { type SubjectSuggestion } from '$lib/components/SubjectCombobox.svelte';
+	import TeamChip from '$lib/components/TeamChip.svelte';
+	import {
+		type AnyPayload,
+		type Container,
+		containerOfType,
+		displayName,
+		type Grant,
+		type GrantKind,
+		grantKindsByTarget,
+		type GrantSet,
+		type GrantTarget,
+		grantTargets,
+		grantSetForRole,
+		grantSetForSubjectOn,
+		type InheritedMatrixSection,
+		type MemberRole,
+		memberRoleMatchingGrantSet,
+		memberRoles,
+		payloadTypes,
+		predicates,
+		type TeamWithMembers,
+		type User
+	} from '$lib/models';
+	import { getToastContext } from '$lib/contexts/toast';
+	import { ability, user } from '$lib/stores';
+
+	interface Props {
+		admins: Readonly<Array<User>>;
+		adminTeams?: ReadonlyArray<TeamWithMembers>;
+		container: Container<AnyPayload>;
+		editable?: boolean;
+		grants: Readonly<Array<Grant>>;
+		inheritedSections: ReadonlyArray<InheritedMatrixSection>;
+		// may the user edit at all (as opposed to editable: in edit mode now)
+		mayEdit?: boolean;
+		mayManageOrganizationUsers?: boolean;
+		oninvite?: () => void;
+		teams: ReadonlyArray<TeamWithMembers>;
+		users: Readonly<Array<User>>;
+	}
+
+	let {
+		admins,
+		adminTeams = [],
+		container,
+		editable = false,
+		grants,
+		inheritedSections,
+		mayEdit = editable,
+		mayManageOrganizationUsers = false,
+		oninvite,
+		teams,
+		users
+	}: Props = $props();
+
+	// a row names a user or a team; grants and overrides are keyed by the
+	// subject guid either way
+	type Subject =
+		| { guid: string; team?: undefined; user: User }
+		| { guid: string; team: TeamWithMembers; user?: undefined };
+	const userSubject = (user: User): Subject => ({ guid: user.guid, user });
+	const teamSubject = (team: TeamWithMembers): Subject => ({ guid: team.container.guid, team });
+	// every stored grant is editable individually: the rights on the object
+	// itself and the rights on subordinate objects form separate column groups,
+	// just like in the matrix of an organization
+	const columnGroups = [
+		{ kinds: grantKindsByTarget.self, label: 'this_object', target: grantTargets.enum.self },
+		{
+			kinds: grantKindsByTarget.subordinates,
+			label: 'subordinate_objects',
+			target: grantTargets.enum.subordinates
+		}
+	];
+	const columnCount = columnGroups.reduce((count, { kinds }) => count + kinds.length, 3);
+
+	const selectableRoles = [
+		memberRoles.enum.administrator,
+		memberRoles.enum.head,
+		memberRoles.enum.collaborator,
+		memberRoles.enum.observer
+	];
+
+	// the role colors of the design
+	const roleColors: Record<MemberRole, string> = {
+		administrator: 'red',
+		head: 'yellow',
+		collaborator: 'indigo',
+		observer: 'gray'
+	};
+
+	const roleOptions = $derived(
+		selectableRoles.map((role) => ({
+			label: $_(`role.${role}`),
+			value: role,
+			badgeColor: roleColors[role]
+		}))
+	);
+
+	const storedInherits = $derived(!container.own_matrix);
+
+	let inheritsOverride = $state<boolean | undefined>();
+
+	$effect(() => {
+		if (inheritsOverride === storedInherits) {
+			inheritsOverride = undefined;
+		}
+	});
+
+	const inherits = $derived(inheritsOverride ?? storedInherits);
+	const viewOnly = $derived(!mayEdit);
+
+	// below a program the program's matrix stays in effect, so the own rows
+	// add to it rather than replacing the area
+	const underProgram = $derived(
+		inheritedSections.some(
+			(section) => section.active && section.scope.type === payloadTypes.enum.program
+		)
+	);
+
+	// one's own row is locked: nobody takes rights from themselves by accident
+	const isSelf = (subject: Subject) => subject.user?.guid === $user.guid;
+	const nameOf = (subject: Subject) =>
+		subject.team ? subject.team.container.payload.name : displayName(subject.user);
+
+	const toast = getToastContext();
+	let confirmInheritDialog: HTMLDialogElement = $state(undefined!);
+
+	// expanded states follow the active sections until toggled by hand
+	let adminsExpanded = $state(true);
+	let ownExpandedOverride = $state<boolean | undefined>();
+
+	let sectionExpandedOverrides = new SvelteMap<string, boolean>();
+	const ownExpanded = $derived(ownExpandedOverride ?? !inherits);
+	const sectionExpanded = (section: (typeof inheritedSections)[number]) =>
+		sectionExpandedOverrides.get(section.scope.guid) ?? section.active;
+
+	const creators = $derived(
+		container.user
+			.filter(({ predicate }) => predicate === predicates.enum['is-creator-of'])
+			.map(({ subject }) => subject)
+	);
+
+	function sectionRows(section: (typeof inheritedSections)[number]) {
+		return [...section.users.map(userSubject), ...section.teams.map(teamSubject)]
+			.map((subject) => ({
+				subject,
+				set: grantSetForSubjectOn(section.grants, section.scope.guid, subject.guid)
+			}))
+			.filter(({ set }) => set.self.length > 0 || set.subordinates.length > 0);
+	}
+
+	function titleOf(c: Container<AnyPayload>) {
+		return 'name' in c.payload ? c.payload.name : 'title' in c.payload ? c.payload.title : '';
+	}
+
+	let setOverrides = new SvelteMap<string, GrantSet>();
+
+	// the container's own rows: every user with a role on it and the teams
+	// holding rows on it (or about to, while an assignment is in flight)
+	const ownRows = $derived([
+		...users.map(userSubject),
+		...teams
+			.filter(
+				({ container: team }) =>
+					setOverrides.has(team.guid) ||
+					grants.some((g) => g.object === container.guid && g.subject === team.guid)
+			)
+			.map(teamSubject)
+	]);
+
+	function storedSetFor(subject: string) {
+		return grantSetForSubjectOn(grants, container.guid, subject);
+	}
+
+	function sameSet(a: GrantSet, b: GrantSet) {
+		return (
+			a.self.length === b.self.length &&
+			a.subordinates.length === b.subordinates.length &&
+			a.self.every((kind) => b.self.includes(kind)) &&
+			a.subordinates.every((kind) => b.subordinates.includes(kind))
+		);
+	}
+
+	// drop an optimistic override only once the reloaded data reflects it —
+	// dropping it right after invalidateAll would flash the previous grants for
+	// a render cycle until the fresh props arrive
+	$effect(() => {
+		for (const [guid, set] of setOverrides) {
+			const known =
+				users.some((u) => u.guid === guid) || teams.some((t) => t.container.guid === guid);
+			if (!known || sameSet(storedSetFor(guid), set)) {
+				setOverrides.delete(guid);
+			}
+		}
+	});
+
+	function visibleSetFor(subject: string): GrantSet {
+		return setOverrides.get(subject) ?? storedSetFor(subject);
+	}
+
+	function isSelectableRole(value: BadgeDropdownValue): value is MemberRole {
+		return typeof value === 'string' && (selectableRoles as string[]).includes(value);
+	}
+
+	function reportFailure() {
+		toast({ heading: $_('permission_matrix.error_saving'), status: 'error' });
+	}
+
+	async function save(subject: string, set: GrantSet) {
+		const hadPrevious = setOverrides.has(subject);
+		const previous = setOverrides.get(subject);
+		setOverrides.set(subject, set);
+
+		const response = await saveGrants(container, { subject, ...set });
+
+		if (!response.ok) {
+			if (hadPrevious && previous) setOverrides.set(subject, previous);
+			else setOverrides.delete(subject);
+			reportFailure();
+			return false;
+		}
+
+		await invalidateAll();
+		return true;
+	}
+
+	async function changeRole(subject: string, value: BadgeDropdownValue) {
+		if (!isSelectableRole(value)) {
+			return;
+		}
+		await save(subject, grantSetForRole(value));
+	}
+
+	async function toggleKind(
+		subject: string,
+		target: GrantTarget,
+		kind: GrantKind,
+		checked: boolean
+	) {
+		const current = visibleSetFor(subject);
+		await save(subject, {
+			...current,
+			[target]: checked
+				? [...current[target].filter((k) => k !== kind), kind]
+				: current[target].filter((k) => k !== kind)
+		});
+	}
+
+	// removing a row can be undone from the toast: the previous set is saved
+	// again (for a user, that invites them into the container once more)
+	async function removeSubject(subject: Subject) {
+		const previous = visibleSetFor(subject.guid);
+		if (await save(subject.guid, { self: [], subordinates: [] })) {
+			toast({
+				action: {
+					label: $_('permission_matrix.undo'),
+					onclick: () => save(subject.guid, previous)
+				},
+				heading: $_('permission_matrix.removed', { values: { name: nameOf(subject) } }),
+				icon: CheckIcon,
+				status: 'success'
+			});
+		}
+	}
+
+	// adding a row starts with the observer set; registered users who are no
+	// member yet get invited into the container on the way
+	// a team can be created right from the search; it then joins the matrix
+	// as a row of its own
+	// svelte-ignore non_reactive_update
+	let createTeamDialog: HTMLDialogElement;
+
+	const mayCreateTeam = $derived.by(() => {
+		const organization = page.data.organizations.find(
+			({ guid }) => guid === container.organization
+		);
+		return (
+			!!organization &&
+			$ability.can('create', containerOfType(payloadTypes.enum.organizational_unit, organization))
+		);
+	});
+
+	async function addSubject(suggestion: SubjectSuggestion) {
+		if (suggestion.kind === 'team') {
+			await save(suggestion.guid, grantSetForRole(memberRoles.enum.observer));
+			return;
+		}
+		const response = await saveUser({
+			container,
+			email: suggestion.email,
+			role: memberRoles.enum.observer
+		});
+		if (!response.ok) {
+			reportFailure();
+			return;
+		}
+		await invalidateAll();
+	}
+
+	// whether the current user would lose access once the container inherits:
+	// their access rests on an own row (directly or through a team), they
+	// administer no area, and no governing matrix (the dormant area applies
+	// again) grants them read
+	const subjectsOfSelf = $derived([
+		$user.guid,
+		...teams
+			.filter(({ members }) => members.some(({ guid }) => guid === $user.guid))
+			.map(({ container }) => container.guid)
+	]);
+	const wouldLockOut = $derived(
+		ownRows.some(({ guid }) => subjectsOfSelf.includes(guid)) &&
+			!admins.some(({ guid }) => guid === $user.guid) &&
+			!adminTeams.some(({ container }) => subjectsOfSelf.includes(container.guid)) &&
+			!inheritedSections.some((section) =>
+				subjectsOfSelf.some((subject) =>
+					grantSetForSubjectOn(section.grants, section.scope.guid, subject).self.includes('read')
+				)
+			)
+	);
+	const inheritSource = $derived(
+		(inheritedSections.find(({ active }) => !active) ?? inheritedSections[0])?.scope.title ?? ''
+	);
+
+	async function toggleIndividualRights(checked: boolean) {
+		if (!checked && wouldLockOut) {
+			confirmInheritDialog.showModal();
+			return;
+		}
+		await saveInheritance(checked);
+	}
+
+	async function saveInheritance(checked: boolean) {
+		inheritsOverride = !checked;
+		ownExpandedOverride = undefined;
+		sectionExpandedOverrides.clear();
+
+		const response = await saveGrantInheritance(container, !checked);
+
+		if (!response.ok) {
+			inheritsOverride = undefined;
+			reportFailure();
+			return;
+		}
+
+		await invalidateAll();
+	}
+
+	function cellLabel(kind: GrantKind, groupLabel: string, checked: boolean) {
+		return `${$_(`permission.${kind}`)} (${$_(`permission_matrix.${groupLabel}`)}): ${$_(
+			checked ? 'permission_matrix.granted' : 'permission_matrix.not_granted'
+		)}`;
+	}
+</script>
+
+{#snippet subjectName(subject: Subject, author: boolean)}
+	<span class="user-cell">
+		{#if subject.team}
+			<TeamChip team={subject.team} />
+		{:else}
+			<span class="user-name">
+				{isSelf(subject)
+					? `${displayName(subject.user)} ${$_('permission_matrix.you')}`
+					: displayName(subject.user)}
+			</span>
+		{/if}
+		{#if author}
+			<span class="badge badge--large badge--yellow">{$_('role.author')}</span>
+		{/if}
+	</span>
+{/snippet}
+
+<CreateTeamDialog
+	bind:dialog={createTeamDialog}
+	oncreated={(team) =>
+		addSubject({ guid: team.guid, kind: 'team', label: team.payload.name, members: 0 })}
+	organization={container.organization}
+/>
+
+<div class="table-wrapper wide">
+	<table>
+		<thead>
+			<tr>
+				<th class="col-name" rowspan="2">
+					<span class="header-content">
+						{#if viewOnly}
+							<button
+								aria-label={$_('permission_matrix.view_only')}
+								class="action-button action-button--alternate"
+								type="button"
+								{@attach tooltip($_('permission_matrix.view_only'), { describe: true })}
+							>
+								<InfoIcon />
+							</button>
+						{/if}
+						<UserIcon />
+						<span class="header-label">{$_('user.display_name')}</span>
+					</span>
+				</th>
+				<th class="col-role" rowspan="2">
+					<span class="header-content">
+						<RoleIcon />
+						<span class="header-label">{$_('user.role')}</span>
+					</span>
+				</th>
+				{#each columnGroups as group (group.target)}
+					<th class="col-group" colspan={group.kinds.length} scope="colgroup">
+						{$_(`permission_matrix.${group.label}`)}
+					</th>
+				{/each}
+				<th class="col-actions"></th>
+			</tr>
+			<tr>
+				{#each columnGroups as group (group.target)}
+					{#each group.kinds as kind (kind)}
+						<th class="col-grant" class:col-group-start={kind === group.kinds[0]}>
+							<span class="header-content">
+								<span class="header-label">{$_(`permission.${kind}`)}</span>
+							</span>
+						</th>
+					{/each}
+				{/each}
+				<th class="col-actions"></th>
+			</tr>
+		</thead>
+		<tbody>
+			<!-- administrators of the surrounding areas always hold every kind -->
+			<tr class="section-row section-row--admins">
+				<td colspan={columnCount + 1}>
+					<span class="section-header">
+						<span class="section-start">
+							<button
+								aria-expanded={adminsExpanded}
+								class="section-toggle"
+								type="button"
+								onclick={() => (adminsExpanded = !adminsExpanded)}
+							>
+								{#if adminsExpanded}<ChevronDownIcon />{:else}<ChevronRightIcon />{/if}
+								<span class="section-title">{$_('permission_matrix.admins')}</span>
+							</button>
+							<span class="badge section-badge">{$_('permission_matrix.always_all_rights')}</span>
+						</span>
+						{#if mayManageOrganizationUsers}
+							<a class="admins-link" href={`/${container.organization}/user-management`}>
+								{$_('permission_matrix.manage_in_organization')} →
+							</a>
+						{/if}
+					</span>
+				</td>
+			</tr>
+			{#if adminsExpanded}
+				{#each [...admins.map(userSubject), ...adminTeams.map(teamSubject)] as subject (subject.guid)}
+					<tr>
+						<td class="col-name" class:locked={editable}>
+							{@render subjectName(subject, false)}
+						</td>
+						<td class="col-role" class:locked={editable}>
+							<BadgeDropdown
+								allowEmpty={false}
+								value={memberRoles.enum.administrator}
+								options={roleOptions}
+								editable={false}
+								emptyLabel={$_('role.custom')}
+							/>
+						</td>
+						{#each columnGroups as group (group.target)}
+							{#each group.kinds as kind (kind)}
+								<td
+									class="col-grant"
+									class:locked={editable}
+									class:col-group-start={kind === group.kinds[0]}
+								>
+									<PermissionCheckbox
+										ariaLabel={cellLabel(kind, group.label, true)}
+										checked
+										state="readonly"
+										tooltip={viewOnly
+											? $_('permission_matrix.tooltip_readonly')
+											: $_('permission_matrix.tooltip_admin')}
+									/>
+								</td>
+							{/each}
+						{/each}
+						<td class="col-actions" class:locked={editable}></td>
+					</tr>
+				{/each}
+			{/if}
+
+			<!-- the container's own matrix -->
+			<tr
+				class="section-row section-row--individual {inherits ? '' : 'system-success'}"
+				class:active={!inherits}
+			>
+				<td colspan={columnCount + 1}>
+					<span class="section-header">
+						<span class="section-start">
+							<button
+								aria-expanded={ownExpanded}
+								class="section-toggle"
+								type="button"
+								onclick={() => (ownExpandedOverride = !ownExpanded)}
+							>
+								{#if ownExpanded}<ChevronDownIcon />{:else}<ChevronRightIcon />{/if}
+								<span class="section-title">
+									{$_(
+										underProgram
+											? 'permission_matrix.additional_rights_for'
+											: 'permission_matrix.individual_rights_for',
+										{ values: { name: titleOf(container) } }
+									)}
+								</span>
+							</button>
+							<span class="badge section-badge">
+								{$_(inherits ? 'permission_matrix.inactive' : 'permission_matrix.active')}
+							</span>
+						</span>
+						{#if editable}
+							<label class="inherit-toggle">
+								<span>
+									{$_(
+										underProgram
+											? 'permission_matrix.additional_rights'
+											: 'permission_matrix.individual_rights'
+									)}
+								</span>
+								<input
+									checked={!inherits}
+									class="toggle"
+									type="checkbox"
+									onchange={(event) => {
+										const input = event.currentTarget;
+										toggleIndividualRights(input.checked);
+										// the dialog decides; until then the switch shows the stored state
+										input.checked = !inherits;
+									}}
+								/>
+							</label>
+						{/if}
+					</span>
+				</td>
+			</tr>
+			{#if ownExpanded}
+				{#each ownRows as subject (subject.guid)}
+					{@const set = visibleSetFor(subject.guid)}
+					{@const self = isSelf(subject)}
+					{@const locked = editable && (inherits || self)}
+					{@const cellState = inherits ? 'inactive' : editable && !self ? 'editable' : 'readonly'}
+					<tr>
+						<td class="col-name" class:locked>
+							{@render subjectName(subject, creators.includes(subject.guid))}
+						</td>
+						<td class="col-role" class:locked>
+							<BadgeDropdown
+								allowEmpty={false}
+								value={memberRoleMatchingGrantSet(set) ?? undefined}
+								options={roleOptions}
+								editable={editable && !inherits && !self}
+								emptyLabel={$_('role.custom')}
+								onchange={(value) => changeRole(subject.guid, value)}
+							/>
+						</td>
+						{#each columnGroups as group (group.target)}
+							{#each group.kinds as kind (kind)}
+								{@const checked = set[group.target].includes(kind)}
+								<td class="col-grant" class:locked class:col-group-start={kind === group.kinds[0]}>
+									<PermissionCheckbox
+										ariaLabel={cellState === 'editable'
+											? `${$_(`permission.${kind}`)} (${$_(`permission_matrix.${group.label}`)})`
+											: cellLabel(kind, group.label, checked)}
+										{checked}
+										state={cellState}
+										tooltip={cellState === 'inactive'
+											? $_('permission_matrix.tooltip_dormant_own')
+											: cellState === 'readonly' && viewOnly
+												? $_('permission_matrix.tooltip_readonly')
+												: cellState === 'readonly' && self
+													? $_('permission_matrix.tooltip_own_row')
+													: undefined}
+										onchange={(value) => toggleKind(subject.guid, group.target, kind, value)}
+									/>
+								</td>
+							{/each}
+						{/each}
+						<td class="col-actions" class:locked>
+							{#if editable && !inherits && !self}
+								<button
+									aria-label={$_('user.remove')}
+									class="action-button"
+									type="button"
+									onclick={() => removeSubject(subject)}
+								>
+									<TrashBinIcon />
+								</button>
+							{/if}
+						</td>
+					</tr>
+				{:else}
+					<tr class="empty-row">
+						<td colspan={columnCount + 1}>{$_('permission_matrix.no_entries')}</td>
+					</tr>
+				{/each}
+				{#if editable && !inherits}
+					<tr class="add-row">
+						<td colspan={columnCount + 1}>
+							<span class="add-controls">
+								<SubjectCombobox
+									excluded={ownRows.map(({ guid }) => guid)}
+									oncreateteam={mayCreateTeam ? () => createTeamDialog.showModal() : undefined}
+									{oninvite}
+									onselect={addSubject}
+									organization={container.organization}
+									{teams}
+								/>
+							</span>
+						</td>
+					</tr>
+				{/if}
+			{/if}
+
+			<!-- the governing matrices, one section each; they apply beside the
+			     container's own rows, a dormant area section once it inherits -->
+			{#each inheritedSections as section (section.scope.guid)}
+				{@const expanded = sectionExpanded(section)}
+				<tr
+					class="section-row section-row--inherited {section.active ? 'system-success' : ''}"
+					class:active={section.active}
+				>
+					<td colspan={columnCount + 1}>
+						<span class="section-header">
+							<span class="section-start">
+								<button
+									aria-expanded={expanded}
+									class="section-toggle"
+									type="button"
+									onclick={() => sectionExpandedOverrides.set(section.scope.guid, !expanded)}
+								>
+									{#if expanded}<ChevronDownIcon />{:else}<ChevronRightIcon />{/if}
+									<span class="section-title">
+										{#if section.unit}
+											{$_('permission_matrix.inherited_from_via', {
+												values: { name: section.unit.title, source: section.scope.title }
+											})}
+										{:else}
+											{$_('permission_matrix.inherited_from', {
+												values: { name: section.scope.title }
+											})}
+										{/if}
+									</span>
+								</button>
+								<span class="badge section-badge">
+									{$_(section.active ? 'permission_matrix.active' : 'permission_matrix.inactive')}
+								</span>
+							</span>
+						</span>
+					</td>
+				</tr>
+				{#if expanded}
+					{#each sectionRows(section) as { set, subject } (subject.guid)}
+						{@const cellState = section.active ? 'readonly' : 'inactive'}
+						<tr>
+							<td class="col-name" class:locked={editable}>
+								{@render subjectName(subject, false)}
+							</td>
+							<td class="col-role" class:locked={editable}>
+								<BadgeDropdown
+									allowEmpty={false}
+									value={memberRoleMatchingGrantSet(set) ?? undefined}
+									options={roleOptions}
+									editable={false}
+									emptyLabel={$_('role.custom')}
+								/>
+							</td>
+							{#each columnGroups as group (group.target)}
+								{#each group.kinds as kind (kind)}
+									{@const checked = set[group.target].includes(kind)}
+									<td
+										class="col-grant"
+										class:locked={editable}
+										class:col-group-start={kind === group.kinds[0]}
+									>
+										<PermissionCheckbox
+											ariaLabel={cellLabel(kind, group.label, checked)}
+											{checked}
+											state={cellState}
+											tooltip={cellState === 'inactive'
+												? $_('permission_matrix.tooltip_dormant')
+												: viewOnly
+													? $_('permission_matrix.tooltip_readonly')
+													: $_('permission_matrix.tooltip_inherited', {
+															values: { name: section.scope.title }
+														})}
+										/>
+									</td>
+								{/each}
+							{/each}
+							<td class="col-actions" class:locked={editable}></td>
+						</tr>
+					{:else}
+						<tr class="empty-row">
+							<td colspan={columnCount + 1}>{$_('permission_matrix.no_entries')}</td>
+						</tr>
+					{/each}
+				{/if}
+			{/each}
+		</tbody>
+	</table>
+</div>
+
+<ConfirmInheritDialog
+	bind:dialog={confirmInheritDialog}
+	onconfirm={() => saveInheritance(false)}
+	source={inheritSource}
+/>
+
+<style>
+	table {
+		border-collapse: separate;
+		border-spacing: 0;
+		border-radius: 4px;
+		font-size: 0.875rem;
+		min-width: 100%;
+		width: max-content;
+	}
+
+	thead th {
+		background-color: white;
+		position: sticky;
+		z-index: 1;
+	}
+
+	/* checked boxes do not tint the row (the global rule would); the checkbox
+	   lives in its own component, so it must stay unscoped inside :has() */
+	tbody tr:has(:global(input[type='checkbox']:checked)) {
+		background-color: white;
+	}
+
+	tbody tr:has(:global(input[type='checkbox']:checked)):hover {
+		background-color: var(--color-gray-050);
+	}
+
+	/* the add row is an action bar, not a record: no row or cell highlighting */
+	tr.add-row,
+	tr.add-row:hover {
+		background-color: white;
+	}
+
+	tr.add-row td:hover {
+		background-color: transparent;
+	}
+
+	thead tr:first-child th {
+		top: 0;
+	}
+
+	th.col-group {
+		border-left: 1px solid var(--color-border-subtle);
+		font-weight: 500;
+		height: 2.5rem;
+		text-align: left;
+	}
+
+	thead tr:nth-child(2) th {
+		top: 2.5rem;
+	}
+
+	th,
+	td {
+		border-bottom: 1px solid var(--color-border-subtle);
+		border-right: 1px solid var(--color-border-subtle);
+		padding: 0.5rem;
+		white-space: nowrap;
+	}
+
+	th:last-child,
+	td:last-child {
+		border-right: none;
+	}
+
+	/* stronger separators mark the start of each column group */
+	td.col-role,
+	th.col-role,
+	.col-group-start {
+		border-left: 1px solid var(--color-border-subtle);
+	}
+
+	/* the empty actions header reads as part of the preceding cell */
+	thead th:has(+ .col-actions) {
+		border-right: none;
+	}
+
+	th {
+		color: var(--color-gray-600);
+		font-weight: 400;
+		height: 2.5rem;
+	}
+
+	td {
+		color: var(--color-gray-800);
+		font-weight: 500;
+		height: 3.125rem;
+		padding: 0.625rem 0.5rem;
+	}
+
+	/* the hatched cells mark the rows locked in edit mode, outside of it the
+	   table reads plain; the pattern of the Figma component (#fff5f5/#ffebeb),
+	   overlaid at 75% like in the design */
+	td.locked {
+		background: repeating-linear-gradient(
+			45deg,
+			rgba(255, 245, 245, 0.75),
+			rgba(255, 245, 245, 0.75) 2px,
+			rgba(255, 235, 235, 0.75) 2px,
+			rgba(255, 235, 235, 0.75) 4px
+		);
+		cursor: not-allowed;
+	}
+
+	tr.section-row td {
+		border-left: none;
+		border-right: none;
+		height: 3rem;
+		padding: 0.75rem 0.5rem;
+	}
+
+	tr.add-row td {
+		border: none;
+		height: 3rem;
+		padding-bottom: 0;
+		padding-top: 0;
+	}
+
+	/* the hint of an empty section, in the muted text of the design */
+	tr.empty-row td {
+		border: none;
+		color: var(--color-text-subtle);
+		font-weight: 400;
+		height: 3rem;
+	}
+
+	/* the group heads take their colors from the system mode of the row:
+	   .system-success while the group is active, the base mode otherwise */
+	tr.section-row--individual td,
+	tr.section-row--inherited td {
+		background-color: var(--color-surface-accent-container);
+		border-bottom: 1px solid var(--color-border-accent-muted);
+		border-top: 1px solid var(--color-border-accent-muted);
+	}
+
+	tr.section-row--individual .section-toggle,
+	tr.section-row--inherited .section-toggle {
+		color: var(--color-text-accent-default);
+	}
+
+	tr.section-row--admins td {
+		background-color: var(--color-surface-container-raised);
+		border-bottom: 1px solid var(--color-border-subtle);
+	}
+
+	tr.section-row--admins .section-toggle {
+		color: var(--color-text-strong);
+		font-weight: 600;
+	}
+
+	tr.section-row--admins .section-toggle :global(svg) {
+		color: var(--color-icon-strong);
+	}
+
+	/* the scroll container measures the visible width for the group heads */
+	.table-wrapper {
+		container-type: inline-size;
+	}
+
+	/* A group head spans the visible width only and sticks to the left edge
+	   while scrolling sideways, so its title truncates instead of being
+	   covered by the controls on the right. The offset (measured from the
+	   wrapper's content edge) and the width leave the cell paddings free.
+	   Toggle, badge and control are direct flex items: the title gives way
+	   first, down to the chevron and a couple of characters, only then the
+	   control on the right truncates; the badge keeps its size and stays
+	   right after the title. */
+	.section-header {
+		align-items: center;
+		display: flex;
+		gap: 0.375rem;
+		left: 0.5rem;
+		position: sticky;
+		width: calc(100cqw - 1rem);
+	}
+
+	.section-start {
+		display: contents;
+	}
+
+	.section-badge {
+		--badge-background-color: var(--color-background-accent-subtle);
+		--badge-color: var(--color-text-accent-default);
+
+		flex-shrink: 0;
+	}
+
+	.section-toggle {
+		align-items: center;
+		background: none;
+		border: none;
+		color: var(--color-text-default);
+		display: inline-flex;
+		flex: 0 100 auto;
+		font-weight: 500;
+		gap: 0.375rem;
+		min-width: 3rem;
+		padding: 0;
+		text-align: left;
+	}
+
+	.section-title {
+		flex: 0 1 auto;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.section-toggle :global(svg) {
+		color: var(--color-icon-accent-default);
+		flex-shrink: 0;
+		height: 1rem;
+		width: 1rem;
+	}
+
+	.admins-link {
+		color: var(--color-text-link);
+		margin-left: auto;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.inherit-toggle {
+		align-items: center;
+		color: var(--color-text-accent-strong);
+		display: inline-flex;
+		font-weight: 500;
+		gap: 0.5rem;
+		margin-left: auto;
+		min-width: 0;
+	}
+
+	.inherit-toggle > span {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.inherit-toggle .toggle {
+		flex-shrink: 0;
+	}
+
+	.inherit-toggle .toggle {
+		--height: 1.2rem;
+		--padding: 0.15rem;
+		--width: 2.7rem;
+	}
+
+	.header-content {
+		align-items: center;
+		display: flex;
+		gap: 0.375rem;
+	}
+
+	.header-content :global(svg) {
+		height: 1rem;
+		flex-shrink: 0;
+		width: 1rem;
+	}
+
+	.header-content .action-button {
+		height: 1.75rem;
+		padding: 0.375rem;
+	}
+
+	.header-label {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.user-cell {
+		align-items: center;
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	/* as high as the search field, so the rows below stay put when it opens */
+	.add-controls {
+		align-items: center;
+		display: flex;
+		gap: 0.5rem;
+		min-height: 2.25rem;
+	}
+
+	.user-name {
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.col-name {
+		min-width: 13.75rem;
+		width: 13.75rem;
+	}
+
+	.col-role {
+		min-width: 10.3125rem;
+		width: 10.3125rem;
+	}
+
+	.col-grant {
+		min-width: 7.5rem;
+		width: 7.5rem;
+	}
+
+	.col-actions {
+		min-width: 3.5rem;
+		text-align: center;
+	}
+</style>

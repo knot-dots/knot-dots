@@ -75,7 +75,7 @@
 
 		<div>
 			<fieldset class="data-grid">
-				<label for="givenName">
+				<label class="label" for="givenName">
 					{$_('given_name')}
 				</label>
 				<input
@@ -87,7 +87,7 @@
 					value={$user.givenName}
 				/>
 
-				<label for="familyName">
+				<label class="label" for="familyName">
 					{$_('family_name')}
 				</label>
 				<input
@@ -120,11 +120,19 @@
 								<p><strong>{key}</strong></p>
 								<ul>
 									{#each value as flag (flag)}
-										<li>
-											<label>
-												<input type="checkbox" name="feature" value={flag} bind:group={features} />
-												{$_(flag)}
-											</label>
+										<li class="feature-flag">
+											<input
+												id="feature-{flag}"
+												type="checkbox"
+												name="feature"
+												value={flag}
+												bind:group={features}
+												aria-describedby="feature-{flag}-description"
+											/>
+											<label for="feature-{flag}">{$_(`feature_flag.${flag}.title`)}</label>
+											<p id="feature-{flag}-description">
+												{$_(`feature_flag.${flag}.description`)}
+											</p>
 										</li>
 									{/each}
 								</ul>
@@ -182,19 +190,26 @@
 		margin-bottom: 1rem;
 	}
 
-	fieldset :global(label) {
-		color: var(--color-gray-700);
-	}
-
 	li {
 		padding: 0.25rem 0;
 	}
 
-	input {
-		border: none;
-		border-radius: 4px;
-		color: var(--color-gray-700);
-		padding: 0.375rem;
+	/* The description sits in the second column so that it lines up with the title. */
+	.feature-flag {
+		align-items: baseline;
+		column-gap: 0.5rem;
+		display: grid;
+		font-size: 0.875rem;
+		grid-template-columns: auto 1fr;
+	}
+
+	.feature-flag > input {
+		margin: 0;
+	}
+
+	.feature-flag > p {
+		color: var(--color-text-system-subtle);
+		grid-column: 2;
 	}
 
 	.button-primary {
@@ -214,10 +229,7 @@
 	}
 
 	.data-grid {
-		border: none;
-		border-radius: 0;
-		border-left: 2px solid var(--gray-200, #e5e7eb);
-		padding: 0.5rem 0 0.5rem 1.5rem;
+		padding: 0.5rem 0;
 	}
 
 	@container (min-inline-size: 20rem) {

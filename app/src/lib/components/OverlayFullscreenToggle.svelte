@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
-	import FullscreenCollapse from '~icons/knotdots/overlay-fullscreen-collapse';
-	import FullscreenExpand from '~icons/knotdots/overlay-fullscreen-expand';
+	import Maximize from '~icons/knotdots/maximize';
+	import Minimize from '~icons/knotdots/minimize';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
@@ -63,6 +63,8 @@
 				return resolve('/[guid=uuid]/[contentGuid=uuid]/all/members', routeParams);
 			case overlayKey.enum['tasks']:
 				return resolve('/[guid=uuid]/[contentGuid=uuid]/tasks/status', routeParams);
+			case overlayKey.enum.team:
+				return resolve('/[guid=uuid]/team', { guid: $overlay.container.guid });
 			default:
 				return '';
 		}
@@ -75,9 +77,12 @@
 		class="action-button"
 		aria-label={$_('full_screen')}
 		{href}
-		onclick={() => (lastOverlay.url = page.url)}
+		onclick={() => {
+			lastOverlay.url = page.url;
+			lastOverlay.pageTitle = page.data.title;
+		}}
 	>
-		<FullscreenExpand />
+		<Maximize />
 	</a>
 {:else}
 	<button
@@ -86,7 +91,7 @@
 		onclick={() => (fullScreen.enabled = !fullScreen.enabled)}
 		{@attach tooltip($_('full_screen'))}
 	>
-		{#if fullScreen.enabled}<FullscreenCollapse />{:else}<FullscreenExpand />{/if}
+		{#if fullScreen.enabled}<Minimize />{:else}<Maximize />{/if}
 	</button>
 {/if}
 

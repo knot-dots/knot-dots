@@ -8,6 +8,7 @@ import { getPayloadSchema } from '$lib/models';
 import {
 	mcpPayloadTypes,
 	mcpPayloadTypeValues,
+	withoutLegacyFields,
 	type McpPayloadType
 } from '$lib/server/mcp/contracts/payloads';
 
@@ -24,21 +25,25 @@ const catalog = {
 	schemaVersion: 1
 };
 
-const jsonSchemas = new Map(
-	mcpPayloadTypeValues.map(
-		(type) =>
-			[
-				type,
-				{
-					...z.toJSONSchema(getPayloadSchema(type), {
-						io: 'input',
-						target: 'draft-2020-12'
-					}),
-					$id: payloadSchemaUri(type)
-				}
-			] as const
-	)
-);
+function payloadJsonSchema(type: McpPayloadType) {
+	const {
+		properties = {},
+		required,
+		...schema
+	} = z.toJSONSchema(getPayloadSchema(type), {
+		io: 'input',
+		target: 'draft-2020-12'
+	});
+	const exposed = withoutLegacyFields(type, properties);
+	return {
+		...schema,
+		$id: payloadSchemaUri(type),
+		properties: exposed,
+		...(required ? { required: required.filter((field) => field in exposed) } : {})
+	};
+}
+
+const jsonSchemas = new Map(mcpPayloadTypeValues.map((type) => [type, payloadJsonSchema(type)]));
 
 export function registerPayloadSchemaResources(server: McpServer) {
 	server.registerResource(

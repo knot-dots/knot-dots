@@ -288,6 +288,7 @@
 		--dropdown-button-default-color: var(--color-text-default);
 		--dropdown-button-default-background: transparent;
 		--dropdown-button-icon-default-color: var(--color-icon-subtle);
+		--dropdown-button-icon-size: 1rem;
 		--dropdown-button-padding: 0.25rem 0.25rem 0.25rem 0.5rem;
 		--dropdown-panel-border-radius: 16px;
 		--dropdown-panel-width: 15rem;

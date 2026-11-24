@@ -1,11 +1,12 @@
 import type { Component } from 'svelte';
 import type { SvelteHTMLElements } from 'svelte/elements';
+import BookOpen from '~icons/flowbite/book-open-outline';
+import Book from '~icons/flowbite/book-outline';
 import UsersGroup from '~icons/flowbite/users-group-outline';
+import Tag from '~icons/flowbite/tag-outline';
 import ChartBar from '~icons/knotdots/chart-bar';
 import ChartLine from '~icons/knotdots/chart-line';
 import ChartMixed from '~icons/knotdots/chart-mixed';
-import BookOutline from '~icons/knotdots/book-outline';
-import BookOpenOutline from '~icons/knotdots/book-open-outline';
 import Chapter from '~icons/knotdots/chapter';
 import Clipboard from '~icons/knotdots/clipboard-simple';
 import ClipboardCheck from '~icons/knotdots/clipboard-check';
@@ -18,7 +19,6 @@ import Objects from '~icons/knotdots/objects';
 import Program from '~icons/knotdots/program';
 import Resources from '~icons/knotdots/resources_v2';
 import RuleDatabase from '~icons/knotdots/rule-database';
-import Tag from '~icons/knotdots/tag';
 import Template from '~icons/knotdots/template';
 import {
 	type Container,
@@ -226,7 +226,7 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'guides',
-		icon: BookOutline,
+		icon: Book,
 		module: 'knowledge_transfer',
 		views: {
 			default: '/guides/catalog',
@@ -236,7 +236,7 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'knowledge',
-		icon: BookOpenOutline,
+		icon: BookOpen,
 		module: 'knowledge_transfer',
 		views: {
 			default: '/knowledge/catalog',

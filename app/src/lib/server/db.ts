@@ -11,8 +11,8 @@ import {
 import { z } from 'zod';
 import {
 	anyContainer,
-	authenticatedMcpToken,
 	type AnyPayload,
+	authenticatedMcpToken,
 	type BinaryIndicatorPayload,
 	type Container,
 	container,
@@ -25,6 +25,7 @@ import {
 	grantTargets,
 	type HelpSlug,
 	type IndicatorPayload,
+	isOrganizationContainer,
 	isProgramContainer,
 	mcpToken,
 	type MemberRole,
@@ -63,35 +64,6 @@ import {
 } from '$lib/server/containerCopyPlan';
 import { enqueueIndexingEvent } from '$lib/server/indexingQueue';
 import { createGroup, deleteGroup, updateAccessSettings } from '$lib/server/keycloak';
-
-// Types that are indexed to Elasticsearch (must match indexContainersToElasticsearch.ts)
-const INDEXABLE_TYPES = new Set<string>([
-	'binary_indicator',
-	'effect',
-	'event',
-	'goal',
-	'help',
-	'indicator',
-	'knowledge',
-	'measure',
-	'objective',
-	'organization',
-	'organizational_unit',
-	'page',
-	'post',
-	'program',
-	'report',
-	'resource',
-	'resource_data',
-	'resource_v2',
-	'rule',
-	'simple_measure',
-	'task'
-]);
-
-function shouldIndexType(type: PayloadType): boolean {
-	return INDEXABLE_TYPES.has(type);
-}
 
 const createResultParserInterceptor = (): Interceptor => {
 	return {
@@ -278,8 +250,11 @@ export function createMcpToken({
 }
 
 // A relation change records the relation: containerGuid is its subject and
-// relation.relatedContainerGuid its object.
+// relation.relatedContainerGuid its object. A write records either the
+// personal access token (tokenId) or the OAuth client (clientId) it was made
+// with.
 export function recordMcpWriteEvent({
+	clientId,
 	containerGuid,
 	relation,
 	revision,
@@ -287,20 +262,23 @@ export function recordMcpWriteEvent({
 	tool,
 	userId
 }: {
+	clientId?: string;
 	containerGuid: string;
 	relation?: { predicate: string; relatedContainerGuid: string };
 	revision: number | null;
-	tokenId: string;
+	tokenId?: string;
 	tool: string;
 	userId: string;
 }) {
 	return async (connection: DatabaseConnection) => {
 		await connection.query(sql.typeAlias('void')`
 			INSERT INTO mcp_write_event (
-				token_id, user_id, tool, container_guid, revision, predicate, related_container_guid
+				token_id, client_id, user_id, tool, container_guid, revision, predicate,
+				related_container_guid
 			)
 			VALUES (
-				${tokenId},
+				${tokenId ?? null},
+				${clientId ?? null},
 				${userId},
 				${tool},
 				${containerGuid},
@@ -505,11 +483,6 @@ export function createManyContainers(inserts: readonly NewContainerWithGuid[]) {
 	}
 
 	const relations = inserts.flatMap((c) => c.relation);
-	const insertedGuids = new Set(inserts.map(({ guid }) => guid));
-	const externalProgramPlacements = relations.filter(
-		({ object, predicate }) =>
-			predicate === predicates.enum['is-part-of-program'] && !insertedGuids.has(object)
-	);
 
 	return async (connection: DatabaseTransactionConnection) => {
 		if (inserts.length === 0) {
@@ -562,28 +535,7 @@ export function createManyContainers(inserts: readonly NewContainerWithGuid[]) {
 					RETURNING object, predicate, subject
 				`);
 
-		const shiftedProgramSiblings =
-			externalProgramPlacements.length === 0
-				? []
-				: await connection.any(sql.typeAlias('guid')`
-					UPDATE container_relation relation
-					SET position = relation.position + 1
-					FROM ${sql.unnest(
-						externalProgramPlacements.map(({ object, position }) => [object, position]),
-						['uuid', 'int4']
-					)} AS placement(object, position)
-					WHERE relation.predicate = ${predicates.enum['is-part-of-program']}
-						AND relation.object = placement.object
-						AND relation.position >= placement.position
-						AND relation.valid_currently
-						AND NOT relation.deleted
-					RETURNING relation.subject AS guid
-				`);
-
 		const relationResult = await insertManyContainerRelations(relations, connection);
-		if (relationResult.length !== relations.length) {
-			throw new Error('relation_conflict');
-		}
 
 		const usersByRevision = new Map<number, Array<z.infer<typeof userRelation>>>();
 		for (const { object, predicate, subject } of userResult) {
@@ -610,16 +562,11 @@ export function createManyContainers(inserts: readonly NewContainerWithGuid[]) {
 
 		const affectedIndexingGuids = new Set<string>();
 		for (const persisted of persistedContainers) {
-			if (shouldIndexType(persisted.payload.type)) {
-				affectedIndexingGuids.add(persisted.guid);
-			}
+			affectedIndexingGuids.add(persisted.guid);
 		}
 		for (const { object, subject } of relationResult) {
 			affectedIndexingGuids.add(object);
 			affectedIndexingGuids.add(subject);
-		}
-		for (const { guid } of shiftedProgramSiblings) {
-			affectedIndexingGuids.add(guid);
 		}
 
 		return {
@@ -646,7 +593,7 @@ export function createContainer(
 
 			if (container.payload.type === payloadTypes.enum.organization) {
 				organizationGuid = await createGroup(container.payload.name);
-				await updateAccessSettings(organizationGuid);
+				await updateAccessSettings(container.payload.slug ?? organizationGuid);
 			}
 
 			const containerResult = organizationGuid
@@ -694,20 +641,6 @@ export function createContainer(
 			}));
 			const relationResult = await insertManyContainerRelations(relations, txConnection);
 
-			// Shift the sibling positions within every program the new container
-			// became part of; each program keeps its own ordering.
-			for (const isPartOfProgramRelation of relationResult.filter(
-				({ predicate }) => predicate == predicates.enum['is-part-of-program']
-			)) {
-				await txConnection.any(sql.typeAlias(`void`)`
-					UPDATE container_relation SET position = position + 1
-					WHERE predicate = ${predicates.enum['is-part-of-program']}
-						AND object = ${isPartOfProgramRelation.object}
-						AND subject != ${containerResult.guid}
-						AND position >= ${isPartOfProgramRelation.position}
-				`);
-			}
-
 			// the caller hands the created container straight back to the client,
 			// so it carries the request user's grants like any read result
 			const [created] = await enrichContainers(txConnection, [
@@ -717,10 +650,7 @@ export function createContainer(
 			return created;
 		});
 
-		await enqueueContainerUpserts([
-			...(shouldIndexType(result.payload.type) ? [result.guid] : []),
-			...affectedContainerGuids(result.relation)
-		]);
+		await enqueueContainerUpserts([result.guid, ...affectedContainerGuids(result.relation)]);
 
 		return result;
 	};
@@ -772,6 +702,17 @@ export function updateContainer(
 				SET valid_currently = false
 				WHERE guid = ${container.guid}
 			`);
+
+			// The type of the previous revision and the parameter need to be
+			// narrowed, since there is currently no other way for TypeScript to
+			// infer that both have the same payload type.
+			if (isOrganizationContainer(previousRevision) && isOrganizationContainer(container)) {
+				if (container.payload.slug && container.payload.slug != previousRevision.payload.slug) {
+					await updateAccessSettings(container.payload.slug);
+				} else if (!container.payload.slug && previousRevision.payload.slug) {
+					await updateAccessSettings(container.guid);
+				}
+			}
 
 			const containerResult = await txConnection.one(sql.typeAlias('anyContainer')`
 				INSERT INTO container (guid, managed_by, organization, organizational_unit, own_matrix, payload, realm)
@@ -840,10 +781,7 @@ export function updateContainer(
 			};
 		});
 
-		await enqueueContainerUpserts([
-			...(shouldIndexType(result.payload.type) ? [result.guid] : []),
-			...affectedGuids
-		]);
+		await enqueueContainerUpserts([result.guid, ...affectedGuids]);
 
 		return result;
 	};
@@ -965,13 +903,11 @@ export function deleteContainer(container: Container<AnyPayload>, visited = new 
 		});
 
 		await enqueueContainerUpserts(affectedGuids.filter((guid) => guid !== container.guid));
-		if (shouldIndexType(container.payload.type)) {
-			await enqueueIndexingEvent({
-				action: 'delete',
-				guid: container.guid,
-				timestamp: new Date().toISOString()
-			});
-		}
+		await enqueueIndexingEvent({
+			action: 'delete',
+			guid: container.guid,
+			timestamp: new Date().toISOString()
+		});
 	};
 }
 
@@ -1155,16 +1091,15 @@ export function restoreContainerRecursively(guid: string) {
 				sql.type(
 					z.object({
 						guid: z.string().uuid(),
-						revision: z.number().int().positive(),
-						type: z.string()
+						revision: z.number().int().positive()
 					})
 				)`
 					WITH RECURSIVE deleted_along AS (
-						SELECT c.guid, c.revision, c.valid_from, c.payload->>'type' AS type
+						SELECT c.guid, c.revision, c.valid_from
 						FROM container c
 						WHERE c.revision = ${deletedContainer.revision}
 						UNION
-						SELECT c.guid, c.revision, c.valid_from, c.payload->>'type' AS type
+						SELECT c.guid, c.revision, c.valid_from
 						FROM deleted_along parent
 						JOIN LATERAL (
 							SELECT cr.subject AS guid
@@ -1187,7 +1122,7 @@ export function restoreContainerRecursively(guid: string) {
 							AND c.valid_currently
 							AND c.valid_from = parent.valid_from
 					)
-					SELECT guid, revision, type
+					SELECT guid, revision
 					FROM deleted_along
 				`
 			);
@@ -1219,12 +1154,7 @@ export function restoreContainerRecursively(guid: string) {
 			await updateManyContainerRelationsInTransaction(relations, txConnection);
 
 			return {
-				affectedGuids: [
-					...deletedContainers
-						.filter(({ type }) => shouldIndexType(type as PayloadType))
-						.map(({ guid }) => guid),
-					...affectedContainerGuids(relations)
-				],
+				affectedGuids: [...guids, ...affectedContainerGuids(relations)],
 				container: await getContainerByGuid(guid)(txConnection)
 			};
 		});
@@ -1344,11 +1274,12 @@ export function getContainerCopyGraph(rootGuid: string) {
 				JOIN copy_candidate candidate ON candidate.guid = source.guid
 				WHERE source.payload->>'type' = ${payloadTypes.enum.resource_data}
 				UNION
-				SELECT item.value::uuid
+				-- Collections store GUIDs, indicator dashboards objects with the GUID in indicator.
+				SELECT COALESCE(item.value->>'indicator', item.value #>> '{}')::uuid
 				FROM current_container source
 				JOIN copy_candidate candidate ON candidate.guid = source.guid
-				CROSS JOIN LATERAL jsonb_array_elements_text(source.payload->'item') item(value)
-				WHERE source.payload->>'type' = ANY (${sql.array([payloadTypes.enum.custom_collection, payloadTypes.enum.relation_collection], 'text')})
+				CROSS JOIN LATERAL jsonb_array_elements(source.payload->'item') item(value)
+				WHERE source.payload->>'type' = ANY (${sql.array([payloadTypes.enum.custom_collection, payloadTypes.enum.indicator_dashboard, payloadTypes.enum.relation_collection], 'text')})
 				UNION
 				SELECT template.value::uuid
 				FROM current_container source
@@ -2220,6 +2151,32 @@ export function getAllRelatedContainersByProgramType(
 	};
 }
 
+// Guids of the indicators in use within the given scopes: those a container
+// is measured by or has an objective for, and those actual data reports on.
+export function getIndicatorGuidsInUse(
+	filters: { organizations?: string[]; organizationalUnits?: string[] },
+	actualDataFilters: { organizations?: string[]; organizationalUnits?: string[] | null }
+) {
+	return async (connection: DatabaseConnection): Promise<string[]> => {
+		const result = await connection.any(sql.typeAlias('guid')`
+			SELECT cr.object AS guid
+			FROM container c
+			JOIN container_relation cr ON c.guid = cr.subject
+				AND cr.predicate IN (${predicates.enum['is-measured-by']}, ${predicates.enum['is-objective-for']})
+				AND cr.valid_currently
+				AND NOT cr.deleted
+			WHERE ${prepareWhereCondition(filters)}
+			UNION
+			SELECT (c.payload->>'indicator')::uuid AS guid
+			FROM container c
+			WHERE ${prepareWhereCondition(actualDataFilters)}
+				AND c.payload->>'type' = ${payloadTypes.enum.actual_data}
+				AND c.payload->>'indicator' IS NOT NULL
+		`);
+		return result.map(({ guid }) => guid);
+	};
+}
+
 export function getAllContainersRelatedToIndicators(
 	containers: Array<Container<BinaryIndicatorPayload | IndicatorPayload>>,
 	filters: { organizations?: string[]; organizationalUnits?: string[] },
@@ -2556,9 +2513,23 @@ export function getAllContainersRelatedToMeasure(
 	};
 }
 
+// Everything the user takes part in: the contents of the areas and the areas
+// the user has a role on, the containers granting rows to one of the user's
+// teams, and the tasks assigned to the user.
 export function getAllContainersRelatedToUser(guid: string) {
 	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>[]> => {
 		const containerResult = await connection.any(sql.typeAlias('anyContainer')`
+			WITH subjects AS (
+				SELECT ${guid}::uuid AS guid
+				UNION
+				SELECT t.guid
+				FROM container_user cu
+				JOIN container t ON t.revision = cu.object
+					AND t.valid_currently AND NOT t.deleted
+					AND t.payload->>'type' = ${payloadTypes.enum.organizational_unit}
+					AND t.payload->>'organizationalUnitType' = ${organizationalUnitType.enum['organizational_unit_type.team']}
+				WHERE cu.subject = ${guid} AND cu.predicate = ${predicates.enum['is-member-of']}
+			)
 			SELECT c.* FROM container c
 			JOIN container m ON c.managed_by = m.guid
 			JOIN container_user cu ON cu.subject = ${guid}
@@ -2568,6 +2539,13 @@ export function getAllContainersRelatedToUser(guid: string) {
 				AND NOT m.deleted
 			WHERE c.payload->>'type' IN ('measure', 'program', 'simple_measure')
 			  AND c.valid_currently
+				AND NOT c.deleted
+			UNION
+			SELECT c.* FROM container c
+			JOIN container_grant g ON g.object = c.guid
+				AND g.subject IN (SELECT guid FROM subjects WHERE guid <> ${guid})
+			WHERE c.payload->>'type' IN ('measure', 'program', 'simple_measure')
+				AND c.valid_currently
 				AND NOT c.deleted
 			UNION
 			SELECT c.* FROM container c
@@ -2758,6 +2736,16 @@ export function getUser(subject: string) {
 	};
 }
 
+// Like getUser, but for subjects that may have no row yet, such as a Keycloak
+// user who has never signed in to the web application.
+export function findUser(subject: string) {
+	return async (connection: DatabaseConnection) => {
+		return await connection.maybeOne(sql.typeAlias('user')`
+			SELECT * FROM "user" WHERE guid = ${subject}
+		`);
+	};
+}
+
 export function getAllRelatedUsers(guid: string, predicates: Predicate[]) {
 	return async (connection: DatabaseConnection) => {
 		return await connection.any(sql.typeAlias('user')`
@@ -2913,14 +2901,12 @@ export function createOrUpdateTaskPriority(taskPriority: TaskPriority[]) {
 			`);
 		});
 
-		if (shouldIndexType(payloadTypes.enum.task)) {
-			for (const taskGuid of new Set(tasks)) {
-				await enqueueIndexingEvent({
-					action: 'upsert',
-					guid: taskGuid,
-					timestamp: new Date().toISOString()
-				});
-			}
+		for (const taskGuid of new Set(tasks)) {
+			await enqueueIndexingEvent({
+				action: 'upsert',
+				guid: taskGuid,
+				timestamp: new Date().toISOString()
+			});
 		}
 	};
 }

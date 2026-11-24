@@ -10,6 +10,7 @@
 	import OverlayLayout from '$lib/components/OverlayLayout.svelte';
 	import ProgramTableOverlay from '$lib/components/ProgramTableOverlay.svelte';
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
+	import TeamOverlay from '$lib/components/TeamOverlay.svelte';
 	import ResourcesOverlay from '$lib/components/ResourcesOverlay.svelte';
 	import TasksOverlay from '$lib/components/TasksOverlay.svelte';
 	import TemplatesOverlay from '$lib/components/TemplatesOverlay.svelte';
@@ -80,6 +81,13 @@
 		<IOOIOverlay container={data.container} containers={data.containers} />
 	{:else if data.key === overlayKey.enum['measure-iooi'] && isMeasureContainer(data.container)}
 		<IOOIOverlay container={data.container} containers={data.containers} />
+	{:else if data.key === overlayKey.enum.team}
+		<TeamOverlay
+			container={data.container}
+			mayManage={data.mayManage}
+			parent={data.parent}
+			users={data.users}
+		/>
 	{:else if data.key === overlayKey.enum['relations']}
 		<RelationOverlay object={data.container} relatedContainers={data.relatedContainers} />
 	{:else if data.key === overlayKey.enum['measures']}

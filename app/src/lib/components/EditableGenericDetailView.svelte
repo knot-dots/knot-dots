@@ -5,13 +5,11 @@
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
-	import Badges from '$lib/components/Badges.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import PropertiesBar from '$lib/components/PropertiesBar.svelte';
 	import Sections from '$lib/components/Sections.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
 		type Container,
@@ -85,21 +83,13 @@
 				</div>
 
 				{#if isContainer(container)}
-					{#if createFeatureDecisions(page.data.features).useNewPropertyPanel()}
-						<PropertiesBar
-							bind:container
-							editable={$applicationState.containerDetailView.editable &&
-								$ability.can('update', container)}
-							relatedContainers={[]}
-							revisions={[]}
-						/>
-					{:else}
-						<Badges
-							bind:container
-							editable={$applicationState.containerDetailView.editable &&
-								$ability.can('update', container)}
-						/>
-					{/if}
+					<PropertiesBar
+						bind:container
+						editable={$applicationState.containerDetailView.editable &&
+							$ability.can('update', container)}
+						relatedContainers={[]}
+						revisions={[]}
+					/>
 				{/if}
 
 				{#if isSimpleMeasureContainer(container)}

@@ -15,7 +15,6 @@
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import ImpactMonitoringChart from '$lib/components/ImpactMonitoringChart.svelte';
-	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
 	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
 	import NewIndicatorTable from '$lib/components/NewIndicatorTable.svelte';
 	import Sections from '$lib/components/Sections.svelte';
@@ -220,16 +219,6 @@
 				<CreateCopyButton {container} />
 				<CreateTemplateButton {container} />
 			</footer>
-		{/snippet}
-
-		{#snippet properties()}
-			<IndicatorProperties
-				bind:container
-				editable={$applicationState.containerDetailView.editable &&
-					$ability.can('update', container)}
-				{relatedContainers}
-				{revisions}
-			/>
 		{/snippet}
 	</EditableContainerDetailView>
 {/snippet}

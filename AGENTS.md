@@ -110,6 +110,7 @@ The project is migrating from Svelte stores to runes-based state provided throug
 ## 📋 Engineering Standards
 
 - **Commit Messages:** Strictly follow [cbea.ms rules](https://cbea.ms/git-commit/).
+  - The subject must complete "If applied, this commit will …" and describe what the commit changes, not what the changed code does (e.g. "Migrate the relation tests to fixtures", not "Use fixtures in the relation tests").
 - **Linting & Formatting:** Run `npm run lint` and `npm run format` before finalizing changes.
 - **Testing:**
   - **Unit/Integration:** Use Vitest (`app/src/lib/**/*.test.ts`).

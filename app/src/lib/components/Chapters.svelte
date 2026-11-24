@@ -70,6 +70,7 @@
 						[overlayKey.enum.create, payloadTypes.enum.goal],
 						['hierarchyLevel', String(hierarchyLevel)],
 						[predicates.enum['is-part-of-program'], program.guid],
+						[predicates.enum['is-section-of'], program.guid],
 						['managedBy', program.managed_by[0]]
 					])
 				),
@@ -89,6 +90,7 @@
 								[overlayKey.enum.create, payloadTypes.enum.rule],
 								['hierarchyLevel', String(hierarchyLevel)],
 								[predicates.enum['is-part-of-program'], program.guid],
+								[predicates.enum['is-section-of'], program.guid],
 								['managedBy', program.managed_by[0]]
 							])
 						),
@@ -106,6 +108,7 @@
 								[overlayKey.enum.create, payloadTypes.enum.measure],
 								['hierarchyLevel', String(hierarchyLevel)],
 								[predicates.enum['is-part-of-program'], program.guid],
+								[predicates.enum['is-section-of'], program.guid],
 								['managedBy', program.managed_by[0]]
 							])
 						),

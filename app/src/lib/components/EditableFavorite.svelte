@@ -2,9 +2,9 @@
 	import { createPopover } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
+	import Ellipsis from '~icons/flowbite/dots-horizontal-outline';
 	import StarSolid from '~icons/flowbite/star-solid';
 	import Close from '~icons/knotdots/close';
-	import Ellipsis from '~icons/knotdots/ellipsis';
 	import { uploadAsFormData } from '$lib/client/upload';
 	import transformFileURL from '$lib/transformFileURL';
 

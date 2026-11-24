@@ -7,10 +7,8 @@
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
-	import ResourceProperties from '$lib/components/ResourceProperties.svelte';
 	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 	import { type AnyPayload, type Container, predicates, type ResourcePayload } from '$lib/models';
-	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: Container<ResourcePayload>;
@@ -60,16 +58,6 @@
 
 {#snippet main()}
 	<EditableContainerDetailView bind:container {relatedContainers} {revisions}>
-		{#snippet data()}
-			<ResourceProperties
-				bind:container
-				editable={$applicationState.containerDetailView.editable &&
-					$ability.can('update', container)}
-				{relatedContainers}
-				{revisions}
-			/>
-		{/snippet}
-
 		{#snippet footer()}
 			<footer class="footer-action-bar">
 				<RelationButton {container} />

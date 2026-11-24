@@ -3,7 +3,7 @@
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { z } from 'zod';
-	import ArrowRight from '~icons/knotdots/arrow-right';
+	import ArrowRight from '~icons/flowbite/arrow-right-outline';
 	import Collection from '~icons/knotdots/collection';
 	import Search from '~icons/knotdots/search';
 	import { resolve } from '$app/paths';
@@ -25,7 +25,6 @@
 	import TemplatePicker from '$lib/components/TemplatePicker.svelte';
 	import TimelineView from '$lib/components/TimelineView.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		actualDataPayload,
 		type AnyPayload,
@@ -33,6 +32,7 @@
 		createContainerSchema,
 		createTemplateInstanceOf,
 		type CustomCollectionPayload,
+		isBinaryIndicatorContainer,
 		isIndicatorContainer,
 		isOrganizationalUnitContainer,
 		isProgramContainer,
@@ -95,10 +95,7 @@
 	// The timeline shows all items at once, but more make it hard to use.
 	const timelineLimit = 200;
 
-	let isTimeline = $derived(
-		container.payload.listType === 'timeline' &&
-			createFeatureDecisions(page.data.features).useTimeline()
-	);
+	let isTimeline = $derived(container.payload.listType === 'timeline');
 
 	let localTerms = $state('');
 
@@ -497,8 +494,8 @@
 			onLoadMore={savedHasMore ? loadMoreSaved : undefined}
 		>
 			{#snippet itemSnippet(item)}
-				{#if isIndicatorContainer(item)}
-					{@const relatedContainers =
+				{#if isBinaryIndicatorContainer(item) || isIndicatorContainer(item)}
+					{const relatedContainers =
 						actualDataResource.current?.filter(({ payload }) => payload.indicator === item.guid) ??
 						[]}
 					<NewIndicatorCard
@@ -533,8 +530,8 @@
 		<ul class="catalog wide">
 			{#each items as item (item.guid)}
 				<li>
-					{#if isIndicatorContainer(item)}
-						{@const relatedContainers =
+					{#if isBinaryIndicatorContainer(item) || isIndicatorContainer(item)}
+						{const relatedContainers =
 							actualDataResource.current?.filter(
 								({ payload }) => payload.indicator === item.guid
 							) ?? []}

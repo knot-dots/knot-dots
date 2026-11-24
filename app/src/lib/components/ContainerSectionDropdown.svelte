@@ -4,9 +4,9 @@
 	import { _ } from 'svelte-i18n';
 	import { createPopover } from 'svelte-headlessui';
 	import { createPopperActions } from 'svelte-popperjs';
+	import ChevronRight from '~icons/flowbite/chevron-right-outline';
+	import Link from '~icons/flowbite/link-outline';
 	import Plus from '~icons/knotdots/plus';
-	import ChevronRight from '~icons/knotdots/chevron-right';
-	import Link from '~icons/knotdots/link';
 	import Text from '~icons/knotdots/text';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';

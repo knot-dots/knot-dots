@@ -153,7 +153,6 @@
 					<div class="step-3-layout-right">
 						<EditableObjectiveDetailView
 							bind:container={newObjective}
-							hideProperties
 							revisions={[newObjective]}
 							sections={[]}
 						>

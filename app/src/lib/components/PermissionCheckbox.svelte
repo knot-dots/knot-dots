@@ -6,12 +6,21 @@
 	interface Props {
 		ariaLabel: string;
 		checked: boolean;
+		// an editable box that cannot be toggled yet, e.g. in a row being added
+		disabled?: boolean;
 		onchange?: (checked: boolean) => void;
 		state: 'editable' | 'readonly' | 'inactive';
 		tooltip?: string;
 	}
 
-	let { ariaLabel, checked, onchange, state, tooltip: tooltipText }: Props = $props();
+	let {
+		ariaLabel,
+		checked,
+		disabled = false,
+		onchange,
+		state,
+		tooltip: tooltipText
+	}: Props = $props();
 </script>
 
 {#if state === 'editable'}
@@ -19,17 +28,20 @@
 		<input
 			aria-label={ariaLabel}
 			{checked}
+			{disabled}
 			type="checkbox"
 			onchange={(event) => onchange?.(event.currentTarget.checked)}
 		/>
 	</span>
 {:else if state === 'readonly'}
+	<!-- a cell with a tooltip takes focus so the keyboard reaches the hint -->
 	<span
 		aria-label={ariaLabel}
 		class="permission-checkbox"
 		class:permission-checkbox--granted={checked}
 		class:permission-checkbox--not-granted={!checked}
 		role="img"
+		tabindex={tooltipText ? 0 : undefined}
 		{@attach tooltipText ? tooltip(tooltipText, { describe: true }) : undefined}
 	>
 		{#if checked}<CheckIcon />{:else}<MinusIcon />{/if}
@@ -40,6 +52,7 @@
 		aria-label={ariaLabel}
 		class="permission-checkbox permission-checkbox--dormant"
 		role="img"
+		tabindex={tooltipText ? 0 : undefined}
 		{@attach tooltipText ? tooltip(tooltipText, { describe: true }) : undefined}
 	>
 		<CheckIcon />
@@ -64,15 +77,16 @@
 		border-color: var(--color-border-accent-strong);
 	}
 
-	.permission-checkbox--editable:has(input:focus-visible) {
+	.permission-checkbox--editable:has(input:focus-visible),
+	.permission-checkbox:focus-visible {
 		outline: 2px solid var(--color-border-focus);
 		outline-offset: -2px;
 	}
 
 	input {
 		appearance: none;
-		background-color: var(--color-surface-default);
-		border: 1px solid var(--color-border-strong);
+		background-color: var(--color-surface-container);
+		border: 1px solid var(--color-border-default);
 		border-radius: 4px;
 		height: 16px;
 		margin: 0;

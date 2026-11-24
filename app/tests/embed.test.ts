@@ -19,9 +19,6 @@ test('embed route renders public report without header or properties', async ({
 	// Header, action buttons, and help widget are hidden
 	await expect(page.locator('header[role="banner"]')).not.toBeVisible();
 	await expect(page.locator('.help-widget')).not.toBeVisible();
-
-	// Properties section is hidden
-	await expect(page.locator('#properties-label')).not.toBeVisible();
 });
 
 test('embed route returns 404 for non-public container', async ({

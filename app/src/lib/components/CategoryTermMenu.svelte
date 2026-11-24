@@ -2,7 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import { createPopover } from 'svelte-headlessui';
 	import { createPopperActions } from 'svelte-popperjs';
-	import Ellipsis from '~icons/knotdots/ellipsis';
+	import Ellipsis from '~icons/flowbite/dots-horizontal-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 
 	interface Props {

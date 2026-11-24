@@ -23,7 +23,6 @@
 	import TitleDropdown from '$lib/components/TitleDropdown.svelte';
 	import VisibilityDropdown from '$lib/components/VisibilityDropdown.svelte';
 	import { getBulkActionContext } from '$lib/contexts/bulkAction';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type ActualDataPayload,
 		type AnyPayload,
@@ -128,7 +127,7 @@
 		<Overlay />
 	</a>
 
-	{#if createFeatureDecisions(page.data.features).useBulkActions() && $applicationState.containerDetailView.editable && bulkActionContext}
+	{#if $applicationState.containerDetailView.editable && bulkActionContext}
 		<label>
 			<input
 				{@attach bulkActionContext.registerTarget}

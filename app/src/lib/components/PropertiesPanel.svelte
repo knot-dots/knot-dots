@@ -160,7 +160,7 @@
 					{:else if item == 'organization'}
 						<EditableOrganization
 							bind:value={container.organization}
-							editable={editable && $ability.can('update', container, 'organizational')}
+							editable={editable && $ability.can('update', container, 'organization')}
 						/>
 					{:else if item == 'organizational_unit'}
 						<EditableOrganizationalUnit

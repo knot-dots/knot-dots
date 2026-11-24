@@ -18,11 +18,11 @@ import {
 test.each([
 	[undefined, ['IOOI'], true, ['tendency', 'series', 'binary']],
 	[undefined, ['IOOI'], false, ['tendency', 'series']],
-	[undefined, [], true, ['series']],
+	[undefined, [], true, ['series', 'binary']],
 	['indicator', ['IOOI'], true, ['tendency', 'series']],
 	['indicator', [], true, ['series']],
 	['binary_indicator', ['IOOI'], false, ['binary']],
-	['binary_indicator', [], false, []]
+	['binary_indicator', [], false, ['binary']]
 ] as const)(
 	'effects for indicator type %s with features %j and binary creation %s',
 	(indicatorType, features, mayCreateBinaryIndicator, expected) => {

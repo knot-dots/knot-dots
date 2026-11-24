@@ -80,7 +80,7 @@
 	<form method="dialog" onkeydown={handleKeyDown} onsubmit={handleSubmit}>
 		<p class="dialog-actions">
 			<span>{$_('signup_dialog.heading')}</span>
-			<button class="action-button" formnovalidate type="submit">
+			<button class="action-button" onclick={() => dialog.close()} type="button">
 				<Close />
 				<span class="is-visually-hidden">{$_('cancel')}</span>
 			</button>
@@ -198,13 +198,6 @@
 		align-items: center;
 		font-size: 0.875rem;
 		margin: 1rem 0;
-	}
-
-	input {
-		border: none;
-		border-radius: 4px;
-		color: var(--color-gray-700);
-		padding: 0.375rem;
 	}
 
 	.dialog-actions span {

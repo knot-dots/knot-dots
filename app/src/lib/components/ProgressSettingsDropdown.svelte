@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { page } from '$app/state';
 	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import Eye from '~icons/flowbite/eye-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
@@ -9,7 +8,6 @@
 	import deleteContainer from '$lib/client/deleteContainer';
 	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
 		backgroundColor,
@@ -94,7 +92,7 @@
 					</button>
 				{/if}
 
-				{#if createFeatureDecisions(page.data.features).useComputedProgress() && $ability.can('update', container)}
+				{#if $ability.can('update', container)}
 					<button
 						class="cascading-menu-item"
 						onclick={() => openSubMenu($_('progress_measurement'))}

@@ -4,15 +4,17 @@
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
 	import ArrowLeft from '~icons/flowbite/arrow-left-outline';
+	import Ellipsis from '~icons/flowbite/dots-horizontal-outline';
 	import Close from '~icons/knotdots/close';
-	import Ellipsis from '~icons/knotdots/ellipsis';
 
 	interface Props {
 		children: Snippet<[string, (title: string) => void, () => void]>;
+		// fixed keeps the panel out of scrolling (clipping) containers
+		strategy?: 'absolute' | 'fixed';
 		title: string;
 	}
 
-	let { children, title }: Props = $props();
+	let { children, strategy = 'absolute', title }: Props = $props();
 
 	let subMenuOpen = $state(false);
 
@@ -24,9 +26,11 @@
 		}
 	});
 
+	// The strategy stays the same for the life of the menu.
+	// svelte-ignore state_referenced_locally
 	let [popperRef, popperContent] = createPopperActions({
 		placement: 'bottom-end',
-		strategy: 'absolute'
+		strategy
 	});
 
 	const popperOpts = {
@@ -46,6 +50,20 @@
 		subMenuOpen = false;
 	}
 
+	let button = $state<HTMLButtonElement>();
+
+	// Esc closes the menu from anywhere in it, not only from its button, and gives the focus back
+	// to the button.
+	function closeOnEscape(event: KeyboardEvent) {
+		if (event.key !== 'Escape') {
+			return;
+		}
+		event.preventDefault();
+		event.stopPropagation();
+		popover.close();
+		button?.focus();
+	}
+
 	$effect(() => {
 		if (!$popover.expanded) {
 			closeSubMenu();
@@ -54,12 +72,18 @@
 </script>
 
 <div class="dropdown" use:popperRef>
-	<button class="dropdown-button" type="button" use:popover.button>
+	<button bind:this={button} class="dropdown-button" type="button" use:popover.button>
 		<Ellipsis />
 	</button>
 
 	{#if $popover.expanded}
-		<fieldset class="dropdown-panel" use:popperContent={popperOpts} use:popover.panel>
+		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+		<fieldset
+			class="dropdown-panel"
+			onkeydown={closeOnEscape}
+			use:popperContent={popperOpts}
+			use:popover.panel
+		>
 			<p class="dropdown-panel-title">
 				{#if subMenuOpen}
 					<button class="action-button" onclick={closeSubMenu} type="button">
@@ -84,6 +108,8 @@
 <style>
 	.dropdown {
 		--dropdown-button-default-background: transparent;
+		--dropdown-button-icon-size: 1.25rem;
+		--dropdown-button-padding: 0.375rem;
 		--dropdown-panel-background: var(--color-surface-container);
 		--dropdown-panel-border-color: var(--color-border-raised);
 		--dropdown-panel-border-radius: 16px;

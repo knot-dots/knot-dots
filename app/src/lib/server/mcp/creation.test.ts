@@ -19,7 +19,6 @@ const mocks = vi.hoisted(() => ({
 	containers: new Map<string, Container<AnyPayload>>(),
 	createAuthorizedContainer: vi.fn(),
 	recordMcpWriteEvent: vi.fn(),
-	relations: [] as Array<{ object: string; position: number; predicate: string }>,
 	transactionConnection: { transaction: true },
 	unreadableGuids: new Set<string>(),
 	unupdatableGuids: new Set<string>()
@@ -43,7 +42,6 @@ vi.mock('$lib/server/containerCreation', async (importOriginal) => ({
 	createAuthorizedContainer: mocks.createAuthorizedContainer
 }));
 vi.mock('$lib/server/db', () => ({
-	getAllDirectContainerRelations: () => async () => mocks.relations,
 	getContainerByGuid: (guid: string) => async () => mocks.containers.get(guid),
 	getManyContainers:
 		(_organizations: string[], { guid }: { guid: string[] }) =>
@@ -69,13 +67,9 @@ vi.mock('$lib/server/mcp/userContext', () => ({
 	})
 }));
 
-import { createContainerInput } from '$lib/server/mcp/contracts/creation';
+import { createContainerInput, createContainersInput } from '$lib/server/mcp/contracts/creation';
 import { mcpPayloadTypeValues } from '$lib/server/mcp/contracts/payloads';
-import {
-	addMcpCustomCollectionSection,
-	createMcpContainer,
-	McpCreationError
-} from '$lib/server/mcp/creation';
+import { createMcpContainer, createMcpContainers } from '$lib/server/mcp/creation';
 
 const organizationGuid = '00000000-0000-4000-8000-000000000001';
 const pageGuid = '00000000-0000-4000-8000-000000000002';
@@ -126,7 +120,6 @@ beforeEach(() => {
 			visibility: 'organization'
 		})
 	);
-	mocks.relations = [];
 	mocks.unreadableGuids.clear();
 	mocks.unupdatableGuids.clear();
 	mocks.recordMcpWriteEvent.mockReset();
@@ -152,11 +145,13 @@ const payloadCases = [
 	['effect', { title: 'Created effect', type: 'effect' }],
 	['objective', { title: 'Created objective', type: 'objective' }],
 	['rule', { title: 'Created rule', type: 'rule' }],
-	['text', { body: 'Created text', title: 'Created text', type: 'text' }]
+	['text', { body: 'Created text', title: 'Created text', type: 'text' }],
+	['category', { title: 'Created category', type: 'category' }]
 ] as const;
 
+// A term needs a parent, so it has tests of its own.
 test('covers every resource-backed payload type with a creation fixture', () => {
-	expect(payloadCases.map(([type]) => type)).toEqual(mcpPayloadTypeValues);
+	expect([...payloadCases.map(([type]) => type), 'term']).toEqual(mcpPayloadTypeValues);
 });
 
 test.each(payloadCases)(
@@ -228,7 +223,8 @@ test('appends structural parent relations using server-assigned positions', asyn
 			{ title: 'Climate program', type: 'program' },
 			{
 				relation: [
-					{ object: parentGuid, position: 4, predicate: 'is-part-of-program', subject: pageGuid }
+					{ object: parentGuid, position: 4, predicate: 'is-part-of-program', subject: pageGuid },
+					{ object: parentGuid, position: 6, predicate: 'is-section-of', subject: pageGuid }
 				]
 			}
 		)
@@ -261,6 +257,7 @@ test('appends structural parent relations using server-assigned positions', asyn
 		data: expect.objectContaining({
 			relation: [
 				{ object: parentGuid, position: 5, predicate: 'is-part-of-program' },
+				{ object: parentGuid, position: 7, predicate: 'is-section-of' },
 				{ object: parentGoalGuid, position: 3, predicate: 'is-part-of' }
 			]
 		}),
@@ -289,6 +286,30 @@ test('rejects invalid payloads and templates', async () => {
 	);
 	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
 	expect(mocks.recordMcpWriteEvent).not.toHaveBeenCalled();
+});
+
+test('refuses to make a new container public', async () => {
+	const input = createContainerInput.parse({
+		organizationGuid,
+		payload: { title: 'Public goal', type: 'goal', visibility: 'public' }
+	});
+
+	await expect(createMcpContainer({ ...input, tokenId, userId })({} as never)).rejects.toThrow(
+		'Agents cannot make content public; a person can change the visibility in the web application.'
+	);
+	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
+});
+
+test.each([
+	[{ title: 'Created category', type: 'category' }, 'organization'],
+	[{ title: 'Created resource', type: 'resource_v2' }, 'organization'],
+	[{ title: 'Created category', type: 'category', visibility: 'members' }, 'members']
+])('creates %j, public by default, for the organization', async (payload, visibility) => {
+	const input = createContainerInput.parse({ organizationGuid, payload });
+
+	await createMcpContainer({ ...input, tokenId, userId })({} as never);
+
+	expect(createdPayload()).toMatchObject({ visibility });
 });
 
 test.each(['hidden', 'other organization'])('rejects a %s parent', async (condition) => {
@@ -329,7 +350,10 @@ test('accepts a visible parent that the user cannot update', async () => {
 	expect(mocks.createAuthorizedContainer).toHaveBeenCalledWith(
 		expect.objectContaining({
 			data: expect.objectContaining({
-				relation: [{ object: parentGuid, position: 0, predicate: 'is-part-of-program' }]
+				relation: [
+					{ object: parentGuid, position: 0, predicate: 'is-part-of-program' },
+					{ object: parentGuid, position: 0, predicate: 'is-section-of' }
+				]
 			})
 		})
 	);
@@ -375,67 +399,6 @@ test('rejects an organizational unit of another organization', async () => {
 	await expect(createMcpContainer({ ...input, tokenId, userId })({} as never)).rejects.toThrow(
 		'Organization or organizational unit not found or inaccessible.'
 	);
-	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
-});
-
-test('maps categories to the persisted collection filter and appends the section', async () => {
-	mocks.relations = [
-		{ object: pageGuid, position: 2, predicate: 'is-section-of' },
-		{ object: pageGuid, position: 7, predicate: 'is-part-of' }
-	];
-
-	await addMcpCustomCollectionSection({
-		categories: { sdg: ['13'] },
-		includeSubordinateOrganizationalUnits: true,
-		pageGuid,
-		title: 'Objekte einbinden',
-		types: ['indicator'],
-		tokenId,
-		userId
-	})({} as never);
-
-	expect(mocks.createAuthorizedContainer).toHaveBeenCalledWith({
-		afterCreate: expect.any(Function),
-		data: expect.objectContaining({
-			payload: expect.objectContaining({
-				filter: {
-					organization: ['current'],
-					organizationalUnit: [],
-					sdg: ['13'],
-					type: ['indicator']
-				},
-				title: 'Objekte einbinden',
-				type: 'custom_collection'
-			}),
-			relation: [{ object: pageGuid, position: 3, predicate: 'is-section-of' }]
-		}),
-		features: [],
-		user: expect.objectContaining({ guid: userId })
-	});
-	expect(mocks.recordMcpWriteEvent).toHaveBeenCalledExactlyOnceWith(
-		{
-			containerGuid: createdGuid,
-			revision: createdRevision,
-			tokenId,
-			tool: 'add_custom_collection_section',
-			userId
-		},
-		mocks.transactionConnection
-	);
-});
-
-test('rejects category values that are not available for the selected types', async () => {
-	await expect(
-		addMcpCustomCollectionSection({
-			categories: { sdg: ['99'] },
-			includeSubordinateOrganizationalUnits: false,
-			pageGuid,
-			title: 'Objekte einbinden',
-			types: ['indicator'],
-			tokenId,
-			userId
-		})({} as never)
-	).rejects.toEqual(expect.any(McpCreationError));
 	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
 });
 
@@ -518,9 +481,16 @@ test.each([
 	['objective', 'is-part-of', 'measure'],
 	['binary_indicator', 'is-part-of', 'goal'],
 	['binary_indicator', 'is-part-of-program', 'program'],
+	['task', 'is-part-of-program', 'program'],
+	['effect', 'is-part-of-program', 'program'],
+	['page', 'is-part-of-program', 'program'],
 	['indicator', 'is-part-of-measure', 'measure'],
-	['text', 'is-section-of', 'program'],
+	['text', 'is-part-of-program', 'program'],
 	['goal', 'is-section-of', 'page'],
+	['goal', 'is-section-of', 'program'],
+	['text', 'is-section-of', 'effect'],
+	['text', 'is-section-of', 'objective'],
+	['text', 'is-section-of', 'binary_indicator'],
 	['text', 'is-part-of', 'goal']
 ] as const)('rejects a %s %s a %s', async (type, predicate, parentType) => {
 	mocks.containers.set(
@@ -558,7 +528,7 @@ test.each([
 	['objective', 'is-part-of', 'goal'],
 	['text', 'is-section-of', 'measure'],
 	['text', 'is-section-of', 'page'],
-	['text', 'is-part-of-program', 'program']
+	['text', 'is-section-of', 'program']
 ] as const)('accepts a %s %s a %s', async (type, predicate, parentType) => {
 	mocks.containers.set(
 		parentGuid,
@@ -672,4 +642,253 @@ test('appends a text section after the existing sections', async () => {
 	expect(mocks.createAuthorizedContainer.mock.calls[0][0].data.relation).toEqual([
 		{ object: parentGuid, position: 2, predicate: 'is-section-of' }
 	]);
+});
+
+test.each(['goal', 'knowledge', 'measure', 'rule', 'simple_measure'] as const)(
+	'makes a %s that is part of a program a section of the program',
+	async (type) => {
+		mocks.containers.set(
+			parentGuid,
+			container(
+				parentGuid,
+				{ title: 'Climate program', type: 'program' },
+				{
+					relation: [
+						{ object: parentGuid, position: 0, predicate: 'is-section-of', subject: pageGuid },
+						{ object: parentGuid, position: 3, predicate: 'is-part-of-program', subject: pageGuid }
+					]
+				}
+			)
+		);
+
+		await createWith({ title: 'Part', type }, [{ parentGuid, predicate: 'is-part-of-program' }]);
+
+		expect(mocks.createAuthorizedContainer.mock.calls[0][0].data.relation).toEqual([
+			{ object: parentGuid, position: 4, predicate: 'is-part-of-program' },
+			{ object: parentGuid, position: 1, predicate: 'is-section-of' }
+		]);
+	}
+);
+
+test.each([
+	['an organization', organizationGuid, null],
+	['an organizational unit', organizationalUnitGuid, organizationalUnitGuid]
+])('creates a text section of %s in its area', async (_, areaGuid, unit) => {
+	mocks.containers.set(
+		organizationalUnitGuid,
+		container(organizationalUnitGuid, { name: 'Climate office', type: 'organizational_unit' })
+	);
+
+	await createWith({ body: 'Welcome', title: 'Welcome', type: 'text' }, [
+		{ parentGuid: areaGuid, predicate: 'is-section-of' }
+	]);
+
+	expect(mocks.createAuthorizedContainer.mock.calls[0][0].data).toMatchObject({
+		managed_by: [areaGuid],
+		organization: organizationGuid,
+		organizational_unit: unit,
+		relation: [{ object: areaGuid, position: 0, predicate: 'is-section-of' }]
+	});
+});
+
+const firstGuid = '00000000-0000-4000-8000-000000000010';
+const secondGuid = '00000000-0000-4000-8000-000000000011';
+
+function createMany(containers: Array<Record<string, unknown>>) {
+	return createMcpContainers({
+		...createContainersInput.parse({ containers, organizationGuid }),
+		tokenId,
+		userId
+	})({} as never);
+}
+
+function goalOf(guid: string, parentRelations: Array<Record<string, string>>) {
+	return { guid, parentRelations, payload: { title: 'Less traffic', type: 'goal' } };
+}
+
+const inProgram = { parentGuid, predicate: 'is-part-of-program' };
+
+test.each([
+	[
+		'whose parents are all created in the same call',
+		[
+			goalOf(firstGuid, [inProgram]),
+			goalOf(secondGuid, [{ parentGuid: firstGuid, predicate: 'is-part-of' }])
+		],
+		'containers[1]: At least one parent must exist already, since the container gets its permissions from it; create the parents in an earlier call.'
+	],
+	[
+		'listed before its parent',
+		[
+			goalOf(secondGuid, [inProgram, { parentGuid: firstGuid, predicate: 'is-part-of' }]),
+			goalOf(firstGuid, [inProgram])
+		],
+		'containers[0]: A parent created in the same call must be listed before its children.'
+	],
+	[
+		'related to itself',
+		[
+			{
+				...goalOf(firstGuid, [inProgram]),
+				relations: [{ objectGuid: firstGuid, predicate: 'contributes-to' }]
+			}
+		],
+		'containers[0]: A container cannot be related to itself.'
+	],
+	[
+		'that is a category with relations',
+		[
+			{
+				guid: firstGuid,
+				payload: { title: 'Mobility', type: 'category' },
+				relations: [{ objectGuid: parentGuid, predicate: 'contributes-to' }]
+			}
+		],
+		'containers[0]: A category classifies other containers and cannot be related to them; leave its relations empty.'
+	],
+	[
+		'measured by an existing indicator',
+		[
+			{
+				guid: firstGuid,
+				payload: { title: 'Cycling share', type: 'effect' },
+				relations: [{ objectGuid: pageGuid, predicate: 'is-measured-by' }]
+			}
+		],
+		'containers[0]: is-measured-by links a new effect to an indicator or binary indicator created in the same call; to link an existing indicator, use attach_indicator.'
+	]
+])('rejects a container %s before writing', async (_, containers, message) => {
+	mocks.containers.set(parentGuid, container(parentGuid, { title: 'Climate', type: 'program' }));
+	mocks.containers.set(
+		pageGuid,
+		container(pageGuid, { title: 'Cycling share', type: 'indicator', unit: '%' })
+	);
+
+	await expect(createMany(containers)).rejects.toThrow(message);
+});
+
+test.each([
+	['the same GUID twice', [goalOf(firstGuid, []), goalOf(firstGuid, [])]],
+	[
+		'a structural relation among the relations',
+		[{ ...goalOf(firstGuid, []), relations: [{ objectGuid: parentGuid, predicate: 'is-part-of' }] }]
+	],
+	['no containers', []]
+])('rejects %s in the contract', (_, containers) => {
+	expect(createContainersInput.safeParse({ containers, organizationGuid }).success).toBe(false);
+});
+
+const categoryGuid = '00000000-0000-4000-8000-000000000012';
+const termGuid = '00000000-0000-4000-8000-000000000013';
+const subtermGuid = '00000000-0000-4000-8000-000000000014';
+
+function setCategoryWithTerms() {
+	mocks.containers.set(
+		categoryGuid,
+		container(
+			categoryGuid,
+			{ title: 'Mobility', type: 'category' },
+			{
+				relation: [
+					{ object: categoryGuid, position: 0, predicate: 'is-part-of-category', subject: termGuid }
+				]
+			}
+		)
+	);
+	mocks.containers.set(
+		termGuid,
+		container(
+			termGuid,
+			{ title: 'Cycling', type: 'term' },
+			{
+				relation: [
+					{
+						object: categoryGuid,
+						position: 0,
+						predicate: 'is-part-of-category',
+						subject: termGuid
+					},
+					{ object: termGuid, position: 0, predicate: 'is-part-of', subject: subtermGuid }
+				]
+			}
+		)
+	);
+	mocks.containers.set(
+		subtermGuid,
+		container(
+			subtermGuid,
+			{ title: 'Bike lanes', type: 'term' },
+			{
+				relation: [{ object: termGuid, position: 0, predicate: 'is-part-of', subject: subtermGuid }]
+			}
+		)
+	);
+}
+
+test.each([
+	['a term to its category', categoryGuid, 'is-part-of-category', 1],
+	['a term below a term', termGuid, 'is-part-of', 1]
+])('appends %s', async (_, parent, predicate, position) => {
+	setCategoryWithTerms();
+
+	await createWith({ title: 'Walking', type: 'term' }, [{ parentGuid: parent, predicate }]);
+
+	expect(mocks.createAuthorizedContainer.mock.calls[0][0].data.relation).toEqual([
+		{ object: parent, position, predicate }
+	]);
+	// Terms are public by default, but not when an agent creates them.
+	expect(createdPayload().visibility).toBe('organization');
+});
+
+test.each([
+	[
+		'a term without a parent',
+		{ title: 'Walking', type: 'term' },
+		[],
+		'A term needs exactly one parent: its category (is-part-of-category) or the term it is below (is-part-of).'
+	],
+	[
+		'a term in a category and below a term',
+		{ title: 'Walking', type: 'term' },
+		[
+			{ parentGuid: categoryGuid, predicate: 'is-part-of-category' },
+			{ parentGuid: termGuid, predicate: 'is-part-of' }
+		],
+		'A term needs exactly one parent: its category (is-part-of-category) or the term it is below (is-part-of).'
+	],
+	[
+		'a term below a term that is below a term',
+		{ title: 'Painted lanes', type: 'term' },
+		[{ parentGuid: subtermGuid, predicate: 'is-part-of' }],
+		'A term can only be below a term that is part of a category.'
+	],
+	[
+		'a term in a page',
+		{ title: 'Walking', type: 'term' },
+		[{ parentGuid: pageGuid, predicate: 'is-part-of-category' }],
+		'A page cannot be the is-part-of-category parent of a term.'
+	],
+	[
+		'a goal in a category',
+		{ title: 'Less traffic', type: 'goal' },
+		[{ parentGuid: categoryGuid, predicate: 'is-part-of-category' }],
+		'A category cannot be the is-part-of-category parent of a goal.'
+	],
+	[
+		'a category with a parent',
+		{ title: 'Mobility', type: 'category' },
+		[{ parentGuid: pageGuid, predicate: 'is-section-of' }],
+		'A page cannot be the is-section-of parent of a category.'
+	]
+])('rejects %s', async (_, payload, parentRelations, message) => {
+	setCategoryWithTerms();
+
+	await expect(createWith(payload, parentRelations)).rejects.toThrow(message);
+	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
+});
+
+test('derives the legacy slug of a category from its title instead of taking it', async () => {
+	await createWith({ key: 'sdg', title: 'Mobility', type: 'category' });
+
+	expect(createdPayload()).toMatchObject({ key: 'Mobility', title: 'Mobility' });
 });

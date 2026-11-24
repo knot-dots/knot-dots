@@ -90,18 +90,20 @@ export const symmetricMcpRelationPredicates: ReadonlySet<string> = new Set<McpRe
 	predicates.enum['is-inconsistent-with']
 ]);
 
+// The meaning of each semantic relation, for the descriptions of the tools.
+export const mcpRelationPredicateMeanings = [
+	'contributes-to: the subject contributes to the object;',
+	'is-concrete-target-of: the subject is a concrete target of the object;',
+	'is-prerequisite-for: the subject is a prerequisite for the object;',
+	'is-sub-target-of: the subject is a sub-target of the object;',
+	'is-superordinate-of: the subject is superordinate to the object;',
+	'is-consistent-with, is-inconsistent-with and is-equivalent-to hold in both directions.'
+];
+
 export const containerRelationChangeInput = z.strictObject({
 	objectGuid: z.uuid().describe('Container the relation points to.'),
 	predicate: mcpRelationPredicates.describe(
-		[
-			'The relation reads as "subject predicate object":',
-			'contributes-to: the subject contributes to the object;',
-			'is-concrete-target-of: the subject is a concrete target of the object;',
-			'is-prerequisite-for: the subject is a prerequisite for the object;',
-			'is-sub-target-of: the subject is a sub-target of the object;',
-			'is-superordinate-of: the subject is superordinate to the object;',
-			'is-consistent-with, is-inconsistent-with and is-equivalent-to hold in both directions.'
-		].join(' ')
+		['The relation reads as "subject predicate object":', ...mcpRelationPredicateMeanings].join(' ')
 	),
 	subjectGuid: z.uuid().describe('Container the relation starts from.')
 });

@@ -20,6 +20,7 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import saveUser from '$lib/client/saveUser';
 	import { createFeatureDecisions } from '$lib/features';
+	import { createFavoriteURL, resolveFavoriteURL } from '$lib/favorites';
 	import AdministrationMenu from '$lib/components/AdministrationMenu.svelte';
 	import EditableFavorite from '$lib/components/EditableFavorite.svelte';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
@@ -28,7 +29,6 @@
 	import { type Favorite, getFavoriteListContext } from '$lib/contexts/favoriteList';
 	import {
 		type Container,
-		getContextIdentifier,
 		getOrganizationURL,
 		isTeamContainer,
 		type OrganizationalUnitPayload,
@@ -140,51 +140,16 @@
 		};
 	}
 
-	function visibleFavoriteHref(href: string) {
-		let parsedUrl: URL;
+	// The href of the current page as it is stored with favorites.
+	let currentFavoriteHref = $derived(createFavoriteURL(page));
 
-		try {
-			parsedUrl = new URL(href, page.url);
-		} catch {
-			return href;
-		}
-
-		if (parsedUrl.origin !== page.url.origin) {
-			return href;
-		}
-
-		const segments = parsedUrl.pathname.split('/').filter(Boolean);
-		if (segments.length === 0) {
-			return href;
-		}
-
-		const [contextSegment, ...restSegments] = segments;
-
-		const organization = page.data.organizations.find(({ guid }) => guid === contextSegment);
-		if (organization) {
-			const identifier = getContextIdentifier(organization);
-			const pathname = `/${[identifier, ...restSegments].join('/')}`;
-			return `${pathname}${parsedUrl.search}${parsedUrl.hash}`;
-		}
-
-		const organizationalUnit = page.data.organizationalUnits.find(
-			({ guid, organization }) =>
-				guid === contextSegment && organization === page.data.currentOrganization.guid
-		);
-		if (organizationalUnit) {
-			const identifier = getContextIdentifier(organizationalUnit);
-			const pathname = `/${[identifier, ...restSegments].join('/')}`;
-			return `${pathname}${parsedUrl.search}${parsedUrl.hash}`;
-		}
-
-		return href;
-	}
-
+	// The items keep the stored href as guid, which identifies them and is saved after
+	// reordering, while their href is the one displayed.
 	let favoriteItemsOrganization = $derived(
 		favoriteList.organization.map((favorite) => ({
 			...favorite,
 			guid: favorite.href,
-			href: visibleFavoriteHref(favorite.href)
+			href: resolveFavoriteURL(favorite.href, page.data)
 		}))
 	);
 
@@ -192,7 +157,7 @@
 		favoriteList.organizationalUnit.map((favorite) => ({
 			...favorite,
 			guid: favorite.href,
-			href: visibleFavoriteHref(favorite.href)
+			href: resolveFavoriteURL(favorite.href, page.data)
 		}))
 	);
 
@@ -200,7 +165,7 @@
 		favoriteList.platform.map((favorite) => ({
 			...favorite,
 			guid: favorite.href,
-			href: visibleFavoriteHref(favorite.href)
+			href: resolveFavoriteURL(favorite.href, page.data)
 		}))
 	);
 
@@ -208,7 +173,7 @@
 		favoriteList.user.map((favorite) => ({
 			...favorite,
 			guid: favorite.href,
-			href: visibleFavoriteHref(favorite.href)
+			href: resolveFavoriteURL(favorite.href, page.data)
 		}))
 	);
 
@@ -222,8 +187,8 @@
 		event: CustomEvent<DndEvent<Favorite & { guid: string }>>
 	) {
 		favoriteItemsOrganization = event.detail.items;
-		favoriteList.organization = favoriteItemsOrganization.map(({ href, icon, title }) => ({
-			href,
+		favoriteList.organization = favoriteItemsOrganization.map(({ guid, icon, title }) => ({
+			href: guid,
 			icon,
 			title
 		}));
@@ -241,8 +206,8 @@
 	) {
 		favoriteItemsOrganizationalUnit = event.detail.items;
 		favoriteList.organizationalUnit = favoriteItemsOrganizationalUnit.map(
-			({ href, icon, title }) => ({
-				href,
+			({ guid, icon, title }) => ({
+				href: guid,
 				icon,
 				title
 			})
@@ -256,8 +221,8 @@
 
 	function handleDndFinalizePlatform(event: CustomEvent<DndEvent<Favorite & { guid: string }>>) {
 		favoriteItemsPlatform = event.detail.items;
-		favoriteList.platform = favoriteItemsPlatform.map(({ href, icon, title }) => ({
-			href,
+		favoriteList.platform = favoriteItemsPlatform.map(({ guid, icon, title }) => ({
+			href: guid,
 			icon,
 			title
 		}));
@@ -270,8 +235,8 @@
 
 	function handleDndFinalizeUser(event: CustomEvent<DndEvent<Favorite & { guid: string }>>) {
 		favoriteItemsUser = event.detail.items;
-		favoriteList.user = favoriteItemsUser.map(({ href, icon, title }) => ({
-			href,
+		favoriteList.user = favoriteItemsUser.map(({ guid, icon, title }) => ({
+			href: guid,
 			icon,
 			title
 		}));
@@ -352,7 +317,6 @@
 						}}
 					>
 						{#each favoriteItemsOrganization as item, index (item.guid)}
-							{@const href = visibleFavoriteHref(page.url.toString().split('#')[0])}
 							<li animate:flip={{ duration: 100 }}>
 								{#if $applicationState.containerDetailView.editable && $ability.can('update', page.data.currentOrganization)}
 									<span
@@ -364,7 +328,7 @@
 								{/if}
 								<a
 									class="sidebar-menu-item"
-									class:sidebar-menu-item--active={item.href === href}
+									class:sidebar-menu-item--active={item.guid === currentFavoriteHref}
 									href={item.href}
 								>
 									{#if item.icon}
@@ -454,7 +418,6 @@
 								}}
 							>
 								{#each favoriteItemsOrganizationalUnit as item, index (item.guid)}
-									{@const href = visibleFavoriteHref(page.url.toString().split('#')[0])}
 									<li>
 										{#if $applicationState.containerDetailView.editable && $ability.can('update', page.data.currentOrganizationalUnit)}
 											<span
@@ -466,7 +429,7 @@
 										{/if}
 										<a
 											class="sidebar-menu-item"
-											class:sidebar-menu-item--active={item.href === href}
+											class:sidebar-menu-item--active={item.guid === currentFavoriteHref}
 											href={item.href}
 										>
 											{#if item.icon}
@@ -531,7 +494,6 @@
 					}}
 				>
 					{#each favoriteItemsUser as item, index (item.guid)}
-						{@const href = visibleFavoriteHref(page.url.toString().split('#')[0])}
 						<li>
 							{#if $applicationState.containerDetailView.editable}
 								<span
@@ -543,7 +505,7 @@
 							{/if}
 							<a
 								class="sidebar-menu-item"
-								class:sidebar-menu-item--active={item.href === href}
+								class:sidebar-menu-item--active={item.guid === currentFavoriteHref}
 								href={item.href}
 							>
 								{#if item.icon}
@@ -592,7 +554,6 @@
 				use:platformLinks.panel
 			>
 				{#each favoriteItemsPlatform as item, index (item.guid)}
-					{@const href = visibleFavoriteHref(page.url.toString().split('#')[0])}
 					<li animate:flip={{ duration: 100 }}>
 						{#if $applicationState.containerDetailView.editable && $ability.can('update', defaultOrganization)}
 							<span
@@ -604,7 +565,7 @@
 						{/if}
 						<a
 							class="sidebar-menu-item"
-							class:sidebar-menu-item--active={item.href === href}
+							class:sidebar-menu-item--active={item.guid === currentFavoriteHref}
 							href={item.href}
 						>
 							{#if item.icon}

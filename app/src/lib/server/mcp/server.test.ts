@@ -39,8 +39,11 @@ const userScopedAuthInfo = {
 };
 const addContainerRelation = vi.fn();
 const addCustomCollectionSection = vi.fn();
+const addSection = vi.fn();
+const updateSection = vi.fn();
 const attachIndicator = vi.fn();
 const createContainer = vi.fn();
+const createContainers = vi.fn();
 const getContainer = vi.fn();
 const listContainerCategories = vi.fn();
 const listContainerCategoryValues = vi.fn();
@@ -52,11 +55,14 @@ const setActualData = vi.fn();
 const searchContainers = vi.fn();
 const searchOrganizationUsers = vi.fn();
 const updateContainer = vi.fn();
+const updateCustomCollectionSection = vi.fn();
 const toolHandler = createKnotDotsMcpHandler({
 	addContainerRelation,
 	addCustomCollectionSection,
+	addSection,
 	attachIndicator,
 	createContainer,
+	createContainers,
 	getContainer,
 	listContainerCategories,
 	listContainerCategoryValues,
@@ -67,7 +73,9 @@ const toolHandler = createKnotDotsMcpHandler({
 	setActualData,
 	searchContainers,
 	searchOrganizationUsers,
-	updateContainer
+	updateContainer,
+	updateCustomCollectionSection,
+	updateSection
 });
 
 const modernProtocolVersion = '2026-07-28';
@@ -119,9 +127,13 @@ async function legacyResponseJson(response: Response) {
 beforeEach(() => {
 	addContainerRelation.mockReset();
 	addCustomCollectionSection.mockReset();
+	addSection.mockReset();
+	updateSection.mockReset();
 	attachIndicator.mockReset();
 	createContainer.mockReset();
+	createContainers.mockReset();
 	updateContainer.mockReset();
+	updateCustomCollectionSection.mockReset();
 	getContainer.mockReset();
 	listContainerCategories.mockReset();
 	listContainerCategoryValues.mockReset();
@@ -313,8 +325,26 @@ test('advertises tools without requiring their scopes', async () => {
 					openWorldHint: false,
 					readOnlyHint: false
 				},
+				name: 'create_containers',
+				title: 'Create containers'
+			}),
+			expect.objectContaining({
+				annotations: {
+					idempotentHint: false,
+					openWorldHint: false,
+					readOnlyHint: false
+				},
 				name: 'add_custom_collection_section',
 				title: 'Add custom collection section'
+			}),
+			expect.objectContaining({
+				annotations: {
+					idempotentHint: false,
+					openWorldHint: false,
+					readOnlyHint: false
+				},
+				name: 'add_section',
+				title: 'Add section'
 			}),
 			expect.objectContaining({
 				annotations: {
@@ -351,14 +381,34 @@ test('advertises tools without requiring their scopes', async () => {
 				},
 				name: 'update_container',
 				title: 'Update container'
+			}),
+			expect.objectContaining({
+				annotations: {
+					idempotentHint: false,
+					openWorldHint: false,
+					readOnlyHint: false
+				},
+				name: 'update_custom_collection_section',
+				title: 'Update custom collection section'
+			}),
+			expect.objectContaining({
+				annotations: {
+					idempotentHint: false,
+					openWorldHint: false,
+					readOnlyHint: false
+				},
+				name: 'update_section',
+				title: 'Update section'
 			})
 		])
 	);
 	expect(body.result.tools.map(({ name }: { name: string }) => name).toSorted()).toEqual([
 		'add_container_relation',
 		'add_custom_collection_section',
+		'add_section',
 		'attach_indicator',
 		'create_container',
+		'create_containers',
 		'get_container',
 		'list_container_categories',
 		'list_container_category_values',
@@ -369,7 +419,9 @@ test('advertises tools without requiring their scopes', async () => {
 		'search_containers',
 		'search_organization_users',
 		'set_actual_data',
-		'update_container'
+		'update_container',
+		'update_custom_collection_section',
+		'update_section'
 	]);
 	expect(
 		body.result.tools.find(({ name }: { name: string }) => name === 'search_containers')
@@ -491,6 +543,55 @@ test('denies user lookup without its dedicated scope', async () => {
 			isError: true
 		}
 	});
+});
+
+test('asks OAuth clients to request the user scope for user lookup', async () => {
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: { organizationGuid: '00000000-0000-4000-8000-000000000003' },
+			name: 'search_organization_users'
+		}),
+		{
+			authInfo: {
+				...authInfo,
+				clientId: 'knot-dots-mcp',
+				extra: { clientId: 'knot-dots-mcp', userId },
+				resourceMetadataUrl: 'http://localhost/.well-known/oauth-protected-resource/mcp',
+				scopes: ['containers:read', 'containers:write', 'organizations:read']
+			}
+		}
+	);
+
+	expect(searchOrganizationUsers).not.toHaveBeenCalled();
+	expect(response.status).toBe(403);
+	expect(response.headers.get('www-authenticate')).toContain(
+		'scope="containers:read containers:write organizations:read users:read"'
+	);
+	expect(response.headers.get('www-authenticate')).toContain(
+		'resource_metadata="http://localhost/.well-known/oauth-protected-resource/mcp"'
+	);
+});
+
+test('lets OAuth clients look up users once the user has granted the scope', async () => {
+	searchOrganizationUsers.mockResolvedValue({ nextOffset: null, users: [] });
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: { organizationGuid: '00000000-0000-4000-8000-000000000003' },
+			name: 'search_organization_users'
+		}),
+		{
+			authInfo: {
+				...authInfo,
+				clientId: 'knot-dots-mcp',
+				extra: { clientId: 'knot-dots-mcp', userId },
+				scopes: ['containers:read', 'organizations:read', 'users:read']
+			}
+		}
+	);
+
+	expect(response.status).toBe(200);
+	expect(searchOrganizationUsers).toHaveBeenCalledOnce();
 });
 
 test('denies the category tool without the container read scope', async () => {
@@ -622,6 +723,68 @@ test('creates a container using the write scope', async () => {
 	});
 });
 
+const createContainersArguments = {
+	containers: [
+		{
+			guid: '00000000-0000-4000-8000-000000000005',
+			parentRelations: [
+				{ parentGuid: '00000000-0000-4000-8000-000000000004', predicate: 'is-part-of-program' }
+			],
+			payload: { title: 'Less traffic', type: 'goal' }
+		},
+		{
+			guid: '00000000-0000-4000-8000-000000000006',
+			parentRelations: [
+				{ parentGuid: '00000000-0000-4000-8000-000000000005', predicate: 'is-part-of' },
+				{ parentGuid: '00000000-0000-4000-8000-000000000004', predicate: 'is-part-of-program' }
+			],
+			payload: { title: 'Bike lanes', type: 'measure' }
+		}
+	],
+	organizationGuid: '00000000-0000-4000-8000-000000000003'
+};
+
+test('creates several containers using the write scope', async () => {
+	const output = {
+		containers: createContainersArguments.containers.map(({ guid, payload }) => ({
+			assigneeGuids: [],
+			creatorGuids: [userId],
+			guid,
+			label: payload.title,
+			organizationGuid: createContainersArguments.organizationGuid,
+			organizationalUnitGuid: null,
+			revision: 1,
+			status: null,
+			summary: null,
+			type: payload.type
+		}))
+	};
+	createContainers.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: createContainersArguments,
+			name: 'create_containers'
+		}),
+		{ authInfo: writeScopedAuthInfo }
+	);
+
+	expect(createContainers).toHaveBeenCalledExactlyOnceWith(
+		{ tokenId, userId },
+		{
+			containers: createContainersArguments.containers.map((container) => ({
+				...container,
+				organizationalUnitGuid: null,
+				relations: []
+			})),
+			organizationGuid: createContainersArguments.organizationGuid
+		}
+	);
+	await expect(response.json()).resolves.toMatchObject({
+		result: { structuredContent: output }
+	});
+});
+
 test('updates a container using the write scope', async () => {
 	const organizationGuid = '00000000-0000-4000-8000-000000000003';
 	const guid = '00000000-0000-4000-8000-000000000004';
@@ -662,37 +825,126 @@ test('updates a container using the write scope', async () => {
 	});
 });
 
+const customCollectionSectionView = {
+	additionalFilters: {},
+	allowSearch: false,
+	allowSort: false,
+	categories: { sdg: ['13'] },
+	description: null,
+	guid: '00000000-0000-4000-8000-000000000004',
+	items: [],
+	listType: 'wall',
+	mode: 'filter',
+	organizationScope: { includeSubordinateOrganizationalUnits: true, type: 'current' },
+	parentGuid: '00000000-0000-4000-8000-000000000003',
+	revision: 1,
+	showDescription: false,
+	sort: 'alpha',
+	title: 'Objekte einbinden',
+	types: ['indicator']
+};
+
+test('adds a data view section using the write scope', async () => {
+	const input = {
+		measurement: 'subordinateObjects',
+		objectType: 'task',
+		parentGuid: '00000000-0000-4000-8000-000000000003',
+		type: 'progress'
+	};
+	const output = {
+		assigneeGuids: [],
+		creatorGuids: [],
+		guid: '00000000-0000-4000-8000-000000000004',
+		label: 'Fortschritt',
+		organizationGuid: '00000000-0000-4000-8000-000000000001',
+		organizationalUnitGuid: null,
+		revision: 1,
+		status: null,
+		summary: null,
+		type: 'progress'
+	};
+	addSection.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', { arguments: input, name: 'add_section' }),
+		{ authInfo: writeScopedAuthInfo }
+	);
+
+	expect(addSection).toHaveBeenCalledExactlyOnceWith({ tokenId, userId }, input);
+	await expect(response.json()).resolves.toMatchObject({
+		result: { structuredContent: output }
+	});
+});
+
+test('updates a data view section using the write scope', async () => {
+	const input = {
+		color: 'color.gray',
+		expectedRevision: 1,
+		guid: '00000000-0000-4000-8000-000000000004',
+		visibility: 'members'
+	};
+	const output = {
+		assigneeGuids: [],
+		creatorGuids: [],
+		guid: '00000000-0000-4000-8000-000000000004',
+		label: 'Ziele',
+		organizationGuid: '00000000-0000-4000-8000-000000000001',
+		organizationalUnitGuid: null,
+		revision: 2,
+		status: null,
+		summary: null,
+		type: 'goal_collection'
+	};
+	updateSection.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', { arguments: input, name: 'update_section' }),
+		{ authInfo: writeScopedAuthInfo }
+	);
+
+	expect(updateSection).toHaveBeenCalledExactlyOnceWith({ tokenId, userId }, input);
+	await expect(response.json()).resolves.toMatchObject({
+		result: { structuredContent: output }
+	});
+});
+
 test('adds a custom collection section with categories using the write scope', async () => {
-	const pageGuid = '00000000-0000-4000-8000-000000000003';
+	const parentGuid = '00000000-0000-4000-8000-000000000003';
 	const input = {
 		categories: { sdg: ['13'] },
-		includeSubordinateOrganizationalUnits: true,
-		pageGuid,
+		parentGuid,
 		title: 'Objekte einbinden',
 		types: ['indicator']
 	};
-	const output = {
-		section: {
-			...input,
-			guid: '00000000-0000-4000-8000-000000000004'
-		}
-	};
+	const output = { section: customCollectionSectionView };
 	addCustomCollectionSection.mockResolvedValue(output);
 
 	const response = await toolHandler.fetch(
-		modernRequest('tools/call', {
-			arguments: {
-				categories: { sdg: ['13'] },
-				pageGuid,
-				title: 'Objekte einbinden',
-				types: ['indicator']
-			},
-			name: 'add_custom_collection_section'
-		}),
+		modernRequest('tools/call', { arguments: input, name: 'add_custom_collection_section' }),
 		{ authInfo: writeScopedAuthInfo }
 	);
 
 	expect(addCustomCollectionSection).toHaveBeenCalledExactlyOnceWith({ tokenId, userId }, input);
+	await expect(response.json()).resolves.toMatchObject({
+		result: { structuredContent: output }
+	});
+});
+
+test('updates a custom collection section using the write scope', async () => {
+	const input = {
+		expectedRevision: 1,
+		guid: customCollectionSectionView.guid,
+		listType: 'carousel'
+	};
+	const output = { section: { ...customCollectionSectionView, listType: 'carousel', revision: 2 } };
+	updateCustomCollectionSection.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', { arguments: input, name: 'update_custom_collection_section' }),
+		{ authInfo: writeScopedAuthInfo }
+	);
+
+	expect(updateCustomCollectionSection).toHaveBeenCalledExactlyOnceWith({ tokenId, userId }, input);
 	await expect(response.json()).resolves.toMatchObject({
 		result: { structuredContent: output }
 	});
@@ -823,9 +1075,28 @@ test.each([
 		'add_custom_collection_section',
 		addCustomCollectionSection,
 		{
-			pageGuid: '00000000-0000-4000-8000-000000000003',
+			parentGuid: '00000000-0000-4000-8000-000000000003',
 			title: 'Objekte einbinden',
 			types: ['indicator']
+		}
+	],
+	[
+		'add_section',
+		addSection,
+		{ parentGuid: '00000000-0000-4000-8000-000000000003', type: 'goal_collection' }
+	],
+	[
+		'update_section',
+		updateSection,
+		{ color: 'color.gray', expectedRevision: 1, guid: '00000000-0000-4000-8000-000000000003' }
+	],
+	[
+		'update_custom_collection_section',
+		updateCustomCollectionSection,
+		{
+			expectedRevision: 1,
+			guid: '00000000-0000-4000-8000-000000000003',
+			title: 'Renamed'
 		}
 	],
 	[
@@ -837,6 +1108,7 @@ test.each([
 			payloadPatch: { title: 'Renamed' }
 		}
 	],
+	['create_containers', createContainers, createContainersArguments],
 	['add_container_relation', addContainerRelation, relationArguments],
 	['attach_indicator', attachIndicator, attachIndicatorArguments],
 	['set_actual_data', setActualData, setActualDataArguments],
@@ -939,6 +1211,19 @@ test('serves each curated payload as a direct JSON Schema', async () => {
 			}
 		}
 	}
+});
+
+test.each([
+	['category', 'key'],
+	['term', 'value']
+])('leaves the legacy slug out of the %s payload schema', async (type, field) => {
+	const uri = `${payloadSchemaCatalogUri}/${type}`;
+	const response = await toolHandler.fetch(modernRequest('resources/read', { uri }), { authInfo });
+
+	const schema = JSON.parse((await response.json()).result.contents[0].text);
+	expect(schema.properties).toHaveProperty('title');
+	expect(schema.properties).not.toHaveProperty(field);
+	expect(schema.required ?? []).not.toContain(field);
 });
 
 test.each(['html', 'not_a_payload'])('does not expose the %s payload schema', async (type) => {

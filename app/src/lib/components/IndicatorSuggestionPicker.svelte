@@ -22,7 +22,6 @@
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 
 	interface Props {
-		includeBinaryIndicators?: boolean;
 		onCreateNew?: () => void;
 		// Also receives what the card of the chosen indicator showed.
 		onSelect: (
@@ -33,7 +32,7 @@
 		value?: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>;
 	}
 
-	let { includeBinaryIndicators = true, onCreateNew, onSelect, target, value }: Props = $props();
+	let { onCreateNew, onSelect, target, value }: Props = $props();
 
 	const categoryContext = $derived(
 		filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.indicator])
@@ -67,7 +66,6 @@
 					? [page.data.currentOrganizationalUnit.guid]
 					: [],
 				organization: [page.data.currentOrganization.guid],
-				payloadType: includeBinaryIndicators ? [] : [payloadTypes.enum.indicator],
 				terms
 			};
 			return { ...(await fetchPage(query, 0, { signal })), query };

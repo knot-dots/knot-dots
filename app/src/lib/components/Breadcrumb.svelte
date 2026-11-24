@@ -4,40 +4,68 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
-	import { getOrganizationURL } from '$lib/models';
-	import { isPartOf } from '$lib/relations';
+	import Dropdown from '$lib/components/Dropdown.svelte';
+	import { getLastOverlayContext } from '$lib/contexts/lastOverlay';
+	import { findAncestors, getOrganizationURL, paramsFromFragment, predicates } from '$lib/models';
 
-	const superordinateOrganizationalUnit = $derived(
+	const superordinateOrganizationalUnits = $derived(
 		page.data.currentOrganizationalUnit
-			? isPartOf(page.data.currentOrganizationalUnit, page.data.organizationalUnits)
-			: undefined
+			? findAncestors(page.data.currentOrganizationalUnit, page.data.organizationalUnits, [
+					predicates.enum['is-part-of']
+				]).toSorted((a, b) => a.payload.level - b.payload.level)
+			: []
 	);
+
+	const lastOverlay = getLastOverlayContext();
+
+	const itemFromLastOverlay = $derived.by(() => {
+		if (!lastOverlay.url || !lastOverlay.pageTitle) {
+			return;
+		}
+
+		let params = paramsFromFragment(lastOverlay.url);
+
+		if (params.entries().some(([, v]) => v === page.params.contentGuid)) {
+			return { href: lastOverlay.url.toString().split('#')[0], title: lastOverlay.pageTitle };
+		}
+	});
 
 	const breadcrumb = $derived([
 		{
-			href: getOrganizationURL(page.data.currentOrganization, '', env),
+			href: getOrganizationURL(page.data.currentOrganization, '', env).toString(),
 			icon: Home,
 			title: page.data.currentOrganization.payload.name
 		},
-		...(superordinateOrganizationalUnit ? [{ title: '…' }] : []),
+		...(superordinateOrganizationalUnits.length > 0
+			? [
+					superordinateOrganizationalUnits.map((ou) => ({
+						href: getOrganizationURL(ou, '/', env, {
+							organizationSlug: page.data.currentOrganization.payload.slug,
+							organizationCustomDomain: page.data.currentOrganization.payload.customDomain
+						}).toString(),
+						title: ou.payload.name
+					}))
+				]
+			: []),
 		...(page.data.currentOrganizationalUnit
 			? [
 					{
 						href: getOrganizationURL(page.data.currentOrganizationalUnit, '/', env, {
 							organizationSlug: page.data.currentOrganization.payload.slug,
 							organizationCustomDomain: page.data.currentOrganization.payload.customDomain
-						}),
+						}).toString(),
 						title: page.data.currentOrganizationalUnit.payload.name
 					}
 				]
 			: []),
 		...(page.data.container && page.data.container.guid != page.params.guid
 			? [
+					...(itemFromLastOverlay ? [itemFromLastOverlay] : []),
 					{
 						href: resolve('/[guid=uuid]/[contentGuid=uuid]', {
 							guid: (page.data.currentOrganizationalUnit ?? page.data.currentOrganization).guid,
 							contentGuid: page.data.container.guid
-						}),
+						}) as string,
 						title: page.data.container.payload.title
 					}
 				]
@@ -57,8 +85,26 @@
 		<ol>
 			{#each breadcrumb as item, index (index)}
 				<li>
-					{#if (index < breadcrumb.length - 1 || index == 0) && item.href}
-						<a class="truncated" href={item.href.toString()}>
+					{#if Array.isArray(item)}
+						{#if item.length > 0}
+							<Dropdown label={$_('organizational_units')}>
+								{#snippet button(popover)}
+									<button class="dropdown-button" type="button" use:popover.button>…</button>
+								{/snippet}
+
+								{#snippet panel()}
+									<ul>
+										{#each item as { href, title } (href)}
+											<li>
+												<a class="truncated" {href}>{title}</a>
+											</li>
+										{/each}
+									</ul>
+								{/snippet}
+							</Dropdown>
+						{/if}
+					{:else if (index < breadcrumb.length - 1 || index == 0) && item.href}
+						<a class="truncated" href={item.href}>
 							{#if item.icon}
 								<item.icon />
 								<span class="is-visually-hidden">{item.title}</span>
@@ -88,6 +134,10 @@
 		height: 2rem;
 	}
 
+	ol > li:first-child {
+		flex-shrink: 0;
+	}
+
 	li {
 		color: var(--color-text-accent-default);
 		display: flex;
@@ -97,12 +147,7 @@
 		min-width: 2rem;
 	}
 
-	li:first-child {
-		color: var(--color-text-accent-strong);
-		flex-shrink: 0;
-	}
-
-	li:first-child::after,
+	ol > li:first-child::after,
 	li:not(:last-child)::after {
 		content: ' / ';
 		display: inline-block;
@@ -111,6 +156,7 @@
 	}
 
 	li :global(svg) {
+		color: var(--color-text-accent-strong);
 		display: inline-block;
 		height: 1rem;
 		max-width: none;
@@ -130,5 +176,13 @@
 	li > a:active,
 	li > a:hover {
 		background-color: var(--color-background-accent-hover);
+	}
+
+	.dropdown-button {
+		--dropdown-button-default-background: transparent;
+		--dropdown-button-min-height: auto;
+		--dropdown-button-padding: 0.25rem;
+
+		font-size: inherit;
 	}
 </style>

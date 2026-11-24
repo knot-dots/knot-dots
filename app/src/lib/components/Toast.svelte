@@ -6,6 +6,9 @@
 	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
+		// an optional button below the text, e.g. to undo what the toast reports;
+		// the toast closes once it is used
+		action?: { label: string; onclick: () => void };
 		icon?: Component<SvelteHTMLElements['svg']>;
 		heading: string;
 		message?: string;
@@ -13,7 +16,7 @@
 		status: 'error' | 'info' | 'success' | 'warning';
 	}
 
-	let { icon: Icon, heading, message, onclose, status }: Props = $props();
+	let { action, icon: Icon, heading, message, onclose, status }: Props = $props();
 </script>
 
 <div class="toast" role="status">
@@ -37,6 +40,19 @@
 
 		{#if message}
 			<p class="toast-message">{message}</p>
+		{/if}
+
+		{#if action}
+			<button
+				class="toast-action"
+				type="button"
+				onclick={() => {
+					action.onclick();
+					onclose();
+				}}
+			>
+				{action.label}
+			</button>
 		{/if}
 	</div>
 </div>
@@ -80,7 +96,33 @@
 		color: var(--color-green-600);
 	}
 
-	.toast button {
+	.toast-icon--error,
+	.toast-icon--warning {
+		background-color: var(--color-red-100);
+		color: var(--color-red-600);
+	}
+
+	.toast-content {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		min-width: 0;
+	}
+
+	/* the undo button of the design: a full-width outlined button */
+	.toast-action {
+		--padding-x: 0.75rem;
+		--padding-y: 0.5rem;
+
+		border-color: var(--color-border-subtle);
+		color: var(--color-text-accent-strong);
+		justify-content: center;
+		line-height: 1;
+		min-height: 1.75rem;
+		width: 100%;
+	}
+
+	.toast > button {
 		position: absolute;
 		right: 0.5rem;
 		top: 0.5rem;

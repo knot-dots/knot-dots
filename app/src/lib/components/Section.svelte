@@ -15,11 +15,13 @@
 	import EditableHtmlSection from '$lib/components/EditableHtmlSection.svelte';
 	import EditableImageSection from '$lib/components/EditableImageSection.svelte';
 	import EditableIndicatorCollection from '$lib/components/EditableIndicatorCollection.svelte';
+	import EditableIndicatorDashboard from '$lib/components/EditableIndicatorDashboard.svelte';
 	import EditableInlineHelpSection from '$lib/components/EditableInlineHelpSection.svelte';
 	import EditableMapSection from '$lib/components/EditableMapSection.svelte';
 	import EditableMeasureCollection from '$lib/components/EditableMeasureCollection.svelte';
 	import EditableObjectiveCollection from '$lib/components/EditableObjectiveCollection.svelte';
 	import EditableProgramCollection from '$lib/components/EditableProgramCollection.svelte';
+	import EditableProgramPartSection from '$lib/components/EditableProgramPartSection.svelte';
 	import EditableProgressSection from '$lib/components/EditableProgressSection.svelte';
 	import EditableRelationCollection from '$lib/components/EditableRelationCollection.svelte';
 	import EditableResourceCollection from '$lib/components/EditableResourceCollection.svelte';
@@ -49,7 +51,9 @@
 		isIgniteVideoContainer,
 		isImageContainer,
 		isIndicatorCollectionContainer,
+		isIndicatorDashboardContainer,
 		isInlineHelpTextContainer,
+		isKnowledgeContainer,
 		isMapContainer,
 		isMeasureCollectionContainer,
 		isMeasureContainer,
@@ -57,10 +61,13 @@
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		isProgramCollectionContainer,
+		isProgramContainer,
 		isProgressContainer,
 		isRelationCollectionContainer,
 		isResourceCollectionContainer,
 		isResourceDataCollectionContainer,
+		isRuleContainer,
+		isSimpleMeasureContainer,
 		isSummaryContainer,
 		isTaskCollectionContainer,
 		isTeaserCollectionContainer,
@@ -78,6 +85,7 @@
 		parentContainer: Container<AnyPayload>;
 		preview?: boolean;
 		relatedContainers: Container<AnyPayload>[];
+		sortable?: boolean;
 	}
 
 	let {
@@ -87,7 +95,8 @@
 		heading = 'h2',
 		parentContainer = $bindable(),
 		preview = false,
-		relatedContainers = $bindable()
+		relatedContainers = $bindable(),
+		sortable = true
 	}: Props = $props();
 
 	let editable = $derived(editableOverride ?? $applicationState.containerDetailView.editable);
@@ -133,7 +142,7 @@
 			is its unconditional first option — while sorting requires the update
 			grant on the section itself. -->
 		{#if editable && ($ability.can('update', container) || $mayCreateContainer(payloadTypes.enum.text, parentContainer))}
-			<DraggableActionBar {container} draggable={$ability.can('update', container)}>
+			<DraggableActionBar {container} draggable={sortable && $ability.can('update', container)}>
 				{#snippet actions()}
 					<AddSectionMenu bind:relatedContainers bind:parentContainer compact {handleAddSection} />
 				{/snippet}
@@ -147,6 +156,51 @@
 				bind:relatedContainers
 				{editable}
 				{heading}
+			/>
+		{:else if isGoalContainer(container) && isProgramContainer(parentContainer)}
+			<EditableProgramPartSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={editable && !isShadowItem}
+				{heading}
+				{preview}
+			/>
+		{:else if isKnowledgeContainer(container) && isProgramContainer(parentContainer)}
+			<EditableProgramPartSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={editable && !isShadowItem}
+				{heading}
+				{preview}
+			/>
+		{:else if isMeasureContainer(container) && isProgramContainer(parentContainer)}
+			<EditableProgramPartSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={editable && !isShadowItem}
+				{heading}
+				{preview}
+			/>
+		{:else if isRuleContainer(container) && isProgramContainer(parentContainer)}
+			<EditableProgramPartSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={editable && !isShadowItem}
+				{heading}
+				{preview}
+			/>
+		{:else if isSimpleMeasureContainer(container) && isProgramContainer(parentContainer)}
+			<EditableProgramPartSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={editable && !isShadowItem}
+				{heading}
+				{preview}
 			/>
 		{:else if isChapterContainer(container)}
 			<EditableChapterSection
@@ -199,6 +253,14 @@
 			<EditableHtmlSection bind:container bind:parentContainer bind:relatedContainers {editable} />
 		{:else if isIndicatorCollectionContainer(container)}
 			<EditableIndicatorCollection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				{editable}
+				{heading}
+			/>
+		{:else if isIndicatorDashboardContainer(container)}
+			<EditableIndicatorDashboard
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers

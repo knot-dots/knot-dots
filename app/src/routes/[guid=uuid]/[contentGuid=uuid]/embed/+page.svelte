@@ -68,13 +68,6 @@
 		text-decoration: none;
 	}
 
-	/* Hide properties in embed mode while keeping main content visible. */
-	.embed-main :global(#properties-label),
-	.embed-main :global(#properties-label + .data-grid),
-	.embed-main :global(#properties-label ~ button) {
-		display: none;
-	}
-
 	.embed-main[data-payload-type='organization'] :global(.details-section),
 	.embed-main[data-payload-type='organizational_unit'] :global(.details-section) {
 		display: none;

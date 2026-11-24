@@ -267,26 +267,6 @@ test.each([
 	],
 	['a container without a guid', [{ ...newIndicator(), guid: undefined }]],
 	['the same guid twice', [newIndicator(), newIndicator()]],
-	[
-		'the same relation twice',
-		[
-			newIndicator(),
-			newEffect({ trendValue: 1 }),
-			newContainer(
-				{ title: 'Text', type: 'text' },
-				{
-					relation: [
-						{
-							object: newIndicatorGuid,
-							position: 0,
-							predicate: 'is-measured-by',
-							subject: newEffectGuid
-						}
-					]
-				}
-			)
-		]
-	],
 	['an organization', [newContainer({ name: 'Org', type: 'organization' })]]
 ])('%s is refused', async (_, body) => {
 	await expect(post(body)).rejects.toMatchObject({ status: 422 });

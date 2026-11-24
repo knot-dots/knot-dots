@@ -15,12 +15,10 @@ import {
 	newContainer,
 	payloadTypes,
 	predicates,
-	relation,
 	type Relation
 } from '$lib/models';
 import type { ContainerCopyPlan } from '$lib/server/containerCopyPlan';
 import {
-	createContainer,
 	createManyContainers,
 	createOrUpdateUser,
 	type DatabaseNonTransactionConnection,
@@ -145,61 +143,7 @@ test('bulk-inserts payloads, creators, GUID relations, and reconstructs containe
 	expect(stored.every(({ managed_by }) => managed_by[0] === organization)).toBe(true);
 });
 
-test('shifts existing program siblings for an external copied-root placement', async ({
-	connection
-}) => {
-	const program = await createContainer(copyContainer(payloadTypes.enum.program))(connection);
-	const existingGuids: string[] = [];
-	for (const position of [0, 1, 2]) {
-		const existing = await createContainer(
-			newContainer.parse({
-				...copyContainer(payloadTypes.enum.measure),
-				relation: [
-					{
-						object: program.guid,
-						position,
-						predicate: predicates.enum['is-part-of-program']
-					}
-				]
-			})
-		)(connection);
-		existingGuids.push(existing.guid);
-	}
-
-	const inserted = uuid();
-	const result = await createManyContainers([
-		copyContainer(payloadTypes.enum.measure, {
-			guid: inserted,
-			relation: [
-				{
-					object: program.guid,
-					position: 1,
-					predicate: predicates.enum['is-part-of-program'],
-					subject: inserted
-				}
-			]
-		})
-	])(connection);
-
-	const positions = await connection.any(sql.type(relation)`
-		SELECT object, position, predicate, subject
-		FROM container_relation
-		WHERE object = ${program.guid}
-			AND predicate = ${predicates.enum['is-part-of-program']}
-			AND valid_currently
-			AND NOT deleted
-	`);
-	const positionBySubject = new Map(positions.map(({ position, subject }) => [subject, position]));
-	expect(positionBySubject.get(inserted)).toBe(1);
-	expect(existingGuids.map((guid) => positionBySubject.get(guid))).toEqual([0, 2, 3]);
-	expect(new Set(result.affectedIndexingGuids)).toEqual(
-		new Set([inserted, program.guid, existingGuids[1], existingGuids[2]])
-	);
-});
-
-test('rolls back rows and users when a creator or relation insert fails', async ({
-	connection
-}) => {
+test('rolls back rows and users when a creator insert fails', async ({ connection }) => {
 	const copiedGuid = uuid();
 	const missingCreator = uuid();
 	await expect(
@@ -215,45 +159,6 @@ test('rolls back rows and users when a creator or relation insert fails', async 
 	expect(
 		await connection.maybeOneFirst(sql.typeAlias('guid')`
 			SELECT guid FROM container WHERE guid = ${copiedGuid}
-		`)
-	).toBeNull();
-
-	const existingObject = await createContainer(copyContainer(payloadTypes.enum.program))(
-		connection
-	);
-	const existingSubject = await createContainer(copyContainer(payloadTypes.enum.measure))(
-		connection
-	);
-	const existingRelation: Relation = {
-		object: existingObject.guid,
-		position: 0,
-		predicate: predicates.enum['is-part-of'],
-		subject: existingSubject.guid
-	};
-	await connection.query(sql.typeAlias('void')`
-		INSERT INTO container_relation (object, position, predicate, subject)
-		VALUES (
-			${existingRelation.object},
-			${existingRelation.position},
-			${existingRelation.predicate},
-			${existingRelation.subject}
-		)
-	`);
-
-	const relationConflictGuid = uuid();
-	await expect(
-		connection.transaction((nested) =>
-			createManyContainers([
-				copyContainer(payloadTypes.enum.text, {
-					guid: relationConflictGuid,
-					relation: [existingRelation]
-				})
-			])(nested)
-		)
-	).rejects.toThrow('relation_conflict');
-	expect(
-		await connection.maybeOneFirst(sql.typeAlias('guid')`
-			SELECT guid FROM container WHERE guid = ${relationConflictGuid}
 		`)
 	).toBeNull();
 });

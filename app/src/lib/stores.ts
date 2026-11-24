@@ -12,7 +12,6 @@ import {
 	type ApplicationState,
 	type Container,
 	type CustomCollectionPayload,
-	containerOfType,
 	emptyGrantRecords,
 	filterMembers,
 	type GoalPayload,
@@ -29,7 +28,9 @@ import {
 	predicates,
 	type RelationCollectionPayload,
 	type TeamWithMembers,
-	type User as UserRecord
+	type User as UserRecord,
+	grantForNewContainer,
+	type AnyInitialPayload
 } from '$lib/models';
 import { extractCustomCategoryFiltersFromParams } from '$lib/utils/customCategoryFilters';
 
@@ -98,7 +99,10 @@ export const dragged = writable<Container<AnyPayload> | undefined>();
 export const mayCreateContainer = derived(ability, (values) => {
 	return (payloadType: PayloadType, parent: Container<AnyPayload>): boolean => {
 		// creating happens within the parent; the stub inherits its computed grants
-		return values.can('create', containerOfType(payloadType, parent));
+		return values.can('create', {
+			payload: { type: payloadType } as AnyInitialPayload,
+			user_grant: grantForNewContainer(parent)
+		});
 	};
 });
 
@@ -182,6 +186,13 @@ export type OverlayData =
 			relatedContainers: Container[];
 	  }
 	| {
+			key: 'team';
+			container: Container<OrganizationalUnitPayload>;
+			mayManage: boolean;
+			parent: { guid: string; name: string };
+			users: UserRecord[];
+	  }
+	| {
 			key: 'tasks';
 			container: Container<AnyPayload>;
 			containers: Container[];
@@ -234,7 +245,13 @@ if (browser) {
 
 		const hashParams = paramsFromFragment(values.url);
 
-		if (hashParams.toString() == previousHashState && !hashParams.has(overlayKey.enum.members)) {
+		// the members and team overlays reload after invalidateAll, so their
+		// rosters follow the edits made inside them
+		if (
+			hashParams.toString() == previousHashState &&
+			!hashParams.has(overlayKey.enum.members) &&
+			!hashParams.has(overlayKey.enum.team)
+		) {
 			return;
 		}
 
@@ -295,6 +312,22 @@ if (browser) {
 				inheritedSections: result.data.inheritedSections,
 				mayManageOrganizationUsers: result.data.mayManageOrganizationUsers,
 				teams: result.data.teams,
+				users: result.data.users
+			});
+		} else if (hashParams.has(overlayKey.enum.team)) {
+			const result = await preloadData(
+				resolve('/[guid=uuid]/team', {
+					guid: hashParams.get(overlayKey.enum.team) as string
+				})
+			);
+			if (result.type !== 'loaded' || result.status !== 200) {
+				return;
+			}
+			setOverlayIfLatest({
+				key: overlayKey.enum.team,
+				container: result.data.container,
+				mayManage: result.data.mayManage,
+				parent: result.data.parent,
 				users: result.data.users
 			});
 		} else if (hashParams.has(overlayKey.enum.relations)) {

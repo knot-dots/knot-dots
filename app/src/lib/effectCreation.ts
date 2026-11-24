@@ -73,8 +73,7 @@ export function indicatorTypeForEffectKind(kind: EffectKind) {
 }
 
 // The kinds of effects that can be defined for an indicator of the given type,
-// or for a new indicator if no type is given. Tendencies and yes/no effects are
-// still in beta.
+// or for a new indicator if no type is given. Tendencies are still in beta.
 export function effectKindOptions({
 	features,
 	indicatorType,
@@ -87,17 +86,13 @@ export function effectKindOptions({
 	const featureDecisions = createFeatureDecisions(features);
 
 	if (indicatorType === payloadTypes.enum.binary_indicator) {
-		return featureDecisions.useBinaryIndicators() ? [effectKinds.enum.binary] : [];
+		return [effectKinds.enum.binary];
 	}
 
 	return [
 		...(featureDecisions.useTendentialObjectivesAndEffects() ? [effectKinds.enum.tendency] : []),
 		effectKinds.enum.series,
-		...(indicatorType === undefined &&
-		featureDecisions.useBinaryIndicators() &&
-		mayCreateBinaryIndicator
-			? [effectKinds.enum.binary]
-			: [])
+		...(indicatorType === undefined && mayCreateBinaryIndicator ? [effectKinds.enum.binary] : [])
 	];
 }
 

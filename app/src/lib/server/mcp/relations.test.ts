@@ -267,8 +267,11 @@ test.each([
 	expect(mocks.changeManyContainerRelations).not.toHaveBeenCalled();
 });
 
-test('rejects containers that are not exposed through MCP', async () => {
-	mocks.containers.set(measureGuid, container(measureGuid, { title: 'HTML', type: 'html' }));
+test.each([
+	['html', { title: 'HTML', type: 'html' }],
+	['term', { title: 'Cycling', type: 'term' }]
+])('rejects a %s, which these tools do not relate', async (_, payload) => {
+	mocks.containers.set(measureGuid, container(measureGuid, payload));
 
 	await expect(change('add')).rejects.toThrow('Object container not found or inaccessible.');
 });

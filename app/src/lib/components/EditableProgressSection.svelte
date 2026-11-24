@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { invalidate } from '$app/navigation';
-	import { page } from '$app/state';
-	import { createFeatureDecisions } from '$lib/features';
 	import saveContainer from '$lib/client/saveContainer';
 	import ProgressSettingsDropdown from '$lib/components/ProgressSettingsDropdown.svelte';
 	import SingleChoiceDropdown from '$lib/components/SingleChoiceDropdown.svelte';
@@ -37,8 +35,7 @@
 	const id = crypto.randomUUID();
 
 	let showComputedProgress = $derived(
-		createFeatureDecisions(page.data.features).useComputedProgress() &&
-			container.payload.measurement === progressMeasurement.enum.subordinateObjects
+		container.payload.measurement === progressMeasurement.enum.subordinateObjects
 	);
 
 	let objectTypeOptions = $derived(

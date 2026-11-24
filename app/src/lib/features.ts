@@ -1,24 +1,10 @@
-// ComputedManagedBy, MultipleProgramAssignment and PermissionMatrix are
-// managed per deployment via pod annotations (see $lib/server/podFeatures)
-// and deliberately absent from these user-facing rings.
+// ComputedManagedBy, McpServer, MultipleProgramAssignment and PermissionMatrix
+// are managed per deployment via pod annotations (see $lib/server/podFeatures)
+// and deliberately absent from these user-facing rings. New flags are named in
+// snake_case, like the keys of their translations.
 export const featureFlags = new Map([
-	['alpha', ['OpenAI', 'Adoptions', 'Templating', 'MCP'] as const],
-	[
-		'beta',
-		[
-			'BulkActions',
-			'ComputedProgress',
-			'ImportFromCsv',
-			'IOOI',
-			'Mistral',
-			'NewPropertyPanel',
-			'ResourceV2',
-			'SubMeasures',
-			'Timeline',
-			'TrafficLight',
-			'UrlSlug'
-		] as const
-	]
+	['alpha', ['Adoptions', 'MCP', 'Mistral', 'OpenAI', 'Templating'] as const],
+	['beta', ['ImportFromCsv', 'indicator_dashboard', 'IOOI', 'ResourceV2'] as const]
 ]);
 
 export function createFeatureDecisions(features: string[]) {
@@ -41,35 +27,20 @@ export function createFeatureDecisions(features: string[]) {
 		useIOOI() {
 			return features.includes('IOOI');
 		},
-		useBinaryIndicators() {
-			return features.includes('IOOI');
-		},
 		useTendentialObjectivesAndEffects() {
 			return features.includes('IOOI');
-		},
-		useUrlSlug() {
-			return features.includes('UrlSlug');
-		},
-		useSubMeasures() {
-			return features.includes('SubMeasures');
-		},
-		useBulkActions() {
-			return features.includes('BulkActions');
 		},
 		useAdoptions() {
 			return features.includes('Adoptions');
 		},
+		useIndicatorDashboard() {
+			return features.includes('indicator_dashboard');
+		},
 		useComputedManagedBy() {
 			return features.includes('ComputedManagedBy');
 		},
-		useComputedProgress() {
-			return features.includes('ComputedProgress');
-		},
 		useMultipleProgramAssignment() {
 			return features.includes('MultipleProgramAssignment');
-		},
-		useNewPropertyPanel() {
-			return features.includes('NewPropertyPanel');
 		},
 		usePermissionMatrix() {
 			return features.includes('PermissionMatrix');
@@ -80,15 +51,16 @@ export function createFeatureDecisions(features: string[]) {
 		useNewCreateContainerDialog() {
 			return features.includes('Templating');
 		},
-		useMcpTokenMenu() {
-			return features.includes('MCP');
+		// The MCP server answers only where the deployment enables it, so it can
+		// be switched off at runtime; who may use it is decided by the MCP flag
+		// on top.
+		useMcpServer() {
+			return features.includes('McpServer');
 		},
-		useTimeline() {
-			return features.includes('Timeline');
-		},
-		// The flag keeps its former name, as users have stored it in their settings
-		useIndicatorReview() {
-			return features.includes('TrafficLight');
+		// Users with the MCP flag see the token menu, may create personal access
+		// tokens and may connect OAuth clients.
+		useMcp() {
+			return features.includes('McpServer') && features.includes('MCP');
 		}
 	} satisfies Record<string, () => boolean>;
 }

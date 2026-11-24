@@ -12,11 +12,9 @@
 	import Summary from '~icons/knotdots/summary';
 	import Text from '~icons/knotdots/text';
 	import TimelineIcon from '~icons/knotdots/timeline';
-	import { page } from '$app/state';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
 		backgroundColor,
@@ -226,23 +224,21 @@
 					<CarouselIcon />
 					<span>{$_('list_type.carousel')}</span>
 				</label>
-				{#if createFeatureDecisions(page.data.features).useTimeline()}
-					<label>
-						<input
-							type="radio"
-							name="listType"
-							value="timeline"
-							checked={container.payload.listType === 'timeline'}
-							onchange={() => (container.payload.listType = 'timeline')}
-						/>
-						<TimelineIcon />
-						<span>{$_('list_type.timeline')}</span>
-					</label>
-				{/if}
+				<label>
+					<input
+						type="radio"
+						name="listType"
+						value="timeline"
+						checked={container.payload.listType === 'timeline'}
+						onchange={() => (container.payload.listType = 'timeline')}
+					/>
+					<TimelineIcon />
+					<span>{$_('list_type.timeline')}</span>
+				</label>
 			</fieldset>
 
 			<!-- Options of the selected view -->
-			{#if container.payload.listType === 'timeline' && createFeatureDecisions(page.data.features).useTimeline()}
+			{#if container.payload.listType === 'timeline'}
 				<div class="cascading-menu-divider" role="presentation"></div>
 				<label class="button cascading-menu-item">
 					<Summary />

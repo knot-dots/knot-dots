@@ -23,7 +23,6 @@
 		type EffectValue,
 		newIndicatorForEffect
 	} from '$lib/effectCreation';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type ActualDataPayload,
 		type BinaryIndicatorPayload,
@@ -277,7 +276,6 @@
 
 		{#if step === 1}
 			<IndicatorSuggestionPicker
-				includeBinaryIndicators={createFeatureDecisions(page.data.features).useBinaryIndicators()}
 				onCreateNew={mayCreateIndicator ? createNew : undefined}
 				onSelect={select}
 				{target}

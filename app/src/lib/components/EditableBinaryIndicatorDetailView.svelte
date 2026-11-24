@@ -7,7 +7,6 @@
 	import fetchContainers from '$lib/client/fetchContainers';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import saveContainer from '$lib/client/saveContainer';
-	import BinaryIndicatorProperties from '$lib/components/BinaryIndicatorProperties.svelte';
 	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
 	import CreateTemplateButton from '$lib/components/CreateTemplateButton.svelte';
@@ -210,16 +209,6 @@
 				<CreateCopyButton {container} />
 				<CreateTemplateButton {container} />
 			</footer>
-		{/snippet}
-
-		{#snippet properties()}
-			<BinaryIndicatorProperties
-				bind:container
-				editable={$applicationState.containerDetailView.editable &&
-					$ability.can('update', container)}
-				{relatedContainers}
-				{revisions}
-			/>
 		{/snippet}
 	</EditableContainerDetailView>
 {/snippet}

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Card from '$lib/components/Card.svelte';
 	import { type Container, type TeaserPayload } from '$lib/models';
-	import ArrowRight from '~icons/knotdots/arrow-right';
+	import ArrowRight from '~icons/flowbite/arrow-right-outline';
 
 	interface Props {
 		container: Container<TeaserPayload>;

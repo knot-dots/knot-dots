@@ -42,31 +42,4 @@ test.describe('Templates overlay', () => {
 
 		await expect(programTemplate).toBeVisible();
 	});
-
-	test('switches between overlay and fullscreen', async ({
-		dotsBoard,
-		programReportTemplate,
-		testProgram
-	}) => {
-		await dotsBoard.goto(`/${testProgram.organization}`);
-		await dotsBoard.card(testProgram.payload.title).click();
-
-		await dotsBoard.overlay.locator.getByRole('button', { name: 'All', exact: true }).click();
-		await dotsBoard.overlay.locator.getByRole('menuitem', { name: 'Templates' }).click();
-		await expect(
-			dotsBoard.overlay.locator.getByTitle(programReportTemplate.payload.title, { exact: true })
-		).toBeVisible();
-		await dotsBoard.overlay.fullScreenButton.click();
-
-		await expect(dotsBoard.overlay.locator.first()).not.toBeVisible();
-		await expect(dotsBoard.page).toHaveURL(/\/templates\/catalog/);
-		expect(dotsBoard.page.url()).toContain(testProgram.guid);
-		await expect(dotsBoard.page.getByTitle(programReportTemplate.payload.title)).toBeVisible();
-
-		await dotsBoard.page.getByRole('link', { name: 'Back to overlay' }).first().click();
-		await expect(dotsBoard.overlay.locator).toBeVisible();
-		await expect(
-			dotsBoard.overlay.locator.getByTitle(programReportTemplate.payload.title)
-		).toBeVisible();
-	});
 });

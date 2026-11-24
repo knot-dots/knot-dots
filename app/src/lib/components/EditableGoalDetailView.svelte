@@ -9,7 +9,6 @@
 	import CreateTemplateButton from '$lib/components/CreateTemplateButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
-	import GoalProperties from '$lib/components/GoalProperties.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
@@ -93,16 +92,6 @@
 				<CreateCopyButton {container} />
 				<CreateTemplateButton {container} />
 			</footer>
-		{/snippet}
-
-		{#snippet properties()}
-			<GoalProperties
-				bind:container
-				editable={$applicationState.containerDetailView.editable &&
-					$ability.can('update', container)}
-				{relatedContainers}
-				{revisions}
-			/>
 		{/snippet}
 	</EditableContainerDetailView>
 {/snippet}

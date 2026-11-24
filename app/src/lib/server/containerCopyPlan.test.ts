@@ -783,6 +783,41 @@ test('remaps collection members without instantiating template references', () =
 	expect(snapshot).toEqual(originalSnapshot);
 });
 
+test('keeps only indicators of an indicator dashboard the target may use, with their settings', () => {
+	const publicItem = { height: '2/4', indicator: guids.publicItem, view: 'stat', width: '3/6' };
+	const containers = [
+		makeContainer(guids.root, { title: 'Report', type: payloadTypes.enum.report }),
+		makeContainer(guids.child, {
+			item: [publicItem, { indicator: guids.inaccessibleItem }],
+			title: 'Dashboard',
+			type: payloadTypes.enum.indicator_dashboard
+		}),
+		makeContainer(guids.publicItem, {
+			title: 'Public indicator',
+			type: payloadTypes.enum.indicator,
+			unit: 'unit.percent',
+			visibility: visibility.enum.public
+		}),
+		makeContainer(guids.inaccessibleItem, {
+			title: 'Inaccessible indicator',
+			type: payloadTypes.enum.indicator,
+			unit: 'unit.percent'
+		})
+	];
+
+	const plan = createContainerCopyPlan({
+		graph: graph(guids.root, containers, [
+			relation(guids.child, predicates.enum['is-section-of'], guids.root)
+		]),
+		target,
+		readPolicy: policy({ hidden: [guids.inaccessibleItem] }),
+		allocateGuid: allocator()
+	});
+
+	expect(copyFor(plan, guids.child)?.payload).toMatchObject({ item: [publicItem] });
+	expect(plan.has(guids.publicItem)).toBe(false);
+});
+
 test('keeps a selection of deleted items from turning into a rule', () => {
 	const containers = [
 		makeContainer(guids.root, { title: 'Report', type: payloadTypes.enum.report }),
@@ -1056,6 +1091,9 @@ test('applies edited root payloads before remapping nested container references'
 		title: 'Child',
 		type: payloadTypes.enum.text
 	});
+	if (root.payload.type !== payloadTypes.enum.custom_collection) {
+		throw new Error('Expected a custom collection');
+	}
 	const sourcePayload = structuredClone(root.payload);
 	const editedPayload = {
 		...root.payload,

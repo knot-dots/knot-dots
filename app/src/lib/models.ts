@@ -23,6 +23,7 @@ export const overlayKey = z.enum([
 	'resources',
 	'table',
 	'tasks',
+	'team',
 	'templates',
 	'view'
 ]);
@@ -76,6 +77,7 @@ const payloadTypeValues = [
 	'image',
 	'indicator',
 	'indicator_collection',
+	'indicator_dashboard',
 	'info_box',
 	'knowledge',
 	'map',
@@ -117,6 +119,37 @@ export type PayloadType = z.infer<typeof payloadTypes>;
 export function isPayloadType(value: unknown): value is PayloadType {
 	return payloadTypeValues.includes(value as PayloadType);
 }
+
+// The types a search returns unless a guid or type filter asks for others.
+// Sections, actual data and the like are indexed, but only reachable through
+// the containers they belong to.
+export const searchablePayloadTypes = [
+	'binary_indicator',
+	'effect',
+	'event',
+	'goal',
+	'help',
+	'indicator',
+	'knowledge',
+	'measure',
+	'objective',
+	'organization',
+	'organizational_unit',
+	'page',
+	'post',
+	'program',
+	'report',
+	'resource',
+	'resource_data',
+	'resource_v2',
+	'rule',
+	'simple_measure',
+	'task'
+] as const satisfies readonly PayloadType[];
+
+export const hiddenPayloadTypes = payloadTypeValues.filter(
+	(type) => !(searchablePayloadTypes as readonly PayloadType[]).includes(type)
+);
 
 const helpSlugValues = [
 	'all-catalog',
@@ -775,11 +808,18 @@ export type UserGrants = z.infer<typeof userGrants>;
 // inherits.
 export type InheritedMatrixSection = {
 	active: boolean;
-	scope: { guid: string; title: string };
+	scope: MatrixSectionScope;
+	// the unit a content belongs to while the matrix of an area above governs
+	// it in that unit's place: the section then carries the unit's name
+	unit?: MatrixSectionScope;
 	grants: Grant[];
 	teams: TeamWithMembers[];
 	users: User[];
 };
+
+// A matrix as the sections name it: the container reduced to what readers of
+// the child may see of it.
+export type MatrixSectionScope = { guid: string; title: string; type: PayloadType };
 
 // A team as the matrices show it: the row names the team and opens its roster.
 export type TeamWithMembers = {
@@ -787,7 +827,7 @@ export type TeamWithMembers = {
 	members: User[];
 };
 
-export function matrixSectionScope(container: Container<AnyPayload>) {
+export function matrixSectionScope(container: Container<AnyPayload>): MatrixSectionScope {
 	return {
 		guid: container.guid,
 		title:
@@ -795,7 +835,8 @@ export function matrixSectionScope(container: Container<AnyPayload>) {
 				? container.payload.name
 				: 'title' in container.payload
 					? container.payload.title
-					: ''
+					: '',
+		type: container.payload.type
 	};
 }
 
@@ -1334,7 +1375,7 @@ export const customCollectionPayload = z.strictObject({
 	allowSort: z.boolean().default(false),
 	description: z.string().trim().optional(),
 	filter: z.record(z.string(), z.array(z.string()).transform(deduplicate)).default({}),
-	item: z.array(z.uuid()).default([]),
+	item: z.array(z.uuid()).transform(deduplicate).default([]),
 	listType: z
 		.enum([listTypes.enum.wall, listTypes.enum.carousel, 'timeline'])
 		.default(listTypes.enum.wall),
@@ -1715,6 +1756,54 @@ export function isIndicatorCollectionContainer(
 
 const initialIndicatorCollectionPayload = indicatorCollectionPayload;
 
+const indicatorDashboardHeightValues = ['1/4', '2/4', '4/4'] as const;
+
+export const indicatorDashboardHeights = z.enum(indicatorDashboardHeightValues);
+
+const indicatorDashboardViewValues = ['stat', 'chart'] as const;
+
+export const indicatorDashboardViews = z.enum(indicatorDashboardViewValues);
+
+const indicatorDashboardWidthValues = ['2/6', '3/6', '4/6', '6/6'] as const;
+
+export const indicatorDashboardWidths = z.enum(indicatorDashboardWidthValues);
+
+const indicatorDashboardItem = z.strictObject({
+	height: indicatorDashboardHeights.default(indicatorDashboardHeights.enum['4/4']),
+	indicator: z.uuid(),
+	view: indicatorDashboardViews.default(indicatorDashboardViews.enum.chart),
+	width: indicatorDashboardWidths.default(indicatorDashboardWidths.enum['2/6'])
+});
+
+export type IndicatorDashboardItem = z.infer<typeof indicatorDashboardItem>;
+
+export function indicatorDashboardItemFor(indicator: string): IndicatorDashboardItem {
+	return indicatorDashboardItem.parse({ indicator });
+}
+
+function deduplicateByIndicator(items: IndicatorDashboardItem[]) {
+	const seen = new Set<string>();
+	return items.filter(({ indicator }) => !seen.has(indicator) && seen.add(indicator));
+}
+
+const indicatorDashboardPayload = z.strictObject({
+	...sectionStyle.shape,
+	item: z.array(indicatorDashboardItem).transform(deduplicateByIndicator).default([]),
+	title: z.string(),
+	type: z.literal(payloadTypes.enum.indicator_dashboard),
+	visibility: visibility.default(visibility.enum['organization'])
+});
+
+export type IndicatorDashboardPayload = z.infer<typeof indicatorDashboardPayload>;
+
+export function isIndicatorDashboardContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<IndicatorDashboardPayload> {
+	return container.payload.type === payloadTypes.enum.indicator_dashboard;
+}
+
+const initialIndicatorDashboardPayload = indicatorDashboardPayload.partial({ title: true });
+
 export const indicatorPayload = z
 	.strictObject({
 		...basePayload.shape,
@@ -1996,6 +2085,14 @@ export function isObjectiveCollectionContainer(
 
 const initialObjectiveCollectionPayload = objectiveCollectionPayload;
 
+export const favorite = z.object({
+	href: z.url({ protocol: /^knotdots$/ }),
+	icon: z.url().optional(),
+	title: z.string().trim()
+});
+
+export type Favorite = z.infer<typeof favorite>;
+
 export const organizationPayload = z.strictObject({
 	...detailViewStyle.shape,
 	cityAndMunicipalityTypeBBSR: z.string().optional(),
@@ -2008,15 +2105,7 @@ export const organizationPayload = z.strictObject({
 		.optional(),
 	default: z.boolean().default(false),
 	description: z.string().trim().optional(),
-	favorite: z
-		.array(
-			z.object({
-				href: z.string(),
-				icon: z.url().optional(),
-				title: z.string().trim()
-			})
-		)
-		.default([]),
+	favorite: z.array(favorite).default([]),
 	federalState: z.string().optional(),
 	geometry: z.uuid().optional(),
 	image: z.url().optional(),
@@ -2025,15 +2114,7 @@ export const organizationPayload = z.strictObject({
 	officialMunicipalityKey: z.string().length(8).optional(),
 	officialRegionalCode: z.string().length(12).optional(),
 	organizationCategory: organizationCategories.optional(),
-	platformFavorite: z
-		.array(
-			z.object({
-				href: z.string(),
-				icon: z.url().optional(),
-				title: z.string().trim()
-			})
-		)
-		.optional(),
+	platformFavorite: z.array(favorite).optional(),
 	propertiesConfiguration: propertiesConfiguration.default({}),
 	showPlatformFavorite: z.boolean().default(true),
 	slug: z
@@ -2069,15 +2150,7 @@ export const organizationalUnitPayload = z.strictObject({
 		.default({}),
 	cityAndMunicipalityTypeBBSR: z.string().optional(),
 	description: z.string().trim().optional(),
-	favorite: z
-		.array(
-			z.object({
-				href: z.string(),
-				icon: z.url().optional(),
-				title: z.string().trim()
-			})
-		)
-		.default([]),
+	favorite: z.array(favorite).default([]),
 	federalState: z.string().optional(),
 	geometry: z.uuid().optional(),
 	image: z.url().optional(),
@@ -2349,7 +2422,7 @@ const initialQuotePayload = quotePayload.partial({ title: true });
 
 export const relationCollectionPayload = z.strictObject({
 	...sectionStyle.shape,
-	item: z.array(z.uuid()).default([]),
+	item: z.array(z.uuid()).transform(deduplicate).default([]),
 	listType: z.enum([listTypes.enum.carousel, listTypes.enum.wall]).default(listTypes.enum.carousel),
 	payloadType: payloadTypes,
 	predicate: predicates,
@@ -2912,7 +2985,7 @@ const initialTeaserHighlightPayload = teaserHighlightPayload.partial({ title: tr
 
 const unrefinedTermPayload = z
 	.strictObject({
-		description: z.string().trim().optional(),
+		description: z.string().trim().optional().describe('GitHub-flavored Markdown.'),
 		filterLabel: z
 			.string()
 			.trim()
@@ -3019,6 +3092,7 @@ const payload = z.discriminatedUnion('type', [
 	igniteVideoPayload,
 	imagePayload,
 	indicatorCollectionPayload,
+	indicatorDashboardPayload,
 	indicatorPayload,
 	infoBoxPayload,
 	knowledgePayload,
@@ -3100,6 +3174,7 @@ export const anyInitialPayload = z.discriminatedUnion('type', [
 	initialIgniteVideoPayload,
 	initialImagePayload,
 	initialIndicatorCollectionPayload,
+	initialIndicatorDashboardPayload,
 	initialIndicatorPayload,
 	initialInfoBoxPayload,
 	initialKnowledgePayload,
@@ -3424,16 +3499,7 @@ export const user = z.object({
 	guid: z.uuid(),
 	realm: z.string().max(1024),
 	settings: z.object({
-		favorite: z
-			.array(
-				z.object({
-					href: z.string(),
-					icon: z.url().optional(),
-					title: z.string().trim()
-				})
-			)
-			.default([])
-			.optional(),
+		favorite: z.array(favorite).default([]).optional(),
 		features: z.array(z.string()).transform(deduplicate).optional()
 	})
 });
@@ -3632,6 +3698,14 @@ export function memberRoleOf(
 		return memberRoles.enum.observer;
 	}
 	return null;
+}
+
+// Whether the user holds a row on the container: a member role of their own,
+// or a row of one of their teams on the container's own matrix (user_grant.own
+// is computed for the request user with the teams expanded). A team row lying
+// dormant — the container inherits again — grants nothing and does not count.
+export function isMemberOrTeamMemberOf(user: { guid: string }, container: Container<AnyPayload>) {
+	return isMemberOf(user, container) || (container.user_grant?.own.length ?? 0) > 0;
 }
 
 export function isAssignedTo(user: { guid: string }) {

@@ -4,6 +4,8 @@ import type { SvelteHTMLElements } from 'svelte/elements';
 const key = {};
 
 export interface ToastProps {
+	// an optional button below the text, e.g. to undo what the toast reports
+	action?: { label: string; onclick: () => void };
 	icon?: Component<SvelteHTMLElements['svg']>;
 	heading: string;
 	message?: string;

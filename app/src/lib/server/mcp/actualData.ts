@@ -193,6 +193,7 @@ export function setMcpActualData(input: SetActualDataInput & McpAuth) {
 					{
 						afterUpdate: (container, txConnection) =>
 							recordMcpWriteEvent({
+								clientId: input.clientId,
 								containerGuid: container.guid,
 								revision: container.revision,
 								tokenId: input.tokenId,

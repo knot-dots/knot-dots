@@ -1,4 +1,5 @@
 import { beforeEach, expect, test, vi } from 'vitest';
+import { locale } from 'svelte-i18n';
 
 const databaseOperation = vi.hoisted(() => vi.fn());
 const insertMcpToken = vi.hoisted(() => vi.fn(() => databaseOperation));
@@ -14,7 +15,10 @@ vi.mock('$lib/server/mcp/tokens', () => ({ generateMcpToken }));
 
 import { actions } from './+page.server';
 
+locale.set('en');
+
 const userId = '00000000-0000-4000-8000-000000000001';
+const mcpFeatures = ['McpServer', 'MCP'];
 
 beforeEach(() => {
 	databaseOperation.mockReset();
@@ -36,6 +40,7 @@ test('creates read-only tokens by default', async () => {
 
 	const result = await actions.create({
 		locals: {
+			features: mcpFeatures,
 			pool: { connect },
 			user: { guid: userId, isAuthenticated: true }
 		},
@@ -62,6 +67,7 @@ test('adds the container write scope when explicitly selected', async () => {
 
 	await actions.create({
 		locals: {
+			features: mcpFeatures,
 			pool: { connect },
 			user: { guid: userId, isAuthenticated: true }
 		},
@@ -86,6 +92,7 @@ test('adds the user read scope when explicitly selected', async () => {
 
 	await actions.create({
 		locals: {
+			features: mcpFeatures,
 			pool: { connect },
 			user: { guid: userId, isAuthenticated: true }
 		},
@@ -100,3 +107,25 @@ test('adds the user read scope when explicitly selected', async () => {
 		userId
 	});
 });
+
+test.each([[[]], [['MCP']], [['McpServer']]])(
+	'does not create tokens unless MCP is enabled for the deployment and the user (%j)',
+	async (features) => {
+		const request = new Request('http://localhost/me/settings/tokens?/create', {
+			body: new URLSearchParams({ name: 'Claude' }),
+			method: 'POST'
+		});
+
+		await expect(
+			actions.create({
+				locals: {
+					features,
+					pool: { connect: vi.fn() },
+					user: { guid: userId, isAuthenticated: true }
+				},
+				request
+			} as never)
+		).rejects.toMatchObject({ status: 404 });
+		expect(insertMcpToken).not.toHaveBeenCalled();
+	}
+);

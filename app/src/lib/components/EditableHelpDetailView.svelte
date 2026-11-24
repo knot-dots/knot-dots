@@ -7,7 +7,6 @@
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import HelpProperties from '$lib/components/HelpProperties.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
@@ -71,16 +70,6 @@
 			{/key}
 
 			<Sections bind:container {relatedContainers} />
-		{/snippet}
-
-		{#snippet properties()}
-			<HelpProperties
-				bind:container
-				editable={$applicationState.containerDetailView.editable &&
-					$ability.can('update', container)}
-				{relatedContainers}
-				{revisions}
-			/>
 		{/snippet}
 	</EditableContainerDetailView>
 {/snippet}

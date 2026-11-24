@@ -44,7 +44,6 @@ export default async function fetchSuggestedContainers(
 		indicatorType?: string[];
 		organization?: string[];
 		organizationalUnit?: string[];
-		payloadType?: string[];
 		terms?: string;
 	},
 	{ limit, offset }: { limit: number; offset: number },
@@ -70,9 +69,6 @@ export default async function fetchSuggestedContainers(
 	}
 	for (const value of filters.organizationalUnit ?? []) {
 		params.append('organizationalUnit', value);
-	}
-	for (const value of filters.payloadType ?? []) {
-		params.append('payloadType', value);
 	}
 	if (filters.terms) {
 		params.append('terms', filters.terms);

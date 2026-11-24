@@ -5,9 +5,14 @@ import {
 	listMcpContainerCategoryValues
 } from '$lib/server/mcp/categories';
 import { getMcpContainer, searchMcpContainers } from '$lib/server/mcp/containers';
-import { addMcpCustomCollectionSection, createMcpContainer } from '$lib/server/mcp/creation';
+import { createMcpContainer, createMcpContainers } from '$lib/server/mcp/creation';
+import {
+	addMcpCustomCollectionSection,
+	updateMcpCustomCollectionSection
+} from '$lib/server/mcp/customCollections';
 import { attachMcpIndicator } from '$lib/server/mcp/indicators';
 import { setMcpActualData } from '$lib/server/mcp/actualData';
+import { addMcpSection, updateMcpSection } from '$lib/server/mcp/sections';
 import { listMcpOrganizationalUnits } from '$lib/server/mcp/organizationalUnits';
 import {
 	addMcpContainerRelation,
@@ -31,9 +36,17 @@ import {
 	type AddCustomCollectionSectionDependencies
 } from '$lib/server/mcp/tools/addCustomCollectionSection';
 import {
+	registerAddSectionTool,
+	type AddSectionDependencies
+} from '$lib/server/mcp/tools/addSection';
+import {
 	registerCreateContainerTool,
 	type CreateContainerDependencies
 } from '$lib/server/mcp/tools/createContainer';
+import {
+	registerCreateContainersTool,
+	type CreateContainersDependencies
+} from '$lib/server/mcp/tools/createContainers';
 import {
 	registerRemoveContainerRelationTool,
 	type RemoveContainerRelationDependencies
@@ -46,6 +59,14 @@ import {
 	registerUpdateContainerTool,
 	type UpdateContainerDependencies
 } from '$lib/server/mcp/tools/updateContainer';
+import {
+	registerUpdateCustomCollectionSectionTool,
+	type UpdateCustomCollectionSectionDependencies
+} from '$lib/server/mcp/tools/updateCustomCollectionSection';
+import {
+	registerUpdateSectionTool,
+	type UpdateSectionDependencies
+} from '$lib/server/mcp/tools/updateSection';
 import {
 	registerGetContainerTool,
 	type GetContainerDependencies
@@ -82,8 +103,10 @@ import packageMetadata from '../../../../package.json';
 
 type McpServerDependencies = AddContainerRelationDependencies &
 	AddCustomCollectionSectionDependencies &
+	AddSectionDependencies &
 	AttachIndicatorDependencies &
 	CreateContainerDependencies &
+	CreateContainersDependencies &
 	GetContainerDependencies &
 	ListContainerCategoriesDependencies &
 	ListContainerCategoryValuesDependencies &
@@ -94,7 +117,9 @@ type McpServerDependencies = AddContainerRelationDependencies &
 	SearchOrganizationUsersDependencies &
 	RemoveContainerRelationDependencies &
 	SetActualDataDependencies &
-	UpdateContainerDependencies;
+	UpdateContainerDependencies &
+	UpdateCustomCollectionSectionDependencies &
+	UpdateSectionDependencies;
 
 const defaultDependencies: McpServerDependencies = {
 	async addContainerRelation(auth, input) {
@@ -103,11 +128,17 @@ const defaultDependencies: McpServerDependencies = {
 	async addCustomCollectionSection(auth, input) {
 		return (await getPool()).connect(addMcpCustomCollectionSection({ ...input, ...auth }));
 	},
+	async addSection(auth, input) {
+		return (await getPool()).connect(addMcpSection({ ...input, ...auth }));
+	},
 	async attachIndicator(auth, input) {
 		return (await getPool()).connect(attachMcpIndicator({ ...input, ...auth }));
 	},
 	async createContainer(auth, input) {
 		return (await getPool()).connect(createMcpContainer({ ...input, ...auth }));
+	},
+	async createContainers(auth, input) {
+		return (await getPool()).connect(createMcpContainers({ ...input, ...auth }));
 	},
 	async getContainer(userId, guid) {
 		return (await getPool()).connect(getMcpContainer({ guid, userId }));
@@ -143,6 +174,12 @@ const defaultDependencies: McpServerDependencies = {
 	},
 	async updateContainer(auth, input) {
 		return (await getPool()).connect(updateMcpContainer({ ...input, ...auth }));
+	},
+	async updateCustomCollectionSection(auth, input) {
+		return (await getPool()).connect(updateMcpCustomCollectionSection({ ...input, ...auth }));
+	},
+	async updateSection(auth, input) {
+		return (await getPool()).connect(updateMcpSection({ ...input, ...auth }));
 	}
 };
 
@@ -156,7 +193,7 @@ export function createKnotDotsMcpHandler(dependencies: McpServerDependencies) {
 				},
 				{
 					instructions:
-						'Read knotdots://schemas/payloads and the matching linked payload schema before calling create_container or update_container. Pass update_container the revision from the latest get_container, create_container or update_container response for that container; there is no need to read it again after your own writes. Look up category keys and values with list_container_categories and list_container_category_values instead of guessing them. The description and body fields are GitHub-flavored Markdown. Call list_container_relations before add_container_relation or remove_container_relation; relations read as subject, predicate, object. Attach indicators to measures and goals with attach_indicator, which creates the effect or objective that links them; record actual values of an indicator with set_actual_data. Resource availability does not imply that a creation tool is available.'
+						'Read knotdots://schemas/payloads and the matching linked payload schema before calling create_container, create_containers or update_container. Pass update_container the revision from the latest get_container, create_container, create_containers or update_container response for that container; there is no need to read it again after your own writes. Look up category keys and values with list_container_categories and list_container_category_values instead of guessing them; categories and their values are category and term containers, created and changed with the container tools. The description and body fields are GitHub-flavored Markdown. Content cannot be made public through these tools; only a person can do that in the web application. Call list_container_relations before add_container_relation or remove_container_relation; relations read as subject, predicate, object. Attach indicators to measures and goals with attach_indicator, which creates the effect or objective that links them; record actual values of an indicator with set_actual_data. Add sections that show related data, such as the goals, tasks or progress of a measure, with add_section, and change them with update_section. Resource availability does not imply that a creation tool is available.'
 				}
 			);
 
@@ -164,8 +201,10 @@ export function createKnotDotsMcpHandler(dependencies: McpServerDependencies) {
 
 			registerAddContainerRelationTool(server, authInfo, dependencies);
 			registerAddCustomCollectionSectionTool(server, authInfo, dependencies);
+			registerAddSectionTool(server, authInfo, dependencies);
 			registerAttachIndicatorTool(server, authInfo, dependencies);
 			registerCreateContainerTool(server, authInfo, dependencies);
+			registerCreateContainersTool(server, authInfo, dependencies);
 			registerGetContainerTool(server, authInfo, dependencies);
 			registerListContainerCategoriesTool(server, authInfo, dependencies);
 			registerListContainerCategoryValuesTool(server, authInfo, dependencies);
@@ -177,6 +216,8 @@ export function createKnotDotsMcpHandler(dependencies: McpServerDependencies) {
 			registerRemoveContainerRelationTool(server, authInfo, dependencies);
 			registerSetActualDataTool(server, authInfo, dependencies);
 			registerUpdateContainerTool(server, authInfo, dependencies);
+			registerUpdateCustomCollectionSectionTool(server, authInfo, dependencies);
+			registerUpdateSectionTool(server, authInfo, dependencies);
 
 			return server;
 		},

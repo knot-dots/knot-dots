@@ -41,7 +41,10 @@ test('creates, lists, and revokes a token only for its owner', async ({ connecti
 		scopes: ['organizations:read']
 	});
 	expect(created.created_at).toBeInstanceOf(Date);
-	expect(created.expires_at).toBeInstanceOf(Date);
+	// Tokens expire 30 days after their creation by default.
+	expect(
+		Math.round((created.expires_at.getTime() - created.created_at.getTime()) / 86_400_000)
+	).toBe(30);
 	const authenticated = await authenticateMcpToken(secretHash)(connection);
 	expect(authenticated).toEqual({
 		expires_at: created.expires_at,

@@ -22,15 +22,16 @@ export const withFeatures: Handle = async ({ event, resolve }) => {
 	return storage.run(event.locals.features, () => resolve(event));
 };
 
-// Flags carrying a pod annotation are governed by the deployment alone; stale
-// entries in the user's settings must not resurrect them.
-export async function addUserFeatures(event: RequestEvent) {
+// The ring flags a user has chosen. Flags carrying a pod annotation are
+// governed by the deployment alone; stale entries in the user's settings must
+// not resurrect them.
+export async function getUserFeatures(settings: { features?: string[] }) {
 	const podFeatures = await getPodFeatures();
-	event.locals.features.push(
-		...(event.locals.user.settings.features ?? []).filter(
-			(flag) => ringFlags.has(flag) && !podFeatures.has(flag)
-		)
-	);
+	return (settings.features ?? []).filter((flag) => ringFlags.has(flag) && !podFeatures.has(flag));
+}
+
+export async function addUserFeatures(event: RequestEvent) {
+	event.locals.features.push(...(await getUserFeatures(event.locals.user.settings)));
 }
 
 export const getFeatures = () => storage.getStore() ?? [];

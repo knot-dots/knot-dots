@@ -188,6 +188,7 @@
 	--color-background-accent-disabled: var(--color-gray-100);
 	--color-background-accent-hover: var(--color-background-system-hover);
 	--color-background-accent-expanded: var(--color-background-system-expanded);
+	--color-background-accent-white: var(--color-white);
 
 	--color-border-accent-strong: var(--color-border-system-strong);
 	--color-border-accent-default: var(--color-border-system-default);
@@ -325,6 +326,10 @@
 	--indicator-color-trend-line: #0b808e;
 	--indicator-color-trend-area: #d5f5f6;
 	--indicator-color-objective: #3980ac;
+
+	/* Grid lines and labels of the axes in charts */
+	--chart-axis-text: var(--color-gray-500);
+	--chart-grid: var(--color-gray-100);
 
 	--shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
 	--shadow-md: 0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -2px rgba(0, 0, 0, 0.05);
@@ -496,7 +501,7 @@ table,
 .table {
 	border-collapse: collapse;
 	border-color: inherit;
-	color: var(--color-gray-700);
+	color: var(--color-text-strong);
 	display: table;
 	text-align: left;
 	text-indent: 0;
@@ -505,7 +510,7 @@ table,
 
 thead,
 .table-head {
-	color: var(--color-gray-600);
+	color: var(--color-text-default);
 	display: table-header-group;
 }
 
@@ -533,9 +538,9 @@ tr:has(input[type='checkbox']:checked),
 td,
 th,
 .cell {
-	border-bottom: solid 1px var(--color-gray-200);
+	border-bottom: solid 1px var(--color-border-subtle);
 	display: table-cell;
-	padding: 0.75rem 0.5rem;
+	padding: 0.625rem 0.5rem;
 	vertical-align: middle;
 }
 
@@ -840,6 +845,7 @@ button.button-xs,
 	--padding-x: 0.5rem;
 	--padding-y: 0.375rem;
 
+	border-radius: 4px;
 	font-size: 0.75rem;
 }
 
@@ -1334,7 +1340,7 @@ label > input[type='checkbox'].toggle {
 }
 
 .details {
-	--details-padding-left: var(--details-padding-x, 5rem);
+	--details-padding-left: var(--details-padding-x, 6rem);
 	--details-padding-right: var(--details-padding-x, 2.5rem);
 
 	--carousel-margin-left: calc(
@@ -1439,9 +1445,9 @@ h4.details-heading {
 	--dropdown-panel-max-width: 100%;
 	--form-control-background: var(--color-white);
 
-	border-left: solid 2px var(--color-gray-200);
+	border: none;
 	gap: 0.5rem;
-	padding-left: 1.5rem;
+	padding: 0;
 }
 
 .data-grid > .label {
@@ -1589,6 +1595,7 @@ h4.details-heading {
 	font-weight: 500;
 	gap: 0.25rem;
 	line-height: 1.5;
+	max-width: 10rem;
 	min-height: var(--badge-min-height, 1.5rem);
 	padding: var(--badge-padding-y, 0.125rem) var(--badge-padding-x, 0.625rem);
 	text-align: center;
@@ -1661,13 +1668,16 @@ h4.details-heading {
 
 /* Stage */
 .stage {
-	--details-padding-x: 0;
-	--details-section-padding-x: 6.5rem;
 	--stage-background-color: var(--color-white);
 	--stage-color: var(--color-black);
 	background-color: var(--stage-background-color);
 	border-radius: 0;
 	margin: 0;
+}
+
+.details-section.stage {
+	padding-left: calc(var(--details-padding-left) + var(--details-section-padding-x));
+	padding-right: calc(var(--details-padding-right) + var(--details-section-padding-x));
 }
 
 .details-section.stage + .details-section.stage {
@@ -1916,21 +1926,7 @@ h4.details-heading {
 
 .dropdown-button > svg {
 	flex-shrink: 0;
-	height: var(--dropdown-button-icon-size, 1.25rem);
 	max-width: none;
-	width: var(--dropdown-button-icon-size, 1.25rem);
-}
-
-.dropdown-button > svg:first-child {
-	color: var(--dropdown-button-icon-default-color, var(--color-icon-accent-subtle));
-}
-
-.dropdown-button[aria-expanded='true'] > svg:first-child {
-	color: var(--dropdown-button-icon-expanded-color, inherit);
-}
-
-.dropdown-button[disabled] > svg:first-child {
-	color: var(--dropdown-button-icon-disabled-color, inherit);
 }
 
 .dropdown-button > svg:last-child {
@@ -1946,6 +1942,20 @@ h4.details-heading {
 
 .dropdown-button[disabled] > svg:last-child {
 	color: var(--dropdown-button-chevron-disabled-color, inherit);
+}
+
+.dropdown-button > svg:first-child {
+	color: var(--dropdown-button-icon-default-color, var(--color-icon-accent-subtle));
+	height: var(--dropdown-button-icon-size, 1.25rem);
+	width: var(--dropdown-button-icon-size, 1.25rem);
+}
+
+.dropdown-button[aria-expanded='true'] > svg:first-child {
+	color: var(--dropdown-button-icon-expanded-color, inherit);
+}
+
+.dropdown-button[disabled] > svg:first-child {
+	color: var(--dropdown-button-icon-disabled-color, inherit);
 }
 
 .dropdown-button.dropdown-button--select {
@@ -2098,6 +2108,27 @@ h4.details-heading {
 	color: var(--color-text-muted);
 	font-size: 0.75rem;
 	line-height: 1.5;
+}
+
+/* Keyboard shortcut of the item, flush right */
+.cascading-menu-item > kbd {
+	color: var(--color-text-subtle);
+	flex-shrink: 0;
+	font-family: inherit;
+	font-size: 0.75rem;
+	line-height: 1.5;
+	margin-left: auto;
+}
+
+.cascading-menu-item:disabled {
+	background-color: transparent;
+	color: var(--color-text-disabled);
+	cursor: default;
+}
+
+.cascading-menu-item:disabled > svg,
+.cascading-menu-item:disabled > kbd {
+	color: var(--color-icon-disabled);
 }
 
 .cascading-menu-divider {
@@ -2290,10 +2321,6 @@ h4.details-heading {
 		--details-padding-left: 0.75rem;
 		--details-padding-right: 0.75rem;
 	}
-
-	.stage {
-		--details-section-padding-x: 1.5rem;
-	}
 }
 
 @media print {
@@ -2304,7 +2331,6 @@ h4.details-heading {
 	.is-visible-on-hover,
 	.print-button,
 	aside:has(> button),
-	.details-section:has(#properties-label),
 	.details-section--inline-help {
 		display: none !important;
 	}
@@ -2734,7 +2760,9 @@ h4.details-heading {
 	--color-surface-accent-container-raised: var(--color-amber-050);
 }
 
-.module-rules {
+/* Rules, and the helpers for arranging content (system mode layout) */
+.module-rules,
+.system-layout {
 	--color-accent-on-default: var(--color-pink-700);
 
 	--color-text-accent-strong: var(--color-pink-900);
