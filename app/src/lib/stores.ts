@@ -14,11 +14,9 @@ import {
 	type CustomCollectionPayload,
 	emptyGrantRecords,
 	filterMembers,
-	type GoalPayload,
 	type Grant,
 	type GrantRecords,
 	type InheritedMatrixSection,
-	type IooiType,
 	type MeasurePayload,
 	type OrganizationalUnitPayload,
 	overlayKey,
@@ -121,13 +119,6 @@ export const overlayWidth = writable<number>(
 if (browser) {
 	overlayWidth.subscribe((value) => sessionStorage.setItem('overlayWidth', value.toString()));
 }
-
-type AddObjectiveState = {
-	target?: Container<GoalPayload>;
-	iooiType?: IooiType;
-};
-
-export const addObjectiveState = writable<AddObjectiveState>({});
 
 type AddItemState = {
 	target?: Container<CustomCollectionPayload | RelationCollectionPayload>;

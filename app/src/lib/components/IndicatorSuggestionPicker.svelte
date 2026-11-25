@@ -32,10 +32,9 @@
 		target: Container<GoalPayload | MeasurePayload>;
 		// The type of the objective or effect the indicator is chosen for.
 		type: ObjectiveOrEffectType;
-		value?: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>;
 	}
 
-	let { onCreateNew, onSelect, target, type, value }: Props = $props();
+	let { onCreateNew, onSelect, target, type }: Props = $props();
 
 	const categoryContext = $derived(
 		filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.indicator])
@@ -157,7 +156,7 @@
 </SearchToolbar>
 
 <div class="search-result">
-	<SingleChoiceSelectableCardSet onSelect={select} {options} {value}>
+	<SingleChoiceSelectableCardSet onSelect={select} {options}>
 		{#snippet leading()}
 			{#if onCreateNew}
 				<button class="create-new" onclick={onCreateNew} type="button">

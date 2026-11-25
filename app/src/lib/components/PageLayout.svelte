@@ -6,7 +6,6 @@
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import CreateContainerDialog from '$lib/components/CreateContainerDialog.svelte';
 	import CreateObjectiveOrEffectDialog from '$lib/components/CreateObjectiveOrEffectDialog.svelte';
-	import CreateObjectiveDialog from '$lib/components/CreateObjectiveDialog.svelte';
 	import NewCreateContainerDialog from '$lib/components/NewCreateContainerDialog.svelte';
 	import {
 		createCreateObjectiveOrEffectDialogContext,
@@ -26,9 +25,6 @@
 	let dialog: HTMLDialogElement;
 
 	setContext('createContainerDialog', { getElement: () => dialog });
-
-	// svelte-ignore non_reactive_update
-	let createObjectiveDialog: HTMLDialogElement;
 
 	const createObjectiveOrEffectDialog = setCreateObjectiveOrEffectDialogContext(
 		createCreateObjectiveOrEffectDialogContext()
@@ -61,7 +57,6 @@
 {:else}
 	<CreateContainerDialog bind:dialog />
 {/if}
-<CreateObjectiveDialog bind:dialog={createObjectiveDialog} />
 {#if createObjectiveOrEffectDialog.request && page.state.createObjectiveOrEffect}
 	<CreateObjectiveOrEffectDialog />
 {/if}

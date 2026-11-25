@@ -1,7 +1,8 @@
-import type { Locator, Page } from '@playwright/test';
+import type { Locator } from '@playwright/test';
 import type { AnyPayload, Container } from '$lib/models';
 import { deleteContainer, expect, test } from './fixtures';
 import MeasurePage from './measure-page';
+import { chooseKind, confirm, findSuggestion } from './objective-or-effect-dialog';
 
 test.use({ suiteId: 'effects' });
 
@@ -14,39 +15,6 @@ test.afterEach(async ({ adminContext }) => {
 	}
 	created = [];
 });
-
-// Other indicators may fill the first page of suggestions.
-async function findSuggestion(dialog: Locator, title: string) {
-	await dialog.getByRole('searchbox', { name: 'Search' }).fill(title);
-	return dialog.getByRole('article').filter({ hasText: title });
-}
-
-async function chooseKind(dialog: Locator, kind: string) {
-	await dialog
-		.getByRole('radiogroup', { name: 'Data type' })
-		.getByText(kind, { exact: true })
-		.click();
-}
-
-async function confirm(page: Page, dialog: Locator, { newIndicator }: { newIndicator: boolean }) {
-	const responsePromise = page.waitForResponse(
-		(response) =>
-			new URL(response.url()).pathname === '/container/bulk-action/create' &&
-			response.request().method() === 'POST'
-	);
-	await dialog.getByRole('button', { name: 'Confirm', exact: true }).click();
-	const response = await responsePromise;
-
-	// A new indicator is created before the effect measured by it. Whatever was
-	// created is deleted after the test, even if an assertion fails.
-	const containers: Container<AnyPayload>[] = response.ok() ? await response.json() : [];
-	created.push(...containers);
-	expect(response.status()).toBe(201);
-	expect(containers).toHaveLength(newIndicator ? 2 : 1);
-	await expect(dialog).toBeHidden();
-
-	return { effect: containers.at(-1)!, indicator: newIndicator ? containers[0] : undefined };
-}
 
 test.describe('Creating effects', () => {
 	test.use({ storageState: 'tests/.auth/orgadmin.json' });
@@ -82,7 +50,7 @@ test.describe('Creating effects', () => {
 			})
 		).toBeChecked();
 
-		await confirm(dotsBoard.page, dialog, { newIndicator: false });
+		await confirm(dotsBoard.page, dialog, { newIndicator: false }, created);
 		await expect(measurePage.effects.getByTitle(testIndicator.payload.title)).toBeVisible();
 
 		// Saving the measure sends its relations along, which must include the new effect.
@@ -192,7 +160,7 @@ test.describe('Creating effects', () => {
 			await dialog.getByRole('textbox', { name: 'Title of the effect' }).fill(title);
 			await fillValue(dialog);
 
-			const { indicator } = await confirm(dotsBoard.page, dialog, { newIndicator: true });
+			const { indicator } = await confirm(dotsBoard.page, dialog, { newIndicator: true }, created);
 			expect(indicator?.payload).toMatchObject({ title });
 			await expect(measurePage.effects.getByTitle(title)).toBeVisible();
 		});
@@ -214,7 +182,12 @@ test.describe('Creating effects', () => {
 		await chooseKind(dialog, 'Number values');
 		await dialog.getByRole('spinbutton', { name: 'Planned values' }).fill('25');
 		await dialog.getByRole('spinbutton', { name: 'Achieved values' }).fill('10');
-		const { effect } = await confirm(dotsBoard.page, dialog, { newIndicator: false });
+		const { item: effect } = await confirm(
+			dotsBoard.page,
+			dialog,
+			{ newIndicator: false },
+			created
+		);
 
 		const year = new Date().getFullYear();
 		expect(effect.payload).toMatchObject({

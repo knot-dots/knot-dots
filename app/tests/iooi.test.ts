@@ -69,34 +69,35 @@ test.describe('Goal IOOI Board', () => {
 			await expect(dotsBoard.overlay.locator.getByText('Output')).toBeVisible();
 			await dotsBoard.overlay.fullScreenButton.click();
 
-			// Create a new objective in Output column
+			// Create a new objective in the column
 			const column = dotsBoard.column(iooiType);
 			await column.addItemButton.click();
 
-			// Verify the dialog for creating objectives and effects opens
-			await expect(dotsBoard.page.getByRole('dialog').getByRole('navigation')).toContainText(
-				'Select indicator'
-			);
-
-			// Select an indicator from the dialog
-			await dotsBoard.page.getByRole('dialog').getByText(testIndicator.payload.title).click();
-
-			await dotsBoard.page.getByRole('dialog').getByRole('button', { name: 'Confirm' }).click();
-
-			// Verify the objective can be edited
+			// Verify the dialog for creating objectives opens
+			const dialog = dotsBoard.page.getByRole('dialog');
 			await expect(
-				dotsBoard.page
-					.getByRole('article')
-					.getByRole('heading', { level: 1, name: testIndicator.payload.title })
+				dialog.getByRole('heading', {
+					name: 'Choose an existing indicator for the objective or create a new one'
+				})
 			).toBeVisible();
-			await expect(dotsBoard.page.getByRole('article')).toContainText('Objective');
-			await expect(
-				dotsBoard.page.getByRole('article').getByRole('textbox', { name: 'Description' })
-			).toBeEditable();
 
-			// Close dialog and verify objective is in Output column
-			await dotsBoard.page.getByRole('button', { name: 'Confirm' }).click();
-			await expect(dotsBoard.page.getByRole('dialog')).not.toBeVisible();
+			// Select an indicator and define the objective; other indicators may fill
+			// the first page of suggestions.
+			await dialog.getByRole('searchbox', { name: 'Search' }).fill(testIndicator.payload.title);
+			await dialog.getByRole('article').getByText(testIndicator.payload.title).click();
+			await expect(
+				dialog.getByRole('heading', { name: 'Create a new objective with an existing indicator' })
+			).toBeVisible();
+			await dialog.getByRole('textbox', { name: 'Description' }).fill(`Objective in ${iooiType}`);
+			await dialog
+				.getByRole('radiogroup', { name: 'Data type' })
+				.getByText('Tendency', { exact: true })
+				.click();
+			await dialog.getByText('An increasing trend is desired', { exact: true }).click();
+			await dialog.getByRole('button', { name: 'Confirm', exact: true }).click();
+
+			// Verify the dialog closes and the objective is in the column
+			await expect(dialog).toBeHidden();
 			await expect(column.card(testIndicator.payload.title)).toBeVisible();
 
 			// Delete the created objective

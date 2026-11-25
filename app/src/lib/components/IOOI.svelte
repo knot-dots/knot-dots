@@ -3,7 +3,6 @@
 	import { type DndEvent, dndzone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
-	import { pushState } from '$app/navigation';
 	import { page } from '$app/state';
 	import saveContainer from '$lib/client/saveContainer';
 	import Board from '$lib/components/Board.svelte';
@@ -38,7 +37,7 @@
 		predicates,
 		resourceDataTypes
 	} from '$lib/models';
-	import { ability, addObjectiveState, lastCreatedContainers, newContainer } from '$lib/stores';
+	import { ability, lastCreatedContainers, newContainer } from '$lib/stores';
 
 	interface Props {
 		container: Container<GoalPayload | MeasurePayload>;
@@ -217,17 +216,11 @@
 				return;
 			}
 
-			if (isMeasureContainer(container)) {
-				createObjectiveOrEffectDialog?.open({
-					iooiType,
-					target: container,
-					type: payloadTypes.enum.effect
-				});
-			} else if (isGoalContainer(container)) {
-				$addObjectiveState = { target: container, iooiType };
-
-				pushState(page.url, { createObjective: { step: 1 } });
-			}
+			createObjectiveOrEffectDialog?.open({
+				iooiType,
+				target: container,
+				type: isMeasureContainer(container) ? payloadTypes.enum.effect : payloadTypes.enum.objective
+			});
 		};
 	}
 
