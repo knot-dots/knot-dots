@@ -1,23 +1,33 @@
 <script lang="ts">
-	import { _ } from 'svelte-i18n';
+	import { _, number } from 'svelte-i18n';
 	import Minus from '~icons/flowbite/minus-outline';
 	import Plus from '~icons/flowbite/plus-outline';
 	import tooltip from '$lib/attachments/tooltip';
 
-	// Rows of a year with its planned and its achieved value. The years follow
-	// each other without gaps, so rows are added and removed at either end.
+	// Rows of a year with one value per column. The years follow each other
+	// without gaps, so rows are added and removed at either end. A column of
+	// values that are only shown, such as the actual data of an indicator, may
+	// follow the editable ones.
 	interface Props {
-		value: Array<[number, number, number]>;
+		columns: string[];
+		shown?: { heading: string; values: Map<number, number> };
+		value: Array<[number, ...number[]]>;
 	}
 
-	let { value = $bindable() }: Props = $props();
+	let { columns, shown, value = $bindable() }: Props = $props();
+
+	let columnCount = $derived(columns.length + (shown ? 3 : 2));
+
+	function newRow(year: number): [number, ...number[]] {
+		return [year, ...columns.map(() => 0)];
+	}
 
 	function prependRow() {
-		value = [[value[0][0] - 1, 0, 0], ...value];
+		value = [newRow(value[0][0] - 1), ...value];
 	}
 
 	function appendRow() {
-		value = [...value, [value[value.length - 1][0] + 1, 0, 0]];
+		value = [...value, newRow(value[value.length - 1][0] + 1)];
 	}
 
 	function removeRow(index: number) {
@@ -36,14 +46,18 @@
 	<thead>
 		<tr>
 			<th class="year" scope="col">{$_('indicator.table.year')}</th>
-			<th scope="col">{$_('indicator.effect.planned_values')}</th>
-			<th scope="col">{$_('indicator.effect.achieved_values')}</th>
+			{#each columns as heading, column (column)}
+				<th scope="col">{heading}</th>
+			{/each}
+			{#if shown}
+				<th scope="col">{shown.heading}</th>
+			{/if}
 			<td class="action"></td>
 		</tr>
 	</thead>
 	<tbody>
 		<tr class="add-row">
-			<td colspan="4">
+			<td colspan={columnCount}>
 				<button
 					onclick={prependRow}
 					type="button"
@@ -56,26 +70,22 @@
 		{#each value as row, index (row[0])}
 			<tr>
 				<th class="year" scope="row">{row[0]}</th>
-				<td>
-					<input
-						aria-label="{$_('indicator.effect.planned_values')} {row[0]}"
-						bind:value={row[1]}
-						inputmode="decimal"
-						{onkeydown}
-						step="any"
-						type="number"
-					/>
-				</td>
-				<td>
-					<input
-						aria-label="{$_('indicator.effect.achieved_values')} {row[0]}"
-						bind:value={row[2]}
-						inputmode="decimal"
-						{onkeydown}
-						step="any"
-						type="number"
-					/>
-				</td>
+				{#each columns as heading, column (column)}
+					<td>
+						<input
+							aria-label="{heading} {row[0]}"
+							bind:value={row[column + 1]}
+							inputmode="decimal"
+							{onkeydown}
+							step="any"
+							type="number"
+						/>
+					</td>
+				{/each}
+				{#if shown}
+					{@const shownValue = shown.values.get(row[0])}
+					<td class="shown">{shownValue === undefined ? '' : $number(shownValue)}</td>
+				{/if}
 				<td class="action">
 					{#if value.length > 1 && (index === 0 || index === value.length - 1)}
 						<button
@@ -90,7 +100,7 @@
 			</tr>
 		{/each}
 		<tr class="add-row">
-			<td colspan="4">
+			<td colspan={columnCount}>
 				<button
 					onclick={appendRow}
 					type="button"
@@ -145,6 +155,11 @@
 
 	.add-row td {
 		padding: 0.25rem 0;
+	}
+
+	.shown {
+		color: var(--color-gray-500);
+		text-align: right;
 	}
 
 	input {

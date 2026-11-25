@@ -73,7 +73,7 @@
 	let booleanValue = $state(true);
 
 	// Each row holds a year with its planned and its achieved value.
-	let values = $state<Array<[number, number, number]>>([[new Date().getFullYear(), 0, 0]]);
+	let values = $state<Array<[number, ...number[]]>>([[new Date().getFullYear(), 0, 0]]);
 
 	let submitting = $state(false);
 
@@ -372,7 +372,13 @@
 									<EditableTendency bind:container={draft} editable />
 								</div>
 							{:else if kind === valueKinds.enum.series}
-								<YearlyValuesEditor bind:value={values} />
+								<YearlyValuesEditor
+									columns={[
+										$_('indicator.effect.planned_values'),
+										$_('indicator.effect.achieved_values')
+									]}
+									bind:value={values}
+								/>
 								{#if !isValidValue}
 									<p class="hint">
 										<InfoCircleOutline />{$_(
