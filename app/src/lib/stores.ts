@@ -122,13 +122,6 @@ if (browser) {
 	overlayWidth.subscribe((value) => sessionStorage.setItem('overlayWidth', value.toString()));
 }
 
-type AddEffectState = {
-	target?: Container<GoalPayload | MeasurePayload>;
-	iooiType?: IooiType;
-};
-
-export const addEffectState = writable<AddEffectState>({});
-
 type AddObjectiveState = {
 	target?: Container<GoalPayload>;
 	iooiType?: IooiType;

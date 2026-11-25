@@ -18,9 +18,12 @@
 	interface Props {
 		value?: string;
 		label?: string;
+		// The id of a label shown elsewhere, which replaces the editor's own.
+		labelledBy?: string;
+		placeholder?: string;
 	}
 
-	let { value = $bindable(), label }: Props = $props();
+	let { value = $bindable(), label, labelledBy: outerLabel, placeholder }: Props = $props();
 
 	const labelledBy = `editor-label-${counter + 1}`;
 
@@ -47,10 +50,11 @@
 				}));
 			})
 			.config((ctx) => {
-				if (label) {
+				const ariaLabelledBy = outerLabel ?? (label ? labelledBy : undefined);
+				if (ariaLabelledBy) {
 					ctx.update(editorViewOptionsCtx, (prev) => ({
 						...prev,
-						attributes: { 'aria-labelledby': labelledBy }
+						attributes: { 'aria-labelledby': ariaLabelledBy }
 					}));
 				}
 			})
@@ -59,7 +63,7 @@
 					return {
 						...prev,
 						mode: 'doc' as const,
-						text: $_('empty')
+						text: placeholder ?? $_('empty')
 					};
 				});
 			})

@@ -12,6 +12,7 @@ import {
 	type CategoryPayload,
 	type Container,
 	containerOfType,
+	type EffectCollectionPayload,
 	type EffectPayload,
 	etag,
 	type GoalPayload,
@@ -60,6 +61,7 @@ type MyFixtures = {
 	programReportTemplate: Container<ReportPayload>;
 	measureGoalTemplate: Container<GoalPayload>;
 	measureMeasureTemplate: Container<MeasurePayload>;
+	measureEffectCollection: Container<EffectCollectionPayload>;
 	measureGoalCollection: Container<GoalCollectionPayload>;
 	simpleMeasureGoalCollection: Container<GoalCollectionPayload>;
 	simpleMeasureGoalTemplate: Container<GoalPayload>;
@@ -75,6 +77,7 @@ type MyFixtures = {
 	testGoal: Container<GoalPayload>;
 	testGoalBudget: Container<ResourceDataPayload>;
 	testIndicator: Container<IndicatorPayload>;
+	testIndicatorActualData: Container<ActualDataPayload>;
 	testIndividualProfile: Container<OrganizationalUnitPayload>;
 	testMeasure: Container<MeasurePayload>;
 	testSimpleMeasure: Container<SimpleMeasurePayload>;
@@ -569,6 +572,20 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	programPage: async ({ page }, use) => {
 		await use(new ProgramPage(page));
 	},
+	measureEffectCollection: async ({ adminContext, testMeasure }, use) => {
+		const draft = containerOfType(
+			payloadTypes.enum.effect_collection,
+			testMeasure
+		) as NewContainer<EffectCollectionPayload>;
+		const section = await createContainer(adminContext, {
+			...draft,
+			relation: [
+				{ object: testMeasure.guid, predicate: predicates.enum['is-section-of'], position: 0 }
+			]
+		});
+		await use(section);
+		await deleteContainer(adminContext, section);
+	},
 	measureGoalCollection: async ({ adminContext, testMeasure }, use) => {
 		const draft = containerOfType(
 			payloadTypes.enum.goal_collection,
@@ -971,6 +988,28 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		await use(testIndicator);
 
 		await deleteContainer(adminContext, testIndicator);
+	},
+	testIndicatorActualData: async ({ adminContext, testIndicator, testOrganization }, use) => {
+		const newActualData = containerOfType(
+			payloadTypes.enum.actual_data,
+			testOrganization
+		) as Container<ActualDataPayload>;
+		const testIndicatorActualData = await createContainer(adminContext, {
+			...newActualData,
+			payload: {
+				...newActualData.payload,
+				indicator: testIndicator.guid,
+				title: testIndicator.payload.title,
+				values: [
+					[2024, 10],
+					[2025, 12]
+				]
+			}
+		});
+
+		await use(testIndicatorActualData);
+
+		await deleteContainer(adminContext, testIndicatorActualData);
 	},
 	testObjective: async (
 		{ adminContext, testOrganization, testGoal, testIndicator },

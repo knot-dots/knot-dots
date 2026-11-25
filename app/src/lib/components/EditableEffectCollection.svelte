@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
-	import { pushState } from '$app/navigation';
-	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
 	import Carousel from '$lib/components/Carousel.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import ObjectiveOrEffectCard from '$lib/components/ObjectiveOrEffectCard.svelte';
+	import {
+		getCreateEffectDialogContext,
+		hasCreateEffectDialogContext
+	} from '$lib/contexts/createEffectDialog.svelte';
+	import type { CreatedEffect } from '$lib/effectCreation';
 	import {
 		type AnyPayload,
 		type Container,
@@ -15,9 +18,10 @@
 		isEffectContainer,
 		isPartOf,
 		type MeasurePayload,
-		payloadTypes
+		payloadTypes,
+		predicates
 	} from '$lib/models';
-	import { addEffectState, mayCreateContainer } from '$lib/stores';
+	import { mayCreateContainer } from '$lib/stores';
 
 	interface Props {
 		container: Container<EffectCollectionPayload>;
@@ -41,14 +45,55 @@
 			: []
 	);
 
-	async function addItem() {
+	// The dialog is provided by the page layout, which embedded views lack.
+	const createEffectDialog = hasCreateEffectDialogContext()
+		? getCreateEffectDialogContext()
+		: undefined;
+
+	let mayAddItem = $derived(
+		editable &&
+			createEffectDialog !== undefined &&
+			$mayCreateContainer(payloadTypes.enum.effect, container)
+	);
+
+	function addItem() {
 		if (!parentContainer) {
 			return;
 		}
 
-		$addEffectState = { target: parentContainer };
+		// This component may show another container once the effect is created.
+		const parent = parentContainer;
 
-		pushState(page.url, { createObjectiveOrEffect: { step: 1 } });
+		createEffectDialog?.open({
+			onCreated: (created) => onCreated(parent, created),
+			target: parent
+		});
+	}
+
+	// Items are found through the relations of the parent container, which are
+	// also sent along when it is saved; without the new relation saving it would
+	// detach the effect again.
+	function onCreated(
+		parent: Container<GoalPayload | MeasurePayload>,
+		{ effect, indicator }: CreatedEffect
+	) {
+		parent.relation = [
+			...parent.relation,
+			{
+				object: parent.guid,
+				position: 0,
+				predicate: predicates.enum['is-part-of'],
+				subject: effect.guid
+			}
+		];
+
+		if (parent === parentContainer) {
+			relatedContainers = [
+				...relatedContainers.filter(({ guid }) => guid !== effect.guid && guid !== indicator.guid),
+				effect,
+				indicator
+			];
+		}
 	}
 </script>
 
@@ -57,7 +102,7 @@
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
-			{#if $mayCreateContainer(payloadTypes.enum.effect, container)}
+			{#if mayAddItem}
 				<li>
 					<button
 						class="action-button action-button--size-l"
@@ -77,11 +122,7 @@
 	{/if}
 </header>
 
-<Carousel
-	{addItem}
-	{items}
-	mayAddItem={$mayCreateContainer(payloadTypes.enum.effect, container) && editable}
->
+<Carousel {addItem} {items} {mayAddItem}>
 	{#snippet itemSnippet(item)}
 		<ObjectiveOrEffectCard
 			container={item}
