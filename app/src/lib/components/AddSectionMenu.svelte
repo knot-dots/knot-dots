@@ -120,6 +120,7 @@
 
 	let mayAddEffectCollection = $derived(
 		(isMeasureContainer(parentContainer) ||
+			isSimpleMeasureContainer(parentContainer) ||
 			(isGoalContainer(parentContainer) &&
 				parentContainer.relation.some(
 					({ predicate }) => predicate == predicates.enum['is-part-of-measure']
