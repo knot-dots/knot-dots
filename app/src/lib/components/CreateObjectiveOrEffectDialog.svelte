@@ -44,7 +44,9 @@
 	// request is fixed for its lifetime and every draft starts empty.
 	const { iooiType, onCreated, target, type } = dialogContext.request!;
 
-	let dialog: HTMLDialogElement;
+	// Unset once the dialog is unmounted, which may happen while saving, for
+	// example when the browser's back button leaves it.
+	let dialog: HTMLDialogElement | null | undefined;
 
 	let selection = $state.raw<
 		| {
@@ -254,9 +256,10 @@
 			return;
 		}
 
-		// The item exists now, so the dialog closes even if handling it fails.
+		// The item exists now, so the dialog closes even if handling it fails,
+		// and the parent learns about it even if the dialog is gone already.
 		submitting = false;
-		dialog.close();
+		dialog?.close();
 		onCreated?.(created);
 	}
 </script>
@@ -288,7 +291,7 @@
 				</button>
 			{/if}
 
-			<button disabled={submitting} onclick={() => dialog.close()} type="button">
+			<button disabled={submitting} onclick={() => dialog?.close()} type="button">
 				{$_('cancel')}
 			</button>
 

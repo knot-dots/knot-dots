@@ -205,6 +205,61 @@ test.describe('Creating effects', () => {
 		).toBeVisible();
 	});
 
+	test('an effect saved after the dialog was left with the back button stays with its measure', async ({
+		dotsBoard,
+		measureEffectCollection,
+		testIndicator,
+		testMeasure
+	}) => {
+		void measureEffectCollection;
+		const page = dotsBoard.page;
+		const measurePage = new MeasurePage(page);
+		await measurePage.goto(testMeasure);
+
+		// The effect is only saved once the dialog is gone.
+		let release = () => {};
+		const released = new Promise<void>((resolve) => (release = resolve));
+		await page.route('**/container/bulk-action/create', async (route) => {
+			await released;
+			await route.continue();
+		});
+
+		const dialog = await measurePage.createEffect();
+		const suggestion = await findSuggestion(dialog, testIndicator.payload.title);
+		await suggestion.getByText(testIndicator.payload.title).click();
+		await chooseKind(dialog, 'Tendency');
+		await dialog
+			.getByText('This tends to have an increasing effect on the indicator', { exact: true })
+			.click();
+
+		const responsePromise = page.waitForResponse(
+			(response) =>
+				new URL(response.url()).pathname === '/container/bulk-action/create' &&
+				response.request().method() === 'POST'
+		);
+		await dialog.getByRole('button', { name: 'Confirm', exact: true }).click();
+		await page.goBack();
+		await page.goBack();
+		await expect(dialog).toBeHidden();
+		release();
+		const response = await responsePromise;
+		created.push(...(response.ok() ? await response.json() : []));
+		expect(response.status()).toBe(201);
+		await expect(measurePage.effects.getByTitle(testIndicator.payload.title)).toBeVisible();
+
+		// Saving the measure sends its relations along, which must include the new effect.
+		const savePromise = page.waitForResponse(
+			(response) =>
+				response.url().endsWith(`/container/${testMeasure.guid}/revision`) &&
+				response.request().method() === 'POST'
+		);
+		await page.getByRole('main').getByRole('heading', { level: 1 }).fill('Edited measure');
+		expect((await savePromise).ok()).toBe(true);
+
+		await page.reload();
+		await expect(measurePage.effects.getByTitle(testIndicator.payload.title)).toBeVisible();
+	});
+
 	test("the browser's back button returns to the previous step and then closes the dialog", async ({
 		dotsBoard,
 		measureEffectCollection,
