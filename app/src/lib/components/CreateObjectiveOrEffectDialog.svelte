@@ -207,11 +207,13 @@
 		{ actualData, relevance }: { actualData: Container<ActualDataPayload>[]; relevance: number }
 	) {
 		selection = { actualData, kind: 'existing', indicator, relevance };
+		errorMessage = undefined;
 		pushState('', { createObjectiveOrEffect: { step: 2 } });
 	}
 
 	function createNew() {
 		selection = { kind: 'new' };
+		errorMessage = undefined;
 		pushState('', { createObjectiveOrEffect: { step: 2 } });
 	}
 

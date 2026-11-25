@@ -260,6 +260,38 @@ test.describe('Creating effects', () => {
 		await expect(measurePage.effects.getByTitle(testIndicator.payload.title)).toBeVisible();
 	});
 
+	test('the error of a failed save is gone once another indicator is chosen', async ({
+		dotsBoard,
+		measureEffectCollection,
+		testIndicator,
+		testMeasure
+	}) => {
+		void measureEffectCollection;
+		const page = dotsBoard.page;
+		const measurePage = new MeasurePage(page);
+		await measurePage.goto(testMeasure);
+		await page.route('**/container/bulk-action/create', (route) =>
+			route.fulfill({ json: { message: 'The server is not available.' }, status: 503 })
+		);
+
+		const dialog = await measurePage.createEffect();
+		const suggestion = await findSuggestion(dialog, testIndicator.payload.title);
+		await suggestion.getByText(testIndicator.payload.title).click();
+		await chooseKind(dialog, 'Tendency');
+		await dialog
+			.getByText('This tends to have an increasing effect on the indicator', { exact: true })
+			.click();
+		await dialog.getByRole('button', { name: 'Confirm', exact: true }).click();
+		await expect(dialog.getByRole('alert')).toHaveText('The server is not available.');
+
+		await dialog.getByRole('button', { name: 'Back', exact: true }).click();
+		await dialog.getByRole('button', { name: 'Create new effect' }).click();
+		await expect(
+			dialog.getByRole('heading', { name: 'Create a new effect', exact: true })
+		).toBeVisible();
+		await expect(dialog.getByRole('alert')).toHaveCount(0);
+	});
+
 	test("the browser's back button returns to the previous step and then closes the dialog", async ({
 		dotsBoard,
 		measureEffectCollection,
