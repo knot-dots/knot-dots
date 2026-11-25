@@ -684,7 +684,14 @@ test('creates a container using the write scope', async () => {
 		organization: organizationGuid,
 		organizational_unit: null,
 		own_matrix: false,
-		payload: { body: '', title: 'Climate indicators', type: 'page', visibility: 'organization' },
+		payload: {
+			body: '',
+			showCompare: false,
+			showReview: false,
+			title: 'Climate indicators',
+			type: 'page',
+			visibility: 'organization'
+		},
 		realm: 'test',
 		relation: [],
 		revision: 1,
@@ -794,7 +801,14 @@ test('updates a container using the write scope', async () => {
 		organization: organizationGuid,
 		organizational_unit: null,
 		own_matrix: false,
-		payload: { body: '', title: 'Renamed', type: 'page', visibility: 'organization' },
+		payload: {
+			body: '',
+			showCompare: false,
+			showReview: false,
+			title: 'Renamed',
+			type: 'page',
+			visibility: 'organization'
+		},
 		realm: 'test',
 		relation: [],
 		revision: 3,

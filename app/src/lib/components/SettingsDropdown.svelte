@@ -7,6 +7,8 @@
 	import StarSolid from '~icons/flowbite/star-solid';
 	import StarOutline from '~icons/flowbite/star-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
+	import Compare from '~icons/knotdots/compare';
+	import IndicatorReview from '~icons/knotdots/indicator-review';
 	import Users from '~icons/knotdots/users';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -23,6 +25,7 @@
 		getContextIdentifier,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
+		isPageContainer,
 		overlayKey,
 		overlayURL,
 		visibility
@@ -31,10 +34,12 @@
 
 	interface Props {
 		container: Container<AnyPayload>;
+		// Called after a setting of the container changed, so the caller can save it.
+		onchange?: () => void;
 		relatedContainers?: Container<AnyPayload>[];
 	}
 
-	let { container, relatedContainers = [] }: Props = $props();
+	let { container = $bindable(), onchange, relatedContainers = [] }: Props = $props();
 
 	let codeVisible = $state(true);
 	let copied = $state(false);
@@ -204,6 +209,13 @@
 			snippet: togglePlatformFavoriteButton
 		},
 		{
+			condition:
+				isPageContainer(container) &&
+				$applicationState.containerDetailView.editable &&
+				$ability.can('update', container),
+			snippet: pageActionToggles
+		},
+		{
 			condition: container?.payload.visibility === visibility.enum.public,
 			snippet: embedCodeMenu
 		},
@@ -264,6 +276,36 @@
 				</span>
 			{/if}
 		</button>
+	{/if}
+{/snippet}
+
+{#snippet pageActionToggles(openSubMenuTitle: string)}
+	{#if openSubMenuTitle === '' && isPageContainer(container)}
+		<div class="cascading-menu-divider" role="presentation"></div>
+
+		<label class="button cascading-menu-item">
+			<IndicatorReview />
+			<span>{$_('page.settings.show_review')}</span>
+			<input
+				class="toggle"
+				{onchange}
+				type="checkbox"
+				bind:checked={container.payload.showReview}
+			/>
+		</label>
+
+		<label class="button cascading-menu-item">
+			<Compare />
+			<span>{$_('page.settings.show_compare')}</span>
+			<input
+				class="toggle"
+				{onchange}
+				type="checkbox"
+				bind:checked={container.payload.showCompare}
+			/>
+		</label>
+
+		<div class="cascading-menu-divider" role="presentation"></div>
 	{/if}
 {/snippet}
 
@@ -424,5 +466,10 @@
 		padding: 0 0.5rem 0.5rem;
 		word-break: break-word;
 		white-space: pre-wrap;
+	}
+
+	.toggle {
+		--height: 1rem;
+		--width: 2.25rem;
 	}
 </style>

@@ -11,12 +11,20 @@ export default class Header {
 		return this.locator.locator('+ .commands').getByRole('group', { name: 'Bulk actions' });
 	}
 
+	get compareButton() {
+		return this.locator.locator('+ .commands').getByRole('button', { name: 'Compare data' });
+	}
+
 	get disclosePropertiesButton() {
 		return this.locator.getByRole('button', { name: 'Show all properties' });
 	}
 
 	get editModeToggle() {
 		return this.locator.getByRole('checkbox', { name: 'Edit mode' });
+	}
+
+	get reviewButton() {
+		return this.locator.locator('+ .commands').getByRole('button', { name: 'Review' });
 	}
 
 	get settingsMenu() {
@@ -37,6 +45,22 @@ export default class Header {
 			(r) => r.url().includes('/revision') && r.request().method() === 'POST'
 		);
 		await this.settingsMenu.getByRole('button', { name }).click();
+		expect((await saved).ok()).toBe(true);
+	}
+
+	pageActionToggle(name: 'Show comparison' | 'Show review') {
+		return this.settingsMenu.getByRole('checkbox', { name });
+	}
+
+	/**
+	 * Toggles an action of a page in the settings menu, which has to be open, and waits until
+	 * the page is saved.
+	 */
+	async togglePageAction(name: 'Show comparison' | 'Show review') {
+		const saved = this.page.waitForResponse(
+			(r) => r.url().includes('/revision') && r.request().method() === 'POST'
+		);
+		await this.pageActionToggle(name).click();
 		expect((await saved).ok()).toBe(true);
 	}
 

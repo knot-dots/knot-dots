@@ -51,7 +51,6 @@
 		isOrganizationContainer,
 		isPageContainer,
 		isProgramContainer,
-		isReportContainer,
 		isSimpleMeasureContainer,
 		paramsFromFragment
 	} from '$lib/models';
@@ -70,7 +69,6 @@
 		compare?: boolean;
 		facets?: Map<string, Map<string, number>>;
 		filterBarInitiallyOpen?: boolean;
-		// Offers the review without comparing municipalities
 		review?: boolean;
 		search?: boolean;
 		settings?: Snippet;
@@ -80,10 +78,10 @@
 
 	let {
 		commands,
-		compare = false,
+		compare: showCompare = false,
 		facets = new Map(),
 		filterBarInitiallyOpen = false,
-		review: offerReview = false,
+		review: showReview = false,
 		search = false,
 		settings,
 		sortOptions = [
@@ -111,12 +109,6 @@
 	);
 
 	let sortBar = createDisclosure({ label: $_('sort') });
-
-	// A boolean, so the disclosures below are not recreated whenever the
-	// container changes, e.g. on every save of a section.
-	let showCompare = $derived(compare || (container !== undefined && isReportContainer(container)));
-
-	let showReview = $derived(showCompare || offerReview);
 
 	let compareBar = $derived(
 		createDisclosure({

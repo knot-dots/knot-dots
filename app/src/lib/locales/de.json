@@ -637,6 +637,8 @@
 	"overall_objective_title": "Gesamtziel {indicator}",
 	"overview": "Überblick",
 	"page": "Seite",
+	"page.settings.show_compare": "Vergleich anzeigen",
+	"page.settings.show_review": "Überprüfung anzeigen",
 	"page_title": "knotdots.net",
 	"payload_group": {
 		"implementation": "Umsetzung"
