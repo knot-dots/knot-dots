@@ -66,7 +66,8 @@
 
 		createObjectiveOrEffectDialog?.open({
 			onCreated: (created) => onCreated(parent, created),
-			target: parent
+			target: parent,
+			type: payloadTypes.enum.effect
 		});
 	}
 

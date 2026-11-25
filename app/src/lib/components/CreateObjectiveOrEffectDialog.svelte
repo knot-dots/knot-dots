@@ -19,19 +19,21 @@
 	import { getCreateObjectiveOrEffectDialogContext } from '$lib/contexts/createObjectiveOrEffectDialog.svelte';
 	import {
 		type CreatedObjectiveOrEffect,
+		isValidObjectiveOrEffectValue,
+		newIndicatorForObjectiveOrEffect,
+		type ObjectiveOrEffectValue,
 		type ValueKind,
 		valueKindOptions,
-		valueKinds,
-		effectValue,
-		type EffectValue,
-		newIndicatorForObjectiveOrEffect
+		valueKinds
 	} from '$lib/objectiveOrEffectCreation';
 	import {
 		type ActualDataPayload,
 		type BinaryIndicatorPayload,
 		type Container,
+		type EffectPayload,
 		type IndicatorPayload,
 		isIndicatorContainer,
+		type ObjectivePayload,
 		payloadTypes
 	} from '$lib/models';
 	import { mayCreateContainer } from '$lib/stores';
@@ -40,7 +42,7 @@
 
 	// The dialog is mounted for a request and unmounted when it closes, so the
 	// request is fixed for its lifetime and every draft starts empty.
-	const { iooiType, onCreated, target } = dialogContext.request!;
+	const { iooiType, onCreated, target, type } = dialogContext.request!;
 
 	let dialog: HTMLDialogElement;
 
@@ -66,14 +68,38 @@
 
 	let unit = $state('');
 
-	let draft = $state<{ payload: { trendValue?: 1 | -1; type: typeof payloadTypes.enum.effect } }>({
-		payload: { type: payloadTypes.enum.effect }
-	});
+	let draft = $state<{
+		payload:
+			Pick<EffectPayload, 'trendValue' | 'type'> | Pick<ObjectivePayload, 'trendValue' | 'type'>;
+	}>({ payload: { type } });
 
 	let booleanValue = $state(true);
 
-	// Each row holds a year with its planned and its achieved value.
-	let values = $state<Array<[number, ...number[]]>>([[new Date().getFullYear(), 0, 0]]);
+	// Each row holds a year with the planned and the achieved value of an effect,
+	// or with the wanted value of an objective.
+	let values = $state<Array<[number, ...number[]]>>([
+		type === payloadTypes.enum.effect
+			? [new Date().getFullYear(), 0, 0]
+			: [new Date().getFullYear(), 0]
+	]);
+
+	let valueColumns = $derived(
+		type === payloadTypes.enum.effect
+			? [$_('indicator.effect.planned_values'), $_('indicator.effect.achieved_values')]
+			: [$_('indicator.wanted_values')]
+	);
+
+	// Wanted values are compared with the actual data of an existing indicator.
+	let shownValues = $derived(
+		type === payloadTypes.enum.objective &&
+			selection?.kind === 'existing' &&
+			selection.actualData.length > 0
+			? {
+					heading: $_('indicator.table.historical_values'),
+					values: new Map(selection.actualData[0].payload.values)
+				}
+			: undefined
+	);
 
 	let submitting = $state(false);
 
@@ -103,20 +129,25 @@
 				: undefined
 	);
 
-	let value = $derived.by((): EffectValue | undefined => {
+	let value = $derived.by((): ObjectiveOrEffectValue | undefined => {
 		switch (kind) {
 			case valueKinds.enum.tendency:
 				return draft.payload.trendValue
-					? { kind, trendValue: draft.payload.trendValue }
+					? { type, value: { kind, trendValue: draft.payload.trendValue } }
 					: undefined;
 			case valueKinds.enum.series:
-				return {
-					kind,
-					achievedValues: values.map(([year, , achieved]) => [year, achieved]),
-					plannedValues: values.map(([year, planned]) => [year, planned])
-				};
+				return type === payloadTypes.enum.effect
+					? {
+							type,
+							value: {
+								kind,
+								achievedValues: values.map(([year, , achieved]) => [year, achieved]),
+								plannedValues: values.map(([year, planned]) => [year, planned])
+							}
+						}
+					: { type, value: { kind, wantedValues: values.map(([year, wanted]) => [year, wanted]) } };
 			case valueKinds.enum.binary:
-				return { kind, booleanValue };
+				return { type, value: { kind, booleanValue } };
 			default:
 				return undefined;
 		}
@@ -134,13 +165,13 @@
 
 	let heading = $derived(
 		step === 1
-			? $_('create_objective_or_effect_dialog.title.select_indicator')
+			? $_(`create_objective_or_effect_dialog.title.select_indicator.${type}`)
 			: selection?.kind === 'existing'
-				? $_('create_objective_or_effect_dialog.title.existing_indicator')
-				: $_('create_objective_or_effect_dialog.title.new_indicator')
+				? $_(`create_objective_or_effect_dialog.title.existing_indicator.${type}`)
+				: $_(`create_objective_or_effect_dialog.title.new_indicator.${type}`)
 	);
 
-	let isValidValue = $derived(value !== undefined && effectValue.safeParse(value).success);
+	let isValidValue = $derived(value !== undefined && isValidObjectiveOrEffectValue(value));
 
 	// The description is optional. An existing indicator brings its own title.
 	let canSubmit = $derived(
@@ -193,7 +224,7 @@
 		let created: CreatedObjectiveOrEffect;
 		try {
 			created = await createObjectiveOrEffect(target, {
-				type: payloadTypes.enum.effect,
+				...value,
 				description,
 				indicator:
 					selection.kind === 'existing'
@@ -211,20 +242,19 @@
 									unit
 								})
 							},
-				iooiType,
-				value
+				iooiType
 			});
 		} catch (caught) {
 			// Validation errors carry no message meant for users.
 			errorMessage =
 				caught instanceof CreateObjectiveOrEffectError && caught.status !== 422 && caught.message
 					? caught.message
-					: $_('create_objective_or_effect_dialog.error.save_failed');
+					: $_(`create_objective_or_effect_dialog.error.save_failed.${type}`);
 			submitting = false;
 			return;
 		}
 
-		// The effect exists now, so the dialog closes even if handling it fails.
+		// The item exists now, so the dialog closes even if handling it fails.
 		submitting = false;
 		dialog.close();
 		onCreated?.(created);
@@ -278,6 +308,7 @@
 				onCreateNew={mayCreateIndicator ? createNew : undefined}
 				onSelect={select}
 				{target}
+				{type}
 			/>
 		{:else if selection}
 			<div class="step-2">
@@ -296,16 +327,16 @@
 					{/if}
 
 					<div class="field">
-						<p class="property-label" id="create-objective-or-effect-dialog-effect-title">
-							{$_('create_objective_or_effect_dialog.effect_title')}
+						<p class="property-label" id="create-objective-or-effect-dialog-item-title">
+							{$_(`create_objective_or_effect_dialog.item_title.${type}`)}
 						</p>
 						{#if selection.kind === 'existing'}
-							<p class="effect-title">{selection.indicator.payload.title}</p>
+							<p class="item-title">{selection.indicator.payload.title}</p>
 						{:else}
 							<input
-								aria-labelledby="create-objective-or-effect-dialog-effect-title"
+								aria-labelledby="create-objective-or-effect-dialog-item-title"
 								bind:value={title}
-								class="effect-title"
+								class="item-title"
 								placeholder={$_('title')}
 								required
 								type="text"
@@ -324,12 +355,14 @@
 						</p>
 						<Editor
 							labelledBy="create-objective-or-effect-dialog-description"
-							placeholder={$_('create_objective_or_effect_dialog.description_placeholder')}
+							placeholder={$_(`create_objective_or_effect_dialog.description_placeholder.${type}`)}
 							bind:value={description}
 						/>
 						{#if description.trim() === ''}
 							<p class="hint">
-								<InfoCircleOutline />{$_('create_objective_or_effect_dialog.description_hint')}
+								<InfoCircleOutline />{$_(
+									`create_objective_or_effect_dialog.description_hint.${type}`
+								)}
 							</p>
 						{/if}
 					</div>
@@ -341,6 +374,7 @@
 						<ValueKindOptions
 							labelledBy="create-objective-or-effect-dialog-kind"
 							options={kindOptions}
+							{type}
 							bind:value={() => kind, (option) => (chosenKind = option)}
 						/>
 					</div>
@@ -373,17 +407,13 @@
 								</div>
 							{:else if kind === valueKinds.enum.series}
 								<YearlyValuesEditor
-									columns={[
-										$_('indicator.effect.planned_values'),
-										$_('indicator.effect.achieved_values')
-									]}
+									columns={valueColumns}
+									shown={shownValues}
 									bind:value={values}
 								/>
 								{#if !isValidValue}
 									<p class="hint">
-										<InfoCircleOutline />{$_(
-											'create_objective_or_effect_dialog.planned_values_hint'
-										)}
+										<InfoCircleOutline />{$_('create_objective_or_effect_dialog.values_hint')}
 									</p>
 								{/if}
 							{:else}
@@ -496,7 +526,7 @@
 		padding: 0.375rem 0;
 	}
 
-	.effect-title {
+	.item-title {
 		color: var(--color-gray-900);
 		font-size: 1.25rem;
 		font-weight: 600;
@@ -504,7 +534,7 @@
 		padding: 0.25rem;
 	}
 
-	input.effect-title {
+	input.item-title {
 		background-color: transparent;
 		border: none;
 		border-radius: 8px;
@@ -512,14 +542,14 @@
 	}
 
 	/* An empty title is highlighted as missing. */
-	input.effect-title:placeholder-shown {
+	input.item-title:placeholder-shown {
 		background-color: var(--color-red-050);
 		font-weight: 400;
 		line-height: 1.5;
 		padding: 0.5rem;
 	}
 
-	input.effect-title::placeholder {
+	input.item-title::placeholder {
 		color: var(--color-red-700);
 	}
 

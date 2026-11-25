@@ -4,17 +4,23 @@
 	import ArrowCircleDownOutline from '~icons/knotdots/arrow-circle-down-outline';
 	import ArrowCircleUpSolid from '~icons/knotdots/arrow-circle-up-solid';
 	import seriesPreview from '$lib/assets/value-kind-series.svg';
-	import { type ValueKind, valueKinds } from '$lib/objectiveOrEffectCreation';
+	import {
+		type ObjectiveOrEffectType,
+		type ValueKind,
+		valueKinds
+	} from '$lib/objectiveOrEffectCreation';
 
-	// A choice between kinds of effects, each shown with a miniature of how its
-	// values are presented.
+	// A choice between kinds of values, each shown with a miniature of how they
+	// are presented.
 	interface Props {
 		labelledBy: string;
 		options: ValueKind[];
+		// The type of the objective or effect the values are for.
+		type: ObjectiveOrEffectType;
 		value?: ValueKind;
 	}
 
-	let { labelledBy, options, value = $bindable() }: Props = $props();
+	let { labelledBy, options, type, value = $bindable() }: Props = $props();
 
 	const id = $props.id();
 </script>
@@ -48,7 +54,7 @@
 					{$_(`create_objective_or_effect_dialog.value_kind.${option}`)}
 				</span>
 				<span class="description" id="{id}-{option}-description">
-					{$_(`create_objective_or_effect_dialog.value_kind_description.${option}`)}
+					{$_(`create_objective_or_effect_dialog.value_kind_description.${type}.${option}`)}
 				</span>
 			</span>
 

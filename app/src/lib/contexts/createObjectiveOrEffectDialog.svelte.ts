@@ -1,12 +1,16 @@
 import { createContext } from 'svelte';
 import { pushState } from '$app/navigation';
-import type { CreatedObjectiveOrEffect } from '$lib/objectiveOrEffectCreation';
+import type {
+	CreatedObjectiveOrEffect,
+	ObjectiveOrEffectType
+} from '$lib/objectiveOrEffectCreation';
 import type { Container, GoalPayload, IooiType, MeasurePayload } from '$lib/models';
 
 export interface CreateObjectiveOrEffectDialogRequest {
 	iooiType?: IooiType;
 	onCreated?: (created: CreatedObjectiveOrEffect) => void;
 	target: Container<GoalPayload | MeasurePayload>;
+	type: ObjectiveOrEffectType;
 }
 
 export interface CreateObjectiveOrEffectDialogContext {
@@ -15,8 +19,8 @@ export interface CreateObjectiveOrEffectDialogContext {
 	close(): void;
 }
 
-// Holds what the dialog for creating an effect was opened for, while it is
-// open. Must be created during component initialization.
+// Holds what the dialog for creating an objective or effect was opened for,
+// while it is open. Must be created during component initialization.
 export function createCreateObjectiveOrEffectDialogContext(): CreateObjectiveOrEffectDialogContext {
 	let request = $state.raw<CreateObjectiveOrEffectDialogRequest>();
 

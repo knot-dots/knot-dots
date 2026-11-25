@@ -76,7 +76,17 @@ export const objectiveValue = z.discriminatedUnion('kind', [
 
 export type ObjectiveValue = z.infer<typeof objectiveValue>;
 
-// The value must fit the type of the container to create.
+// The value of a new objective or effect, which must fit its type.
+export type ObjectiveOrEffectValue =
+	| { type: typeof payloadTypes.enum.effect; value: EffectValue }
+	| { type: typeof payloadTypes.enum.objective; value: ObjectiveValue };
+
+export function isValidObjectiveOrEffectValue({ type, value }: ObjectiveOrEffectValue) {
+	return type === payloadTypes.enum.effect
+		? effectValue.safeParse(value).success
+		: objectiveValue.safeParse(value).success;
+}
+
 export type CreateObjectiveOrEffectRequest = {
 	description: string;
 	indicator:
@@ -89,10 +99,7 @@ export type CreateObjectiveOrEffectRequest = {
 				container: NewContainer<BinaryIndicatorPayload> | NewContainer<IndicatorPayload>;
 		  };
 	iooiType?: IooiType;
-} & (
-	| { type: typeof payloadTypes.enum.effect; value: EffectValue }
-	| { type: typeof payloadTypes.enum.objective; value: ObjectiveValue }
-);
+} & ObjectiveOrEffectValue;
 
 export type CreatedObjectiveOrEffect = {
 	indicator: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>;

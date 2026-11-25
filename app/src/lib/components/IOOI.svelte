@@ -218,7 +218,11 @@
 			}
 
 			if (isMeasureContainer(container)) {
-				createObjectiveOrEffectDialog?.open({ iooiType, target: container });
+				createObjectiveOrEffectDialog?.open({
+					iooiType,
+					target: container,
+					type: payloadTypes.enum.effect
+				});
 			} else if (isGoalContainer(container)) {
 				$addObjectiveState = { target: container, iooiType };
 

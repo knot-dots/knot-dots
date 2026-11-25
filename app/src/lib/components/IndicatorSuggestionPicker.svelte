@@ -19,6 +19,7 @@
 		type MeasurePayload,
 		payloadTypes
 	} from '$lib/models';
+	import type { ObjectiveOrEffectType } from '$lib/objectiveOrEffectCreation';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 
 	interface Props {
@@ -29,10 +30,12 @@
 			suggestion: { actualData: Container<ActualDataPayload>[]; relevance: number }
 		) => void;
 		target: Container<GoalPayload | MeasurePayload>;
+		// The type of the objective or effect the indicator is chosen for.
+		type: ObjectiveOrEffectType;
 		value?: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>;
 	}
 
-	let { onCreateNew, onSelect, target, value }: Props = $props();
+	let { onCreateNew, onSelect, target, type, value }: Props = $props();
 
 	const categoryContext = $derived(
 		filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.indicator])
@@ -147,7 +150,7 @@
 		{#if onCreateNew}
 			<button class="create-new-button" onclick={onCreateNew} type="button">
 				<Plus />
-				{$_('create_objective_or_effect_dialog.create_with_new_indicator')}
+				{$_(`create_objective_or_effect_dialog.create_with_new_indicator.${type}`)}
 			</button>
 		{/if}
 	{/snippet}
@@ -158,7 +161,7 @@
 		{#snippet leading()}
 			{#if onCreateNew}
 				<button class="create-new" onclick={onCreateNew} type="button">
-					<span>{$_('create_objective_or_effect_dialog.create_new')}</span>
+					<span>{$_(`create_objective_or_effect_dialog.create_new.${type}`)}</span>
 					<Plus />
 				</button>
 			{/if}
