@@ -147,7 +147,7 @@
 		{#if onCreateNew}
 			<button class="create-new-button" onclick={onCreateNew} type="button">
 				<Plus />
-				{$_('create_effect_dialog.create_with_new_indicator')}
+				{$_('create_objective_or_effect_dialog.create_with_new_indicator')}
 			</button>
 		{/if}
 	{/snippet}
@@ -158,7 +158,7 @@
 		{#snippet leading()}
 			{#if onCreateNew}
 				<button class="create-new" onclick={onCreateNew} type="button">
-					<span>{$_('create_effect_dialog.create_new')}</span>
+					<span>{$_('create_objective_or_effect_dialog.create_new')}</span>
 					<Plus />
 				</button>
 			{/if}

@@ -12,9 +12,9 @@
 	import ObjectiveOrEffectCard from '$lib/components/ObjectiveOrEffectCard.svelte';
 	import ResourceDataCard from '$lib/components/ResourceDataCard.svelte';
 	import {
-		getCreateEffectDialogContext,
-		hasCreateEffectDialogContext
-	} from '$lib/contexts/createEffectDialog.svelte';
+		getCreateObjectiveOrEffectDialogContext,
+		hasCreateObjectiveOrEffectDialogContext
+	} from '$lib/contexts/createObjectiveOrEffectDialog.svelte';
 	import {
 		type Container,
 		containerOfType,
@@ -51,8 +51,8 @@
 		'createContainerDialog'
 	);
 
-	const createEffectDialog = hasCreateEffectDialogContext()
-		? getCreateEffectDialogContext()
+	const createObjectiveOrEffectDialog = hasCreateObjectiveOrEffectDialogContext()
+		? getCreateObjectiveOrEffectDialogContext()
 		: undefined;
 
 	// Watch for successfully created resourceData containers and create collection if needed
@@ -218,7 +218,7 @@
 			}
 
 			if (isMeasureContainer(container)) {
-				createEffectDialog?.open({ iooiType, target: container });
+				createObjectiveOrEffectDialog?.open({ iooiType, target: container });
 			} else if (isGoalContainer(container)) {
 				$addObjectiveState = { target: container, iooiType };
 

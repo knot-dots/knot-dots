@@ -1,10 +1,10 @@
 import { z } from 'zod';
 import { env } from '$env/dynamic/public';
 import {
-	type CreateEffectRequest,
-	type CreatedEffect,
-	newEffectContainers
-} from '$lib/effectCreation';
+	type CreateObjectiveOrEffectRequest,
+	type CreatedObjectiveOrEffect,
+	newObjectiveOrEffectContainers
+} from '$lib/objectiveOrEffectCreation';
 import {
 	binaryIndicatorPayload,
 	type Container,
@@ -32,21 +32,21 @@ const createdWithNewIndicator = z
 
 const createdForExistingIndicator = z.tuple([effectContainer]);
 
-export class CreateEffectError extends Error {
+export class CreateObjectiveOrEffectError extends Error {
 	constructor(
 		public readonly status: number,
 		message: string
 	) {
 		super(message);
-		this.name = 'CreateEffectError';
+		this.name = 'CreateObjectiveOrEffectError';
 	}
 }
 
-export default async function createEffect(
+export default async function createObjectiveOrEffect(
 	target: Container<GoalPayload | MeasurePayload>,
-	request: CreateEffectRequest
-): Promise<CreatedEffect> {
-	const containers = newEffectContainers(target, request).map((container) =>
+	request: CreateObjectiveOrEffectRequest
+): Promise<CreatedObjectiveOrEffect> {
+	const containers = newObjectiveOrEffectContainers(target, request).map((container) =>
 		// Drops the grants of a container built with containerOfType.
 		newContainer.parse({ ...container, realm: env.PUBLIC_KC_REALM })
 	);
@@ -60,11 +60,11 @@ export default async function createEffect(
 
 	if (!response.ok) {
 		const { message } = await response.json().catch(() => ({ message: undefined }));
-		throw new CreateEffectError(response.status, message ?? response.statusText);
+		throw new CreateObjectiveOrEffectError(response.status, message ?? response.statusText);
 	}
 
 	const body = await response.json();
-	let created: CreatedEffect;
+	let created: CreatedObjectiveOrEffect;
 	if (request.indicator.kind === 'new') {
 		created = createdWithNewIndicator.parse(body);
 	} else {

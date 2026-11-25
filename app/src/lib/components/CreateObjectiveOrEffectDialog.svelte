@@ -5,25 +5,27 @@
 	import { beforeNavigate, pushState } from '$app/navigation';
 	import { page } from '$app/state';
 	import { filterCategoryContext } from '$lib/categoryOptions';
-	import createEffect, { CreateEffectError } from '$lib/client/createEffect';
+	import createObjectiveOrEffect, {
+		CreateObjectiveOrEffectError
+	} from '$lib/client/createObjectiveOrEffect';
 	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
 	import Editor from '$lib/components/Editor.svelte';
 	import EditableTendency from '$lib/components/EditableTendency.svelte';
-	import EffectKindOptions from '$lib/components/EffectKindOptions.svelte';
-	import EffectValuesEditor from '$lib/components/EffectValuesEditor.svelte';
+	import ValueKindOptions from '$lib/components/ValueKindOptions.svelte';
+	import YearlyValuesEditor from '$lib/components/YearlyValuesEditor.svelte';
 	import IndicatorSuggestionPicker from '$lib/components/IndicatorSuggestionPicker.svelte';
 	import IndicatorUnitDropdown from '$lib/components/IndicatorUnitDropdown.svelte';
 	import SuggestedIndicatorCard from '$lib/components/SuggestedIndicatorCard.svelte';
-	import { getCreateEffectDialogContext } from '$lib/contexts/createEffectDialog.svelte';
+	import { getCreateObjectiveOrEffectDialogContext } from '$lib/contexts/createObjectiveOrEffectDialog.svelte';
 	import {
-		type CreatedEffect,
-		type EffectKind,
-		effectKindOptions,
-		effectKinds,
+		type CreatedObjectiveOrEffect,
+		type ValueKind,
+		valueKindOptions,
+		valueKinds,
 		effectValue,
 		type EffectValue,
-		newIndicatorForEffect
-	} from '$lib/effectCreation';
+		newIndicatorForObjectiveOrEffect
+	} from '$lib/objectiveOrEffectCreation';
 	import {
 		type ActualDataPayload,
 		type BinaryIndicatorPayload,
@@ -34,7 +36,7 @@
 	} from '$lib/models';
 	import { mayCreateContainer } from '$lib/stores';
 
-	const dialogContext = getCreateEffectDialogContext();
+	const dialogContext = getCreateObjectiveOrEffectDialogContext();
 
 	// The dialog is mounted for a request and unmounted when it closes, so the
 	// request is fixed for its lifetime and every draft starts empty.
@@ -54,11 +56,11 @@
 
 	// The step is kept in the history. Without a selection, which is lost when
 	// the dialog is reopened by going forward again, only the first step remains.
-	let step = $derived(page.state.createEffect?.step === 2 && selection ? 2 : 1);
+	let step = $derived(page.state.createObjectiveOrEffect?.step === 2 && selection ? 2 : 1);
 
 	let description = $state('');
 
-	let chosenKind = $state<EffectKind>();
+	let chosenKind = $state<ValueKind>();
 
 	let title = $state('');
 
@@ -86,7 +88,7 @@
 	);
 
 	let kindOptions = $derived(
-		effectKindOptions({
+		valueKindOptions({
 			features: page.data.features,
 			indicatorType: selection?.kind === 'existing' ? selection.indicator.payload.type : undefined,
 			mayCreateBinaryIndicator
@@ -103,17 +105,17 @@
 
 	let value = $derived.by((): EffectValue | undefined => {
 		switch (kind) {
-			case effectKinds.enum.tendency:
+			case valueKinds.enum.tendency:
 				return draft.payload.trendValue
 					? { kind, trendValue: draft.payload.trendValue }
 					: undefined;
-			case effectKinds.enum.series:
+			case valueKinds.enum.series:
 				return {
 					kind,
 					achievedValues: values.map(([year, , achieved]) => [year, achieved]),
 					plannedValues: values.map(([year, planned]) => [year, planned])
 				};
-			case effectKinds.enum.binary:
+			case valueKinds.enum.binary:
 				return { kind, booleanValue };
 			default:
 				return undefined;
@@ -125,17 +127,17 @@
 			? isIndicatorContainer(selection.indicator)
 				? selection.indicator.payload.unit
 				: undefined
-			: kind === effectKinds.enum.binary
+			: kind === valueKinds.enum.binary
 				? undefined
 				: unit
 	);
 
 	let heading = $derived(
 		step === 1
-			? $_('create_effect_dialog.title.select_indicator')
+			? $_('create_objective_or_effect_dialog.title.select_indicator')
 			: selection?.kind === 'existing'
-				? $_('create_effect_dialog.title.existing_indicator')
-				: $_('create_effect_dialog.title.new_indicator')
+				? $_('create_objective_or_effect_dialog.title.existing_indicator')
+				: $_('create_objective_or_effect_dialog.title.new_indicator')
 	);
 
 	let isValidValue = $derived(value !== undefined && effectValue.safeParse(value).success);
@@ -144,7 +146,7 @@
 	let canSubmit = $derived(
 		isValidValue &&
 			(selection?.kind === 'existing' ||
-				(title.trim() !== '' && (kind === effectKinds.enum.binary || unit !== '')))
+				(title.trim() !== '' && (kind === valueKinds.enum.binary || unit !== '')))
 	);
 
 	const showModal: Attachment<HTMLDialogElement> = (element) => {
@@ -160,7 +162,7 @@
 
 	// Closing the dialog also removes its steps from the history.
 	function onclose() {
-		const steps = page.state.createEffect?.step ?? 0;
+		const steps = page.state.createObjectiveOrEffect?.step ?? 0;
 		dialogContext.close();
 		if (steps > 0) {
 			history.go(-steps);
@@ -172,12 +174,12 @@
 		{ actualData, relevance }: { actualData: Container<ActualDataPayload>[]; relevance: number }
 	) {
 		selection = { actualData, kind: 'existing', indicator, relevance };
-		pushState('', { createEffect: { step: 2 } });
+		pushState('', { createObjectiveOrEffect: { step: 2 } });
 	}
 
 	function createNew() {
 		selection = { kind: 'new' };
-		pushState('', { createEffect: { step: 2 } });
+		pushState('', { createObjectiveOrEffect: { step: 2 } });
 	}
 
 	async function submit() {
@@ -188,16 +190,16 @@
 		submitting = true;
 		errorMessage = undefined;
 
-		let created: CreatedEffect;
+		let created: CreatedObjectiveOrEffect;
 		try {
-			created = await createEffect(target, {
+			created = await createObjectiveOrEffect(target, {
 				description,
 				indicator:
 					selection.kind === 'existing'
 						? { kind: 'existing', container: selection.indicator }
 						: {
 								kind: 'new',
-								container: newIndicatorForEffect({
+								container: newIndicatorForObjectiveOrEffect({
 									categoryKeys: filterCategoryContext(page.data.categoryContext, [
 										payloadTypes.enum.indicator
 									]).keys,
@@ -214,9 +216,9 @@
 		} catch (caught) {
 			// Validation errors carry no message meant for users.
 			errorMessage =
-				caught instanceof CreateEffectError && caught.status !== 422 && caught.message
+				caught instanceof CreateObjectiveOrEffectError && caught.status !== 422 && caught.message
 					? caught.message
-					: $_('create_effect_dialog.error.save_failed');
+					: $_('create_objective_or_effect_dialog.error.save_failed');
 			submitting = false;
 			return;
 		}
@@ -229,7 +231,7 @@
 </script>
 
 <dialog
-	aria-labelledby="create-effect-dialog-title"
+	aria-labelledby="create-objective-or-effect-dialog-title"
 	bind:this={dialog}
 	{@attach showModal}
 	oncancel={(event) => {
@@ -247,7 +249,7 @@
 		}}
 	>
 		<header>
-			<h2 class="truncated" id="create-effect-dialog-title">{heading}</h2>
+			<h2 class="truncated" id="create-objective-or-effect-dialog-title">{heading}</h2>
 
 			{#if step === 2}
 				<button disabled={submitting} onclick={() => history.back()} type="button">
@@ -265,7 +267,7 @@
 					disabled={!canSubmit || submitting}
 					type="submit"
 				>
-					{$_('create_effect_dialog.button.confirm')}
+					{$_('create_objective_or_effect_dialog.button.confirm')}
 				</button>
 			{/if}
 		</header>
@@ -293,14 +295,14 @@
 					{/if}
 
 					<div class="field">
-						<p class="property-label" id="create-effect-dialog-effect-title">
-							{$_('create_effect_dialog.effect_title')}
+						<p class="property-label" id="create-objective-or-effect-dialog-effect-title">
+							{$_('create_objective_or_effect_dialog.effect_title')}
 						</p>
 						{#if selection.kind === 'existing'}
 							<p class="effect-title">{selection.indicator.payload.title}</p>
 						{:else}
 							<input
-								aria-labelledby="create-effect-dialog-effect-title"
+								aria-labelledby="create-objective-or-effect-dialog-effect-title"
 								bind:value={title}
 								class="effect-title"
 								placeholder={$_('title')}
@@ -309,46 +311,48 @@
 							/>
 							{#if title.trim() === ''}
 								<p class="hint">
-									<InfoCircleOutline />{$_('create_effect_dialog.title_hint')}
+									<InfoCircleOutline />{$_('create_objective_or_effect_dialog.title_hint')}
 								</p>
 							{/if}
 						{/if}
 					</div>
 
 					<div class="field description">
-						<p class="property-label" id="create-effect-dialog-description">
+						<p class="property-label" id="create-objective-or-effect-dialog-description">
 							{$_('description')}
 						</p>
 						<Editor
-							labelledBy="create-effect-dialog-description"
-							placeholder={$_('create_effect_dialog.description_placeholder')}
+							labelledBy="create-objective-or-effect-dialog-description"
+							placeholder={$_('create_objective_or_effect_dialog.description_placeholder')}
 							bind:value={description}
 						/>
 						{#if description.trim() === ''}
 							<p class="hint">
-								<InfoCircleOutline />{$_('create_effect_dialog.description_hint')}
+								<InfoCircleOutline />{$_('create_objective_or_effect_dialog.description_hint')}
 							</p>
 						{/if}
 					</div>
 
 					<div class="field">
-						<p class="property-label" id="create-effect-dialog-kind">
-							{$_('create_effect_dialog.effect_kind')}
+						<p class="property-label" id="create-objective-or-effect-dialog-kind">
+							{$_('create_objective_or_effect_dialog.value_kind')}
 						</p>
-						<EffectKindOptions
-							labelledBy="create-effect-dialog-kind"
+						<ValueKindOptions
+							labelledBy="create-objective-or-effect-dialog-kind"
 							options={kindOptions}
 							bind:value={() => kind, (option) => (chosenKind = option)}
 						/>
 					</div>
 
-					{#if kind && kind !== effectKinds.enum.binary}
+					{#if kind && kind !== valueKinds.enum.binary}
 						<div class="field unit">
-							<span class="property-label" id="create-effect-dialog-unit">{$_('unit')}</span>
+							<span class="property-label" id="create-objective-or-effect-dialog-unit"
+								>{$_('unit')}</span
+							>
 							{#if selection.kind === 'new'}
 								<IndicatorUnitDropdown
 									editable
-									labelledBy="create-effect-dialog-unit"
+									labelledBy="create-objective-or-effect-dialog-unit"
 									bind:value={unit}
 								/>
 							{:else}
@@ -361,16 +365,18 @@
 
 					{#if kind}
 						<div class="field">
-							<p class="property-label">{$_(`create_effect_dialog.value.${kind}`)}</p>
-							{#if kind === effectKinds.enum.tendency}
+							<p class="property-label">{$_(`create_objective_or_effect_dialog.value.${kind}`)}</p>
+							{#if kind === valueKinds.enum.tendency}
 								<div class="tendency">
 									<EditableTendency bind:container={draft} editable />
 								</div>
-							{:else if kind === effectKinds.enum.series}
-								<EffectValuesEditor bind:value={values} />
+							{:else if kind === valueKinds.enum.series}
+								<YearlyValuesEditor bind:value={values} />
 								{#if !isValidValue}
 									<p class="hint">
-										<InfoCircleOutline />{$_('create_effect_dialog.planned_values_hint')}
+										<InfoCircleOutline />{$_(
+											'create_objective_or_effect_dialog.planned_values_hint'
+										)}
 									</p>
 								{/if}
 							{:else}

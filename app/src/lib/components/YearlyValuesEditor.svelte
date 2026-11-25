@@ -47,7 +47,7 @@
 				<button
 					onclick={prependRow}
 					type="button"
-					{@attach tooltip($_('create_effect_dialog.add_row'))}
+					{@attach tooltip($_('create_objective_or_effect_dialog.add_row'))}
 				>
 					<Plus />
 				</button>
@@ -81,7 +81,7 @@
 						<button
 							onclick={() => removeRow(index)}
 							type="button"
-							{@attach tooltip($_('create_effect_dialog.remove_row'))}
+							{@attach tooltip($_('create_objective_or_effect_dialog.remove_row'))}
 						>
 							<Minus />
 						</button>
@@ -94,7 +94,7 @@
 				<button
 					onclick={appendRow}
 					type="button"
-					{@attach tooltip($_('create_effect_dialog.add_row'))}
+					{@attach tooltip($_('create_objective_or_effect_dialog.add_row'))}
 				>
 					<Plus />
 				</button>

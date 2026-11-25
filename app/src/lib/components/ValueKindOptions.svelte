@@ -3,15 +3,15 @@
 	import Check from '~icons/flowbite/check-outline';
 	import ArrowCircleDownOutline from '~icons/knotdots/arrow-circle-down-outline';
 	import ArrowCircleUpSolid from '~icons/knotdots/arrow-circle-up-solid';
-	import seriesPreview from '$lib/assets/effect-kind-series.svg';
-	import { type EffectKind, effectKinds } from '$lib/effectCreation';
+	import seriesPreview from '$lib/assets/value-kind-series.svg';
+	import { type ValueKind, valueKinds } from '$lib/objectiveOrEffectCreation';
 
 	// A choice between kinds of effects, each shown with a miniature of how its
 	// values are presented.
 	interface Props {
 		labelledBy: string;
-		options: EffectKind[];
-		value?: EffectKind;
+		options: ValueKind[];
+		value?: ValueKind;
 	}
 
 	let { labelledBy, options, value = $bindable() }: Props = $props();
@@ -33,9 +33,9 @@
 			/>
 
 			<span class="preview">
-				{#if option === effectKinds.enum.series}
+				{#if option === valueKinds.enum.series}
 					<img alt="" height="56" src={seriesPreview} width="80" />
-				{:else if option === effectKinds.enum.tendency}
+				{:else if option === valueKinds.enum.tendency}
 					<ArrowCircleUpSolid />
 					<ArrowCircleDownOutline />
 				{:else}
@@ -45,10 +45,10 @@
 
 			<span class="text">
 				<span class="title" id="{id}-{option}-title">
-					{$_(`create_effect_dialog.effect_kind.${option}`)}
+					{$_(`create_objective_or_effect_dialog.value_kind.${option}`)}
 				</span>
 				<span class="description" id="{id}-{option}-description">
-					{$_(`create_effect_dialog.effect_kind_description.${option}`)}
+					{$_(`create_objective_or_effect_dialog.value_kind_description.${option}`)}
 				</span>
 			</span>
 

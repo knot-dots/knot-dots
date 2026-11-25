@@ -1,10 +1,10 @@
 import { expect, test } from 'vitest';
 import {
-	effectKindOptions,
+	valueKindOptions,
 	effectValuePayload,
-	newEffectContainers,
-	newIndicatorForEffect
-} from '$lib/effectCreation';
+	newObjectiveOrEffectContainers,
+	newIndicatorForObjectiveOrEffect
+} from '$lib/objectiveOrEffectCreation';
 import {
 	anyContainer,
 	composeUserGrants,
@@ -27,7 +27,7 @@ test.each([
 	'effects for indicator type %s with features %j and binary creation %s',
 	(indicatorType, features, mayCreateBinaryIndicator, expected) => {
 		expect(
-			effectKindOptions({ features: [...features], indicatorType, mayCreateBinaryIndicator })
+			valueKindOptions({ features: [...features], indicatorType, mayCreateBinaryIndicator })
 		).toEqual(expected);
 	}
 );
@@ -97,7 +97,7 @@ const measure = stored('00000000-0000-4000-8000-000000000002', {
 }) as Container<MeasurePayload>;
 
 test('a new indicator lives in the scope and takes over the categories applying to indicators', () => {
-	const indicator = newIndicatorForEffect({
+	const indicator = newIndicatorForObjectiveOrEffect({
 		categoryKeys: ['sdg', 'topic'],
 		kind: 'series',
 		scope: organization,
@@ -121,7 +121,7 @@ test('a new indicator lives in the scope and takes over the categories applying 
 });
 
 test('a yes/no effect gets a binary indicator without unit', () => {
-	const indicator = newIndicatorForEffect({
+	const indicator = newIndicatorForObjectiveOrEffect({
 		categoryKeys: [],
 		kind: 'binary',
 		scope: organization,
@@ -141,7 +141,7 @@ const indicator = stored('00000000-0000-4000-8000-000000000003', {
 }) as Container<IndicatorPayload>;
 
 test('an effect for an existing indicator is measured by it and part of the target', () => {
-	const containers = newEffectContainers(measure, {
+	const containers = newObjectiveOrEffectContainers(measure, {
 		description: 'More people cycle.',
 		indicator: { kind: 'existing', container: indicator },
 		iooiType: 'iooi.outcome',
@@ -171,7 +171,7 @@ test('an effect for an existing indicator is measured by it and part of the targ
 });
 
 test('an effect without a description has none in its payload', () => {
-	const [effect] = newEffectContainers(measure, {
+	const [effect] = newObjectiveOrEffectContainers(measure, {
 		description: ' ',
 		indicator: { kind: 'existing', container: indicator },
 		value: { kind: 'tendency', trendValue: 1 }
@@ -181,11 +181,11 @@ test('an effect without a description has none in its payload', () => {
 });
 
 test('an effect is sent after the new indicator it refers to by its guid', () => {
-	const [newIndicator, effect] = newEffectContainers(measure, {
+	const [newIndicator, effect] = newObjectiveOrEffectContainers(measure, {
 		description: 'More people cycle.',
 		indicator: {
 			kind: 'new',
-			container: newIndicatorForEffect({
+			container: newIndicatorForObjectiveOrEffect({
 				categoryKeys: [],
 				kind: 'series',
 				scope: organization,

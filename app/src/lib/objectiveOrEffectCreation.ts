@@ -19,18 +19,18 @@ import {
 
 // The kind of an effect is not stored, but inferred from its values and the
 // type of its indicator; see Card.svelte and EditableEffectDetailView.svelte.
-export const effectKinds = z.enum(['tendency', 'series', 'binary']);
+export const valueKinds = z.enum(['tendency', 'series', 'binary']);
 
-export type EffectKind = z.infer<typeof effectKinds>;
+export type ValueKind = z.infer<typeof valueKinds>;
 
 // Unlike a stored effect, a new one must have the value of exactly one kind.
 export const effectValue = z.discriminatedUnion('kind', [
 	z.object({
-		kind: z.literal(effectKinds.enum.tendency),
+		kind: z.literal(valueKinds.enum.tendency),
 		trendValue: effectPayload.shape.trendValue.unwrap()
 	}),
 	z.object({
-		kind: z.literal(effectKinds.enum.series),
+		kind: z.literal(valueKinds.enum.series),
 		plannedValues: effectPayload.shape.plannedValues
 			.unwrap()
 			.min(1)
@@ -40,14 +40,14 @@ export const effectValue = z.discriminatedUnion('kind', [
 		achievedValues: effectPayload.shape.achievedValues.unwrap()
 	}),
 	z.object({
-		kind: z.literal(effectKinds.enum.binary),
+		kind: z.literal(valueKinds.enum.binary),
 		booleanValue: effectPayload.shape.booleanValue.unwrap()
 	})
 ]);
 
 export type EffectValue = z.infer<typeof effectValue>;
 
-export type CreateEffectRequest = {
+export type CreateObjectiveOrEffectRequest = {
 	description: string;
 	indicator:
 		| {
@@ -62,20 +62,20 @@ export type CreateEffectRequest = {
 	value: EffectValue;
 };
 
-export type CreatedEffect = {
+export type CreatedObjectiveOrEffect = {
 	effect: Container<EffectPayload>;
 	indicator: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>;
 };
 
-export function indicatorTypeForEffectKind(kind: EffectKind) {
-	return kind === effectKinds.enum.binary
+export function indicatorTypeForValueKind(kind: ValueKind) {
+	return kind === valueKinds.enum.binary
 		? payloadTypes.enum.binary_indicator
 		: payloadTypes.enum.indicator;
 }
 
 // The kinds of effects that can be defined for an indicator of the given type,
 // or for a new indicator if no type is given. Tendencies are still in beta.
-export function effectKindOptions({
+export function valueKindOptions({
 	features,
 	indicatorType,
 	mayCreateBinaryIndicator
@@ -83,17 +83,17 @@ export function effectKindOptions({
 	features: string[];
 	indicatorType?: typeof payloadTypes.enum.indicator | typeof payloadTypes.enum.binary_indicator;
 	mayCreateBinaryIndicator: boolean;
-}): EffectKind[] {
+}): ValueKind[] {
 	const featureDecisions = createFeatureDecisions(features);
 
 	if (indicatorType === payloadTypes.enum.binary_indicator) {
-		return [effectKinds.enum.binary];
+		return [valueKinds.enum.binary];
 	}
 
 	return [
-		...(featureDecisions.useTendentialObjectivesAndEffects() ? [effectKinds.enum.tendency] : []),
-		effectKinds.enum.series,
-		...(indicatorType === undefined && mayCreateBinaryIndicator ? [effectKinds.enum.binary] : [])
+		...(featureDecisions.useTendentialObjectivesAndEffects() ? [valueKinds.enum.tendency] : []),
+		valueKinds.enum.series,
+		...(indicatorType === undefined && mayCreateBinaryIndicator ? [valueKinds.enum.binary] : [])
 	];
 }
 
@@ -105,9 +105,9 @@ export function effectValuePayload(
 	Pick<EffectPayload, 'achievedValues' | 'booleanValue' | 'plannedValues' | 'trendValue'>
 > {
 	switch (value.kind) {
-		case effectKinds.enum.tendency:
+		case valueKinds.enum.tendency:
 			return { trendValue: value.trendValue };
-		case effectKinds.enum.series: {
+		case valueKinds.enum.series: {
 			const plannedValues = value.plannedValues.toSorted(([a], [b]) => a - b);
 			const achievedValues = new Map(value.achievedValues);
 			return {
@@ -115,7 +115,7 @@ export function effectValuePayload(
 				plannedValues
 			};
 		}
-		case effectKinds.enum.binary:
+		case valueKinds.enum.binary:
 			return { booleanValue: value.booleanValue };
 	}
 }
@@ -123,7 +123,7 @@ export function effectValuePayload(
 // A new indicator lives in the given organization or organizational unit, like
 // one created on the indicators page. It takes over the categories of the
 // target that apply to indicators, which makes it relevant for similar targets.
-export function newIndicatorForEffect({
+export function newIndicatorForObjectiveOrEffect({
 	categoryKeys,
 	kind,
 	scope,
@@ -132,13 +132,13 @@ export function newIndicatorForEffect({
 	unit
 }: {
 	categoryKeys: string[];
-	kind: EffectKind;
+	kind: ValueKind;
 	scope: Container<AnyPayload>;
 	target: Container<GoalPayload | MeasurePayload>;
 	title: string;
 	unit?: string;
 }): NewContainer<IndicatorPayload> | NewContainer<BinaryIndicatorPayload> {
-	const type = indicatorTypeForEffectKind(kind);
+	const type = indicatorTypeForValueKind(kind);
 	const container = containerOfType(type, scope);
 
 	return {
@@ -159,9 +159,9 @@ export function newIndicatorForEffect({
 // /container/bulk-action/create: a new indicator, if the effect needs one,
 // followed by the effect, which refers to it by its guid. Both get their guids
 // here.
-export function newEffectContainers(
+export function newObjectiveOrEffectContainers(
 	target: Container<GoalPayload | MeasurePayload>,
-	{ description, indicator, iooiType, value }: CreateEffectRequest
+	{ description, indicator, iooiType, value }: CreateObjectiveOrEffectRequest
 ) {
 	const indicatorGuid = indicator.kind === 'new' ? crypto.randomUUID() : indicator.container.guid;
 	const effect = {

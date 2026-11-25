@@ -114,7 +114,7 @@
 						onclick={() => handleConfirm()}
 						type="button"
 					>
-						{$_('create_effect_dialog.button.confirm')}
+						{$_('create_objective_or_effect_dialog.button.confirm')}
 					</button>
 				{:else if page.state.createObjective.step === 3}
 					<button
@@ -122,7 +122,7 @@
 						onclick={() => dialog.close()}
 						type="button"
 					>
-						{$_('create_effect_dialog.button.confirm')}
+						{$_('create_objective_or_effect_dialog.button.confirm')}
 					</button>
 				{/if}
 			</nav>
