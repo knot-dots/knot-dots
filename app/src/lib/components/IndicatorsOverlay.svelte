@@ -39,7 +39,7 @@
 	);
 </script>
 
-<Header compare {facets} search />
+<Header compare {facets} review search />
 
 <div class="content">
 	<NewIndicators compare {containers} />

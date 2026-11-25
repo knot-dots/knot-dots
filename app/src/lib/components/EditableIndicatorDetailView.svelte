@@ -98,7 +98,7 @@
 </script>
 
 {#snippet header()}
-	<Header compare sortOptions={[]} workspaceOptions={[]}>
+	<Header compare review sortOptions={[]} workspaceOptions={[]}>
 		{#snippet settings()}
 			<SettingsDropdown {container} {relatedContainers} />
 		{/snippet}

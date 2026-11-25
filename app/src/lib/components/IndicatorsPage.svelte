@@ -22,7 +22,7 @@
 	<BulkActionContextProvider actions={['visibility', 'delete']}>
 		<FullscreenLayout>
 			{#snippet header()}
-				<Header compare {facets} {filterBarInitiallyOpen} search />
+				<Header compare {facets} {filterBarInitiallyOpen} review search />
 				{#if actions}
 					<div class="indicator-actions">
 						{@render actions()}
