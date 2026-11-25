@@ -13,6 +13,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import saveContainer from '$lib/client/saveContainer';
+	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import FileUpload from '$lib/components/FileUpload.svelte';
 	import type { AnyPayload, Container, FileCollectionPayload } from '$lib/models';
@@ -91,7 +92,21 @@
 </script>
 
 <header>
-	<svelte:element this={heading} class="details-heading">{$_('files')}</svelte:element>
+	{#if editable && $ability.can('update', container)}
+		<svelte:element this={heading} class="details-heading">
+			<AutoresizingTextarea
+				aria-label={$_('title')}
+				bind:value={container.payload.title}
+				placeholder={$_('title')}
+				rows={1}
+			/>
+		</svelte:element>
+	{:else}
+		<svelte:element this={heading} class="details-heading">
+			{container.payload.title}
+		</svelte:element>
+	{/if}
+
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
 			<li>
