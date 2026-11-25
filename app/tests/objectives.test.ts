@@ -125,6 +125,7 @@ test.describe('Creating objectives', () => {
 
 		await chooseKind(dialog, 'Yes/No');
 		await dialog.getByRole('textbox', { name: 'Title of the objective' }).fill(title);
+		await expect(dialog.getByRole('checkbox', { name: 'Specify yes or no' })).toBeChecked();
 
 		const { indicator, item } = await confirm(
 			dotsBoard.page,

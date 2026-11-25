@@ -5,9 +5,11 @@
 		checked?: boolean;
 		disabled?: boolean;
 		label?: string;
+		// The id of a label shown elsewhere, used instead of label.
+		labelledBy?: string;
 	}
 
-	let { checked = $bindable(), disabled = false, label }: Props = $props();
+	let { checked = $bindable(), disabled = false, label, labelledBy }: Props = $props();
 </script>
 
 {#if label}
@@ -23,6 +25,7 @@
 	</label>
 {:else}
 	<input
+		aria-labelledby={labelledBy}
 		bind:checked
 		class="toggle"
 		{disabled}

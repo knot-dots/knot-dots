@@ -405,7 +405,9 @@
 
 					{#if kind}
 						<div class="field">
-							<p class="property-label">{$_(`create_objective_or_effect_dialog.value.${kind}`)}</p>
+							<p class="property-label" id="create-objective-or-effect-dialog-value">
+								{$_(`create_objective_or_effect_dialog.value.${kind}`)}
+							</p>
 							{#if kind === valueKinds.enum.tendency}
 								<div class="tendency">
 									<EditableTendency bind:container={draft} editable />
@@ -422,7 +424,10 @@
 									</p>
 								{/if}
 							{:else}
-								<BooleanValueToggle bind:checked={booleanValue} />
+								<BooleanValueToggle
+									labelledBy="create-objective-or-effect-dialog-value"
+									bind:checked={booleanValue}
+								/>
 							{/if}
 						</div>
 					{/if}
