@@ -14,6 +14,7 @@
 		getCreateObjectiveOrEffectDialogContext,
 		hasCreateObjectiveOrEffectDialogContext
 	} from '$lib/contexts/createObjectiveOrEffectDialog.svelte';
+	import type { CreatedObjectiveOrEffect } from '$lib/objectiveOrEffectCreation';
 	import {
 		type Container,
 		containerOfType,
@@ -184,11 +185,16 @@
 
 	let items = $derived((containers ?? []).filter(itemFilterFn) as IooiItem[]);
 
+	// The indicator of an objective or effect created here is missing from the
+	// containers, unless another item of the board refers to it.
+	let chosenIndicators = $state.raw<CreatedObjectiveOrEffect['indicator'][]>([]);
+
 	// Cards of objectives and effects need their indicators for charts and the
 	// review, which covers binary indicators as well.
-	let indicators = $derived(
-		containers.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c))
-	);
+	let indicators = $derived([
+		...containers.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c)),
+		...chosenIndicators.filter(({ guid }) => !containers.some((c) => c.guid === guid))
+	]);
 
 	let resourceData = $derived(
 		(containers ?? [])
@@ -218,6 +224,9 @@
 
 			createObjectiveOrEffectDialog?.open({
 				iooiType,
+				onCreated: ({ indicator }) => {
+					chosenIndicators = [...chosenIndicators, indicator];
+				},
 				target: container,
 				type: isMeasureContainer(container) ? payloadTypes.enum.effect : payloadTypes.enum.objective
 			});
