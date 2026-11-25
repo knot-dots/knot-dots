@@ -47,7 +47,6 @@
 		isDemographicDataContainer,
 		isEffectCollectionContainer,
 		isEventContainer,
-		isFileCollectionContainer,
 		isGoalCollectionContainer,
 		isGoalContainer,
 		isHelpContainer,
@@ -137,10 +136,6 @@
 		!createFeatureDecisions(page.data.features).useResourcePlanning() &&
 			(isMeasureContainer(parentContainer) || isSimpleMeasureContainer(parentContainer)) &&
 			!hasSection(parentContainer, relatedContainers).some(isResourceCollectionContainer)
-	);
-
-	let mayAddFileCollection = $derived(
-		!hasSection(parentContainer, relatedContainers).some(isFileCollectionContainer)
 	);
 
 	let mayAddIndicatorCollection = $derived(
@@ -335,16 +330,12 @@
 		},
 		{ group: 'text_layout', icon: Quote, label: $_('quote'), value: payloadTypes.enum.quote },
 		{ group: 'media', icon: Image, label: $_('image'), value: payloadTypes.enum.image },
-		...(mayAddFileCollection
-			? [
-					{
-						group: 'media' as const,
-						icon: File,
-						label: $_('files'),
-						value: payloadTypes.enum.file_collection
-					}
-				]
-			: []),
+		{
+			group: 'media' as const,
+			icon: File,
+			label: $_('files'),
+			value: payloadTypes.enum.file_collection
+		},
 		...(mayAddIgniteVideo
 			? [
 					{
