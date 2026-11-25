@@ -68,7 +68,9 @@
 					bind:value={container.payload.body}
 				/>
 			{/key}
+		{/snippet}
 
+		{#snippet sections()}
 			<Sections bind:container {relatedContainers} />
 		{/snippet}
 	</EditableContainerDetailView>

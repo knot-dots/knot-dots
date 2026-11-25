@@ -413,7 +413,9 @@
 						handleSave(containerToSave as Container<ResourceDataPayload>)}
 				/>
 			</div>
+		{/snippet}
 
+		{#snippet sections()}
 			<Sections bind:container {relatedContainers} />
 		{/snippet}
 

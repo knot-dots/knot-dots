@@ -30,9 +30,17 @@
 		footer?: Snippet;
 		relatedContainers: Array<Container<AnyPayload>>;
 		revisions: Array<Container<AnyPayload>>;
+		sections?: Snippet;
 	}
 
-	let { container = $bindable(), data, footer, relatedContainers, revisions }: Props = $props();
+	let {
+		container = $bindable(),
+		data,
+		footer,
+		relatedContainers,
+		revisions,
+		sections
+	}: Props = $props();
 
 	const handleSubmit = $derived(autoSave(container, 2000));
 	const detailViewHelpSlug = $derived(helpSlugForDetailView(container.payload.type));
@@ -130,6 +138,8 @@
 
 				{@render data?.()}
 			</form>
+
+			{@render sections?.()}
 		</div>
 
 		<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>

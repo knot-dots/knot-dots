@@ -64,7 +64,7 @@
 		) ?? []
 	);
 
-	let sections = $derived(
+	let sectionContainers = $derived(
 		relatedContainersQuery.current?.filter(({ guid, relation }) =>
 			relation.some(
 				({ object, predicate }) =>
@@ -80,9 +80,12 @@
 			new Map([
 				['status', new Map(status.options.map((s) => [s, 0]))],
 				...buildCategoryFacetsWithCounts(categoryContext.options),
-				['type', new Map(sections.map(({ payload }) => payload.type).map((v) => [v as string, 0]))]
+				[
+					'type',
+					new Map(sectionContainers.map(({ payload }) => payload.type).map((v) => [v as string, 0]))
+				]
 			]),
-			sections
+			sectionContainers
 		)
 	);
 
@@ -124,7 +127,7 @@
 
 {#snippet main()}
 	<EditableContainerDetailView bind:container {footer} {relatedContainers} {revisions}>
-		{#snippet data()}
+		{#snippet sections()}
 			{const filterActive = $derived(
 				[paramsFromFragment(page.url), page.url.searchParams].some((params) =>
 					['type', 'terms', 'status', ...categoryContext.keys].some((key) => params.has(key))

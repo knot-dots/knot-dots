@@ -80,7 +80,9 @@
 					bind:value={container.payload.description}
 				/>
 			{/key}
+		{/snippet}
 
+		{#snippet sections()}
 			<Sections bind:container {relatedContainers} />
 
 			<button class="print-button" onclick={() => window.print()} type="button">

@@ -71,7 +71,9 @@
 					bind:value={container.payload.description}
 				/>
 			{/key}
+		{/snippet}
 
+		{#snippet sections()}
 			<Sections bind:container {relatedContainers} />
 		{/snippet}
 
