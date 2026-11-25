@@ -30,8 +30,9 @@ export default function autoSave(container: Container<AnyPayload>, delay: number
 		}
 	}
 
-	return (event: SubmitEvent) => {
-		event.preventDefault();
+	// Called without an event to save changes made outside a form.
+	return (event?: SubmitEvent) => {
+		event?.preventDefault();
 		clearTimeout(timer);
 		timer = setTimeout(() => {
 			if (inFlight) {

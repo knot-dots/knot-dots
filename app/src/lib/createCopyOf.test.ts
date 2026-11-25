@@ -188,6 +188,18 @@ test('applies root-only identifiers and selected root visibility', () => {
 	}
 });
 
+test('keeps the page actions of a page', () => {
+	const source = sourceFor(payloadTypes.enum.page, { showCompare: true, showReview: true });
+	const copy = createRootCopyOf(
+		source,
+		targetOrganization,
+		targetOrganizationalUnit,
+		visibility.enum.members
+	);
+
+	expect(copy.payload).toMatchObject({ showCompare: true, showReview: true });
+});
+
 test('uses the more restrictive visibility for descendants and preserves term values', () => {
 	const rank = new Map(visibility.options.map((value, index) => [value, index]));
 

@@ -78,9 +78,9 @@
 </script>
 
 {#snippet header()}
-	<Header>
+	<Header compare={container.payload.showCompare} review={container.payload.showReview}>
 		{#snippet settings()}
-			<SettingsDropdown {container} {relatedContainers} />
+			<SettingsDropdown bind:container onchange={() => handleSubmit()} {relatedContainers} />
 		{/snippet}
 	</Header>
 {/snippet}

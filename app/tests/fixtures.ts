@@ -20,6 +20,7 @@ import {
 	type MeasurePayload,
 	type NewContainer,
 	type ObjectivePayload,
+	type PagePayload,
 	type OrganizationalUnitPayload,
 	type OrganizationPayload,
 	payloadTypes,
@@ -80,10 +81,12 @@ type MyFixtures = {
 	testSimpleMeasure: Container<SimpleMeasurePayload>;
 	testObjective: Container<ObjectivePayload>;
 	testOrganization: Container<OrganizationPayload>;
+	testPage: Container<PagePayload>;
 	testOrganizationalUnit: Container<OrganizationalUnitPayload>;
 	testOrganizationalUnitGoal: Container<GoalPayload>;
 	testProgram: Container<ProgramPayload>;
 	testProgramGoalTemplate: Container<GoalPayload>;
+	testPublicPageWithActions: Container<PagePayload>;
 	testPublicProgram: Container<ProgramPayload>;
 	testPublicReport: Container<ReportPayload>;
 	testReport: Container<ReportPayload>;
@@ -1338,6 +1341,43 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		await use(testTask);
 
 		await deleteContainer(adminContext, testTask);
+	},
+	testPage: async ({ adminContext, testOrganization }, use, workerInfo) => {
+		const newPage = containerOfType(
+			payloadTypes.enum.page,
+			testOrganization
+		) as Container<PagePayload>;
+		const testPage = await createContainer(adminContext, {
+			...newPage,
+			payload: {
+				...newPage.payload,
+				title: `Test Page ${workerInfo.workerIndex}`
+			}
+		});
+
+		await use(testPage);
+
+		await deleteContainer(adminContext, testPage);
+	},
+	testPublicPageWithActions: async ({ adminContext, testOrganization }, use, workerInfo) => {
+		const newPage = containerOfType(
+			payloadTypes.enum.page,
+			testOrganization
+		) as Container<PagePayload>;
+		const testPublicPageWithActions = await createContainer(adminContext, {
+			...newPage,
+			payload: {
+				...newPage.payload,
+				showCompare: true,
+				showReview: true,
+				title: `Test Public Page ${workerInfo.workerIndex}`,
+				visibility: 'public'
+			}
+		});
+
+		await use(testPublicPageWithActions);
+
+		await deleteContainer(adminContext, testPublicPageWithActions);
 	},
 	testReport: async ({ adminContext, testOrganization }, use, workerInfo) => {
 		const newReport = containerOfType(

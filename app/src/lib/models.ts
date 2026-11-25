@@ -2204,6 +2204,14 @@ const pagePayload = z
 	.strictObject({
 		...detailViewStyle.shape,
 		body: z.string().trim().default('').describe('GitHub-flavored Markdown.'),
+		showCompare: z
+			.boolean()
+			.default(false)
+			.describe('Offers comparing the indicators on the page with those of other municipalities.'),
+		showReview: z
+			.boolean()
+			.default(false)
+			.describe('Offers reviewing the indicators on the page against the objectives of programs.'),
 		title: z.string().trim(),
 		type: z.literal(payloadTypes.enum.page).register(propertyRegistry, { label: 'payload_type' }),
 		visibility: visibility
