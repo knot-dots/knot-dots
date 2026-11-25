@@ -6,10 +6,10 @@
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import ObjectiveOrEffectCard from '$lib/components/ObjectiveOrEffectCard.svelte';
 	import {
-		getCreateEffectDialogContext,
-		hasCreateEffectDialogContext
-	} from '$lib/contexts/createEffectDialog.svelte';
-	import type { CreatedEffect } from '$lib/effectCreation';
+		getCreateObjectiveOrEffectDialogContext,
+		hasCreateObjectiveOrEffectDialogContext
+	} from '$lib/contexts/createObjectiveOrEffectDialog.svelte';
+	import type { CreatedObjectiveOrEffect } from '$lib/objectiveOrEffectCreation';
 	import {
 		type AnyPayload,
 		type Container,
@@ -46,13 +46,13 @@
 	);
 
 	// The dialog is provided by the page layout, which embedded views lack.
-	const createEffectDialog = hasCreateEffectDialogContext()
-		? getCreateEffectDialogContext()
+	const createObjectiveOrEffectDialog = hasCreateObjectiveOrEffectDialogContext()
+		? getCreateObjectiveOrEffectDialogContext()
 		: undefined;
 
 	let mayAddItem = $derived(
 		editable &&
-			createEffectDialog !== undefined &&
+			createObjectiveOrEffectDialog !== undefined &&
 			$mayCreateContainer(payloadTypes.enum.effect, container)
 	);
 
@@ -64,9 +64,10 @@
 		// This component may show another container once the effect is created.
 		const parent = parentContainer;
 
-		createEffectDialog?.open({
+		createObjectiveOrEffectDialog?.open({
 			onCreated: (created) => onCreated(parent, created),
-			target: parent
+			target: parent,
+			type: payloadTypes.enum.effect
 		});
 	}
 
@@ -75,7 +76,7 @@
 	// detach the effect again.
 	function onCreated(
 		parent: Container<GoalPayload | MeasurePayload>,
-		{ effect, indicator }: CreatedEffect
+		{ indicator, item }: CreatedObjectiveOrEffect
 	) {
 		parent.relation = [
 			...parent.relation,
@@ -83,14 +84,14 @@
 				object: parent.guid,
 				position: 0,
 				predicate: predicates.enum['is-part-of'],
-				subject: effect.guid
+				subject: item.guid
 			}
 		];
 
 		if (parent === parentContainer) {
 			relatedContainers = [
-				...relatedContainers.filter(({ guid }) => guid !== effect.guid && guid !== indicator.guid),
-				effect,
+				...relatedContainers.filter(({ guid }) => guid !== item.guid && guid !== indicator.guid),
+				item,
 				indicator
 			];
 		}

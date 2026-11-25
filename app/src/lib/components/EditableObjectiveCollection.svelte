@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
-	import { pushState } from '$app/navigation';
-	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
 	import Carousel from '$lib/components/Carousel.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import ObjectiveOrEffectCard from '$lib/components/ObjectiveOrEffectCard.svelte';
+	import {
+		getCreateObjectiveOrEffectDialogContext,
+		hasCreateObjectiveOrEffectDialogContext
+	} from '$lib/contexts/createObjectiveOrEffectDialog.svelte';
+	import type { CreatedObjectiveOrEffect } from '$lib/objectiveOrEffectCreation';
 	import {
 		type AnyPayload,
 		type Container,
@@ -14,9 +17,10 @@
 		isObjectiveContainer,
 		isPartOf,
 		type ObjectiveCollectionPayload,
-		payloadTypes
+		payloadTypes,
+		predicates
 	} from '$lib/models';
-	import { addObjectiveState, mayCreateContainer } from '$lib/stores';
+	import { mayCreateContainer } from '$lib/stores';
 
 	interface Props {
 		container: Container<ObjectiveCollectionPayload>;
@@ -40,14 +44,56 @@
 			: []
 	);
 
-	async function addItem() {
+	// The dialog is provided by the page layout, which embedded views lack.
+	const createObjectiveOrEffectDialog = hasCreateObjectiveOrEffectDialogContext()
+		? getCreateObjectiveOrEffectDialogContext()
+		: undefined;
+
+	let mayAddItem = $derived(
+		editable &&
+			createObjectiveOrEffectDialog !== undefined &&
+			$mayCreateContainer(payloadTypes.enum.objective, container)
+	);
+
+	function addItem() {
 		if (!parentContainer) {
 			return;
 		}
 
-		$addObjectiveState = { target: parentContainer };
+		// This component may show another container once the objective is created.
+		const parent = parentContainer;
 
-		pushState(page.url, { createObjective: { step: 1 } });
+		createObjectiveOrEffectDialog?.open({
+			onCreated: (created) => onCreated(parent, created),
+			target: parent,
+			type: payloadTypes.enum.objective
+		});
+	}
+
+	// Items are found through the relations of the parent container, which are
+	// also sent along when it is saved; without the new relation saving it would
+	// detach the objective again.
+	function onCreated(
+		parent: Container<GoalPayload>,
+		{ indicator, item }: CreatedObjectiveOrEffect
+	) {
+		parent.relation = [
+			...parent.relation,
+			{
+				object: parent.guid,
+				position: 0,
+				predicate: predicates.enum['is-part-of'],
+				subject: item.guid
+			}
+		];
+
+		if (parent === parentContainer) {
+			relatedContainers = [
+				...relatedContainers.filter(({ guid }) => guid !== item.guid && guid !== indicator.guid),
+				item,
+				indicator
+			];
+		}
 	}
 </script>
 
@@ -56,7 +102,7 @@
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
-			{#if $mayCreateContainer(payloadTypes.enum.objective, container)}
+			{#if mayAddItem}
 				<li>
 					<button
 						class="action-button action-button--size-l"
@@ -76,11 +122,7 @@
 	{/if}
 </header>
 
-<Carousel
-	{addItem}
-	{items}
-	mayAddItem={$mayCreateContainer(payloadTypes.enum.objective, container) && editable}
->
+<Carousel {addItem} {items} {mayAddItem}>
 	{#snippet itemSnippet(item)}
 		<ObjectiveOrEffectCard
 			container={item}

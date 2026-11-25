@@ -3,7 +3,6 @@
 	import { type DndEvent, dndzone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
-	import { pushState } from '$app/navigation';
 	import { page } from '$app/state';
 	import saveContainer from '$lib/client/saveContainer';
 	import Board from '$lib/components/Board.svelte';
@@ -12,9 +11,10 @@
 	import ObjectiveOrEffectCard from '$lib/components/ObjectiveOrEffectCard.svelte';
 	import ResourceDataCard from '$lib/components/ResourceDataCard.svelte';
 	import {
-		getCreateEffectDialogContext,
-		hasCreateEffectDialogContext
-	} from '$lib/contexts/createEffectDialog.svelte';
+		getCreateObjectiveOrEffectDialogContext,
+		hasCreateObjectiveOrEffectDialogContext
+	} from '$lib/contexts/createObjectiveOrEffectDialog.svelte';
+	import type { CreatedObjectiveOrEffect } from '$lib/objectiveOrEffectCreation';
 	import {
 		type Container,
 		containerOfType,
@@ -38,7 +38,7 @@
 		predicates,
 		resourceDataTypes
 	} from '$lib/models';
-	import { ability, addObjectiveState, lastCreatedContainers, newContainer } from '$lib/stores';
+	import { ability, lastCreatedContainers, newContainer } from '$lib/stores';
 
 	interface Props {
 		container: Container<GoalPayload | MeasurePayload>;
@@ -51,8 +51,8 @@
 		'createContainerDialog'
 	);
 
-	const createEffectDialog = hasCreateEffectDialogContext()
-		? getCreateEffectDialogContext()
+	const createObjectiveOrEffectDialog = hasCreateObjectiveOrEffectDialogContext()
+		? getCreateObjectiveOrEffectDialogContext()
 		: undefined;
 
 	// Watch for successfully created resourceData containers and create collection if needed
@@ -185,11 +185,16 @@
 
 	let items = $derived((containers ?? []).filter(itemFilterFn) as IooiItem[]);
 
+	// The indicator of an objective or effect created here is missing from the
+	// containers, unless another item of the board refers to it.
+	let chosenIndicators = $state.raw<CreatedObjectiveOrEffect['indicator'][]>([]);
+
 	// Cards of objectives and effects need their indicators for charts and the
 	// review, which covers binary indicators as well.
-	let indicators = $derived(
-		containers.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c))
-	);
+	let indicators = $derived([
+		...containers.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c)),
+		...chosenIndicators.filter(({ guid }) => !containers.some((c) => c.guid === guid))
+	]);
 
 	let resourceData = $derived(
 		(containers ?? [])
@@ -217,13 +222,14 @@
 				return;
 			}
 
-			if (isMeasureContainer(container)) {
-				createEffectDialog?.open({ iooiType, target: container });
-			} else if (isGoalContainer(container)) {
-				$addObjectiveState = { target: container, iooiType };
-
-				pushState(page.url, { createObjective: { step: 1 } });
-			}
+			createObjectiveOrEffectDialog?.open({
+				iooiType,
+				onCreated: ({ indicator }) => {
+					chosenIndicators = [...chosenIndicators, indicator];
+				},
+				target: container,
+				type: isMeasureContainer(container) ? payloadTypes.enum.effect : payloadTypes.enum.objective
+			});
 		};
 	}
 

@@ -1154,9 +1154,9 @@ test('omitting the template filter returns a complete mixed program hierarchy', 
 });
 
 // An indicator is in use once it is related to a container of the organization the
-// way the app relates them: an effect (created by createEffect for a measure) is
-// measured by it, an objective (created by createObjective for a goal) is an objective
-// for it, or actual data names it in its payload.
+// way the app relates them: an effect (created by createObjectiveOrEffect for a
+// measure) is measured by it, an objective (created by createObjectiveOrEffect for a
+// goal) is an objective for it, or actual data names it in its payload.
 test('getIndicatorGuidsInUse returns the indicators measured or reported on within scope', async ({
 	connection,
 	containers,

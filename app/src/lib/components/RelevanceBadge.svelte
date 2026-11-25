@@ -11,7 +11,7 @@
 	let level = $derived(relevanceLevel(score));
 </script>
 
-<span class="badge badge--{level.color}" title={$_('create_effect_dialog.relevance')}>
-	<span class="is-visually-hidden">{$_('create_effect_dialog.relevance')}</span>
+<span class="badge badge--{level.color}" title={$_('create_objective_or_effect_dialog.relevance')}>
+	<span class="is-visually-hidden">{$_('create_objective_or_effect_dialog.relevance')}</span>
 	{$number(level.value, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
 </span>
