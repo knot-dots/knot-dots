@@ -193,6 +193,7 @@
 		let created: CreatedObjectiveOrEffect;
 		try {
 			created = await createObjectiveOrEffect(target, {
+				type: payloadTypes.enum.effect,
 				description,
 				indicator:
 					selection.kind === 'existing'

@@ -13,15 +13,25 @@ import {
 	type IooiType,
 	type MeasurePayload,
 	type NewContainer,
+	objectivePayload,
+	type ObjectivePayload,
 	payloadTypes,
 	predicates
 } from '$lib/models';
 
-// The kind of an effect is not stored, but inferred from its values and the
-// type of its indicator; see Card.svelte and EditableEffectDetailView.svelte.
+export type ObjectiveOrEffectType =
+	typeof payloadTypes.enum.effect | typeof payloadTypes.enum.objective;
+
+// The kind of the values of an objective or effect is not stored, but inferred
+// from them and the type of its indicator; see Card.svelte.
 export const valueKinds = z.enum(['tendency', 'series', 'binary']);
 
 export type ValueKind = z.infer<typeof valueKinds>;
+
+const uniqueYears = [
+	(values: Array<[number, number]>) => new Set(values.map(([y]) => y)).size === values.length,
+	{ message: 'Years must be unique.' }
+] as const;
 
 // Unlike a stored effect, a new one must have the value of exactly one kind.
 export const effectValue = z.discriminatedUnion('kind', [
@@ -34,9 +44,7 @@ export const effectValue = z.discriminatedUnion('kind', [
 		plannedValues: effectPayload.shape.plannedValues
 			.unwrap()
 			.min(1)
-			.refine((values) => new Set(values.map(([y]) => y)).size === values.length, {
-				message: 'Years must be unique.'
-			}),
+			.refine(...uniqueYears),
 		achievedValues: effectPayload.shape.achievedValues.unwrap()
 	}),
 	z.object({
@@ -47,6 +55,28 @@ export const effectValue = z.discriminatedUnion('kind', [
 
 export type EffectValue = z.infer<typeof effectValue>;
 
+// Like a new effect, a new objective must have the value of exactly one kind.
+export const objectiveValue = z.discriminatedUnion('kind', [
+	z.object({
+		kind: z.literal(valueKinds.enum.tendency),
+		trendValue: objectivePayload.shape.trendValue.unwrap()
+	}),
+	z.object({
+		kind: z.literal(valueKinds.enum.series),
+		wantedValues: objectivePayload.shape.wantedValues
+			.unwrap()
+			.min(1)
+			.refine(...uniqueYears)
+	}),
+	z.object({
+		kind: z.literal(valueKinds.enum.binary),
+		booleanValue: objectivePayload.shape.booleanValue.unwrap()
+	})
+]);
+
+export type ObjectiveValue = z.infer<typeof objectiveValue>;
+
+// The value must fit the type of the container to create.
 export type CreateObjectiveOrEffectRequest = {
 	description: string;
 	indicator:
@@ -59,12 +89,14 @@ export type CreateObjectiveOrEffectRequest = {
 				container: NewContainer<BinaryIndicatorPayload> | NewContainer<IndicatorPayload>;
 		  };
 	iooiType?: IooiType;
-	value: EffectValue;
-};
+} & (
+	| { type: typeof payloadTypes.enum.effect; value: EffectValue }
+	| { type: typeof payloadTypes.enum.objective; value: ObjectiveValue }
+);
 
 export type CreatedObjectiveOrEffect = {
-	effect: Container<EffectPayload>;
 	indicator: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>;
+	item: Container<EffectPayload> | Container<ObjectivePayload>;
 };
 
 export function indicatorTypeForValueKind(kind: ValueKind) {
@@ -73,7 +105,7 @@ export function indicatorTypeForValueKind(kind: ValueKind) {
 		: payloadTypes.enum.indicator;
 }
 
-// The kinds of effects that can be defined for an indicator of the given type,
+// The kinds of values that can be defined for an indicator of the given type,
 // or for a new indicator if no type is given. Tendencies are still in beta.
 export function valueKindOptions({
 	features,
@@ -155,35 +187,57 @@ export function newIndicatorForObjectiveOrEffect({
 	} as NewContainer<IndicatorPayload> | NewContainer<BinaryIndicatorPayload>;
 }
 
-// The containers to create for an effect of the target, to be sent to
-// /container/bulk-action/create: a new indicator, if the effect needs one,
-// followed by the effect, which refers to it by its guid. Both get their guids
-// here.
+export function objectiveValuePayload(
+	value: ObjectiveValue
+): Partial<Pick<ObjectivePayload, 'booleanValue' | 'trendValue' | 'wantedValues'>> {
+	switch (value.kind) {
+		case valueKinds.enum.tendency:
+			return { trendValue: value.trendValue };
+		case valueKinds.enum.series:
+			return { wantedValues: value.wantedValues.toSorted(([a], [b]) => a - b) };
+		case valueKinds.enum.binary:
+			return { booleanValue: value.booleanValue };
+	}
+}
+
+// Objectives are objectives for their indicator, effects are measured by it.
+const indicatorPredicates = {
+	[payloadTypes.enum.effect]: predicates.enum['is-measured-by'],
+	[payloadTypes.enum.objective]: predicates.enum['is-objective-for']
+} as const;
+
+// The containers to create for an objective or effect of the target, to be
+// sent to /container/bulk-action/create: a new indicator, if the item needs
+// one, followed by the item, which refers to it by its guid. Both get their
+// guids here.
 export function newObjectiveOrEffectContainers(
 	target: Container<GoalPayload | MeasurePayload>,
-	{ description, indicator, iooiType, value }: CreateObjectiveOrEffectRequest
+	request: CreateObjectiveOrEffectRequest
 ) {
+	const { description, indicator, iooiType } = request;
 	const indicatorGuid = indicator.kind === 'new' ? crypto.randomUUID() : indicator.container.guid;
-	const effect = {
+	const item = {
 		guid: crypto.randomUUID(),
 		managed_by: target.managed_by,
 		organization: target.organization,
 		organizational_unit: target.organizational_unit,
 		payload: {
-			...effectValuePayload(value),
+			...(request.type === payloadTypes.enum.effect
+				? effectValuePayload(request.value)
+				: objectiveValuePayload(request.value)),
 			...(description.trim() ? { description } : undefined),
 			...(iooiType ? { iooiType } : undefined),
 			title: indicator.container.payload.title,
-			type: payloadTypes.enum.effect
+			type: request.type
 		},
 		realm: target.realm,
 		relation: [
-			{ object: indicatorGuid, position: 0, predicate: predicates.enum['is-measured-by'] },
+			{ object: indicatorGuid, position: 0, predicate: indicatorPredicates[request.type] },
 			{ object: target.guid, position: 0, predicate: predicates.enum['is-part-of'] }
 		]
 	};
 
 	return indicator.kind === 'new'
-		? [{ ...indicator.container, guid: indicatorGuid }, effect]
-		: [effect];
+		? [{ ...indicator.container, guid: indicatorGuid }, item]
+		: [item];
 }

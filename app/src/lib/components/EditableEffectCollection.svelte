@@ -75,7 +75,7 @@
 	// detach the effect again.
 	function onCreated(
 		parent: Container<GoalPayload | MeasurePayload>,
-		{ effect, indicator }: CreatedObjectiveOrEffect
+		{ indicator, item }: CreatedObjectiveOrEffect
 	) {
 		parent.relation = [
 			...parent.relation,
@@ -83,14 +83,14 @@
 				object: parent.guid,
 				position: 0,
 				predicate: predicates.enum['is-part-of'],
-				subject: effect.guid
+				subject: item.guid
 			}
 		];
 
 		if (parent === parentContainer) {
 			relatedContainers = [
-				...relatedContainers.filter(({ guid }) => guid !== effect.guid && guid !== indicator.guid),
-				effect,
+				...relatedContainers.filter(({ guid }) => guid !== item.guid && guid !== indicator.guid),
+				item,
 				indicator
 			];
 		}

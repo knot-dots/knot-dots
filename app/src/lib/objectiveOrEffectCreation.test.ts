@@ -1,14 +1,16 @@
 import { expect, test } from 'vitest';
 import {
-	valueKindOptions,
 	effectValuePayload,
+	newIndicatorForObjectiveOrEffect,
 	newObjectiveOrEffectContainers,
-	newIndicatorForObjectiveOrEffect
+	objectiveValuePayload,
+	valueKindOptions
 } from '$lib/objectiveOrEffectCreation';
 import {
 	anyContainer,
 	composeUserGrants,
 	type Container,
+	type GoalPayload,
 	grantSetForRole,
 	type IndicatorPayload,
 	type MeasurePayload,
@@ -53,6 +55,23 @@ test('planned values are sorted and accompanied by achieved values for the same 
 		plannedValues: [
 			[2026, 10],
 			[2030, 50]
+		]
+	});
+});
+
+test('wanted values of an objective are sorted', () => {
+	expect(
+		objectiveValuePayload({
+			kind: 'series',
+			wantedValues: [
+				[2030, -5],
+				[2026, -1]
+			]
+		})
+	).toEqual({
+		wantedValues: [
+			[2026, -1],
+			[2030, -5]
 		]
 	});
 });
@@ -142,6 +161,7 @@ const indicator = stored('00000000-0000-4000-8000-000000000003', {
 
 test('an effect for an existing indicator is measured by it and part of the target', () => {
 	const containers = newObjectiveOrEffectContainers(measure, {
+		type: 'effect',
 		description: 'More people cycle.',
 		indicator: { kind: 'existing', container: indicator },
 		iooiType: 'iooi.outcome',
@@ -172,6 +192,7 @@ test('an effect for an existing indicator is measured by it and part of the targ
 
 test('an effect without a description has none in its payload', () => {
 	const [effect] = newObjectiveOrEffectContainers(measure, {
+		type: 'effect',
 		description: ' ',
 		indicator: { kind: 'existing', container: indicator },
 		value: { kind: 'tendency', trendValue: 1 }
@@ -182,6 +203,7 @@ test('an effect without a description has none in its payload', () => {
 
 test('an effect is sent after the new indicator it refers to by its guid', () => {
 	const [newIndicator, effect] = newObjectiveOrEffectContainers(measure, {
+		type: 'effect',
 		description: 'More people cycle.',
 		indicator: {
 			kind: 'new',
@@ -206,5 +228,76 @@ test('an effect is sent after the new indicator it refers to by its guid', () =>
 		object: newIndicator.guid,
 		position: 0,
 		predicate: 'is-measured-by'
+	});
+});
+
+const goal = stored('00000000-0000-4000-8000-000000000004', {
+	category: { sdg: ['sdg.11'] },
+	title: 'Climate-neutral mobility',
+	type: 'goal'
+}) as Container<GoalPayload>;
+
+test('an objective for an existing indicator is an objective for it and part of the target', () => {
+	const containers = newObjectiveOrEffectContainers(goal, {
+		type: 'objective',
+		description: 'Half of all trips by bike.',
+		indicator: { kind: 'existing', container: indicator },
+		iooiType: 'iooi.impact',
+		value: { kind: 'series', wantedValues: [[2030, 20]] }
+	});
+
+	expect(containers).toEqual([
+		{
+			guid: expect.any(String),
+			managed_by: goal.managed_by,
+			organization: organizationGuid,
+			organizational_unit: null,
+			payload: {
+				description: 'Half of all trips by bike.',
+				iooiType: 'iooi.impact',
+				title: 'Modal split',
+				type: 'objective',
+				wantedValues: [[2030, 20]]
+			},
+			realm: 'knot-dots',
+			relation: [
+				{ object: indicator.guid, position: 0, predicate: 'is-objective-for' },
+				{ object: goal.guid, position: 0, predicate: 'is-part-of' }
+			]
+		}
+	]);
+});
+
+test('an objective is sent after the new indicator it is an objective for', () => {
+	const [newIndicator, objective] = newObjectiveOrEffectContainers(goal, {
+		type: 'objective',
+		description: '',
+		indicator: {
+			kind: 'new',
+			container: newIndicatorForObjectiveOrEffect({
+				categoryKeys: ['sdg'],
+				kind: 'binary',
+				scope: organization,
+				target: goal,
+				title: 'Mobility plan adopted'
+			})
+		},
+		value: { kind: 'binary', booleanValue: true }
+	});
+
+	expect(newIndicator.payload).toMatchObject({
+		category: { sdg: ['sdg.11'] },
+		title: 'Mobility plan adopted',
+		type: 'binary_indicator'
+	});
+	expect(objective.payload).toEqual({
+		booleanValue: true,
+		title: 'Mobility plan adopted',
+		type: 'objective'
+	});
+	expect(objective.relation).toContainEqual({
+		object: newIndicator.guid,
+		position: 0,
+		predicate: 'is-objective-for'
 	});
 });

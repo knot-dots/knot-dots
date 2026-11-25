@@ -13,24 +13,21 @@ import {
 	type GoalPayload,
 	indicatorPayload,
 	type MeasurePayload,
-	newContainer
+	newContainer,
+	objectivePayload,
+	payloadTypes
 } from '$lib/models';
 import { lastCreatedContainers } from '$lib/stores';
 
-const effectContainer = createContainerSchema(effectPayload);
+const indicatorContainer = z.union([
+	createContainerSchema(indicatorPayload),
+	createContainerSchema(binaryIndicatorPayload)
+]);
 
-// The batch is answered with the created containers in the order they were sent.
-const createdWithNewIndicator = z
-	.tuple([
-		z.union([
-			createContainerSchema(indicatorPayload),
-			createContainerSchema(binaryIndicatorPayload)
-		]),
-		effectContainer
-	])
-	.transform(([indicator, effect]) => ({ effect, indicator }));
-
-const createdForExistingIndicator = z.tuple([effectContainer]);
+const itemContainers = {
+	[payloadTypes.enum.effect]: createContainerSchema(effectPayload),
+	[payloadTypes.enum.objective]: createContainerSchema(objectivePayload)
+};
 
 export class CreateObjectiveOrEffectError extends Error {
 	constructor(
@@ -63,24 +60,27 @@ export default async function createObjectiveOrEffect(
 		throw new CreateObjectiveOrEffectError(response.status, message ?? response.statusText);
 	}
 
+	// The batch is answered with the created containers in the order they were sent.
 	const body = await response.json();
+	const itemContainer = itemContainers[request.type];
 	let created: CreatedObjectiveOrEffect;
 	if (request.indicator.kind === 'new') {
-		created = createdWithNewIndicator.parse(body);
+		const [indicator, item] = z.tuple([indicatorContainer, itemContainer]).parse(body);
+		created = { indicator, item };
 	} else {
-		const [effect] = createdForExistingIndicator.parse(body);
+		const [item] = z.tuple([itemContainer]).parse(body);
 		const indicator = request.indicator.container;
-		// The indicator was loaded before the effect existed, but cards find the
-		// indicator of an effect through the relations of both.
+		// The indicator was loaded before the item existed, but cards find the
+		// indicator of an objective or effect through the relations of both.
 		created = {
-			effect,
 			indicator: {
 				...indicator,
 				relation: [
 					...indicator.relation,
-					...effect.relation.filter(({ object }) => object === indicator.guid)
+					...item.relation.filter(({ object }) => object === indicator.guid)
 				]
-			}
+			},
+			item
 		};
 	}
 
@@ -88,7 +88,7 @@ export default async function createObjectiveOrEffect(
 		(map) =>
 			new Map([
 				...map,
-				[created.effect.guid, created.effect],
+				[created.item.guid, created.item],
 				...(request.indicator.kind === 'new'
 					? [[created.indicator.guid, created.indicator] as const]
 					: [])

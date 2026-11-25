@@ -2021,7 +2021,7 @@ export function isMeasureCollectionContainer(
 
 const initialMeasureCollectionPayload = measureCollectionPayload;
 
-const objectivePayload = z
+export const objectivePayload = z
 	.strictObject({
 		...basePayload.omit({ category: true, summary: true }).shape,
 		iooiType: iooiTypes
