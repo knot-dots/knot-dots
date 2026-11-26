@@ -495,9 +495,10 @@
 		>
 			{#snippet itemSnippet(item)}
 				{#if isBinaryIndicatorContainer(item) || isIndicatorContainer(item)}
-					{const relatedContainers =
+					{const relatedContainers = $derived(
 						actualDataResource.current?.filter(({ payload }) => payload.indicator === item.guid) ??
-						[]}
+							[]
+					)}
 					<NewIndicatorCard
 						{comparisonDataMap}
 						container={item}
@@ -531,10 +532,11 @@
 			{#each items as item (item.guid)}
 				<li>
 					{#if isBinaryIndicatorContainer(item) || isIndicatorContainer(item)}
-						{const relatedContainers =
+						{const relatedContainers = $derived(
 							actualDataResource.current?.filter(
 								({ payload }) => payload.indicator === item.guid
-							) ?? []}
+							) ?? []
+						)}
 						<NewIndicatorCard
 							--height="100%"
 							{comparisonDataMap}
