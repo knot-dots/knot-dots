@@ -16,13 +16,14 @@
 		type IndicatorPayload,
 		isEffectContainer,
 		type MeasurePayload,
-		payloadTypes
+		payloadTypes,
+		type SimpleMeasurePayload
 	} from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 
 	interface Props {
 		onSelect: (container: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>) => void;
-		target: Container<GoalPayload | MeasurePayload>;
+		target: Container<GoalPayload | MeasurePayload | SimpleMeasurePayload>;
 		value?: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>;
 	}
 

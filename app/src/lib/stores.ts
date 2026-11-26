@@ -30,7 +30,8 @@ import {
 	type TeamWithMembers,
 	type User as UserRecord,
 	grantForNewContainer,
-	type AnyInitialPayload
+	type AnyInitialPayload,
+	type SimpleMeasurePayload
 } from '$lib/models';
 import { extractCustomCategoryFiltersFromParams } from '$lib/utils/customCategoryFilters';
 
@@ -123,7 +124,7 @@ if (browser) {
 }
 
 type AddEffectState = {
-	target?: Container<GoalPayload | MeasurePayload>;
+	target?: Container<GoalPayload | MeasurePayload | SimpleMeasurePayload>;
 	iooiType?: IooiType;
 };
 

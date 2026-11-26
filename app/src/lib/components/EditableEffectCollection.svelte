@@ -15,7 +15,8 @@
 		isEffectContainer,
 		isPartOf,
 		type MeasurePayload,
-		payloadTypes
+		payloadTypes,
+		type SimpleMeasurePayload
 	} from '$lib/models';
 	import { addEffectState, mayCreateContainer } from '$lib/stores';
 
@@ -23,7 +24,7 @@
 		container: Container<EffectCollectionPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: Container<GoalPayload | MeasurePayload>;
+		parentContainer: Container<GoalPayload | MeasurePayload | SimpleMeasurePayload>;
 		relatedContainers: Container<AnyPayload>[];
 	}
 

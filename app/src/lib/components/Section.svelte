@@ -225,7 +225,7 @@
 				{editable}
 				{heading}
 			/>
-		{:else if isEffectCollectionContainer(container) && (isGoalContainer(parentContainer) || isMeasureContainer(parentContainer))}
+		{:else if isEffectCollectionContainer(container) && (isGoalContainer(parentContainer) || isMeasureContainer(parentContainer) || isSimpleMeasureContainer(parentContainer))}
 			<EditableEffectCollection
 				bind:container
 				bind:parentContainer
