@@ -13,6 +13,7 @@ import {
 	indicatorTypes,
 	isGoalContainer,
 	isMeasureContainer,
+	isSimpleMeasureContainer,
 	payloadTypes,
 	scoreIndicatorsByRelevanceForGoalOrMeasure
 } from '$lib/models';
@@ -91,7 +92,9 @@ export const GET = (async ({ locals, params, url }) => {
 		]);
 
 		if (
-			(!isGoalContainer(container) && !isMeasureContainer(container)) ||
+			(!isGoalContainer(container) &&
+				!isMeasureContainer(container) &&
+				!isSimpleMeasureContainer(container)) ||
 			defineAbilityFor(locals.user).cannot('read', container)
 		) {
 			error(404, { message: unwrapFunctionStore(_)('error.not_found') });

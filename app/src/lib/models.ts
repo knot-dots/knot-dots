@@ -4378,7 +4378,7 @@ export function getOrganizationURL(
 function computeRelevanceScore(
 	indicator: Container<BinaryIndicatorPayload | IndicatorPayload>,
 	containersRelatedToIndicator: Container[],
-	container: Container<GoalPayload | MeasurePayload>
+	container: Container<GoalPayload | MeasurePayload | SimpleMeasurePayload>
 ): number {
 	const containerHasParentUsingIndicator = containersRelatedToIndicator.some(({ relation }) =>
 		relation.find(
@@ -4424,7 +4424,7 @@ function computeRelevanceScore(
 export function scoreIndicatorsByRelevanceForGoalOrMeasure(
 	indicators: Array<Container<BinaryIndicatorPayload | IndicatorPayload>>,
 	containersRelatedToIndicators: Container[],
-	container: Container<GoalPayload | MeasurePayload>
+	container: Container<GoalPayload | MeasurePayload | SimpleMeasurePayload>
 ): Array<{ indicator: Container<BinaryIndicatorPayload | IndicatorPayload>; relevance: number }> {
 	return indicators
 		.map((i) => ({
