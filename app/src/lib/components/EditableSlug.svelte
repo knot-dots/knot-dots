@@ -31,7 +31,7 @@
 		class="value"
 		{id}
 		{oninput}
-		pattern="[a-z0-9-]+"
+		pattern="[a-z0-9\-]+"
 		placeholder={z.string().slugify().safeParse(container.payload.name).data ?? undefined}
 		type="text"
 		value={container.payload.slug}
