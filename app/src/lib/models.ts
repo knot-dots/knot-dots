@@ -3754,6 +3754,8 @@ export function grantForNewContainer(scope: Container<AnyPayload>): UserGrants |
 	};
 }
 
+const anyInitialContainer = createNewContainerSchema(anyInitialPayload);
+
 // A new container of the given type within the given scope: it lives in the
 // scope's organization and organizational unit, is managed by and related to the scope, and
 // carries the grants the request user would hold on it (grantForNewContainer),
@@ -3764,7 +3766,7 @@ export function containerOfType(payloadType: PayloadType, scope: Container<AnyPa
 		? scope.guid
 		: scope.organizational_unit;
 	return {
-		...(createNewContainerSchema(anyInitialPayload).parse({
+		...(anyInitialContainer.parse({
 			managed_by: isArea ? scope.guid : scope.managed_by,
 			organization: scope.organization,
 			organizational_unit:
