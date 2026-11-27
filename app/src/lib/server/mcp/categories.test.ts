@@ -23,6 +23,14 @@ import {
 	listMcpContainerCategoryValues
 } from '$lib/server/mcp/categories';
 
+// Categories are identified by the GUID of their category container and
+// their values by the GUID of their term container.
+const sdg = {
+	climateAction: '00000000-0000-4000-8000-0000000000c2',
+	environment: '00000000-0000-4000-8000-0000000000c3',
+	key: '00000000-0000-4000-8000-0000000000c1'
+};
+const programKindKey = '00000000-0000-4000-8000-0000000000d1';
 const organizationGuid = '00000000-0000-4000-8000-000000000001';
 const defaultOrganizationGuid = '00000000-0000-4000-8000-000000000002';
 const userId = '00000000-0000-4000-8000-000000000003';
@@ -32,33 +40,22 @@ beforeEach(() => {
 	getManyOrganizationContainers.mockReturnValue(async () => [{ guid: defaultOrganizationGuid }]);
 	loadCategoryContext.mockReset();
 	loadCategoryContext.mockResolvedValue({
-		keys: ['sdg', 'programKind'],
+		keys: [sdg.key, programKindKey],
 		labels: new Map([
-			['sdg', 'Sustainable Development Goal'],
-			['programKind', 'Program kind']
+			[sdg.key, 'Sustainable Development Goal'],
+			[programKindKey, 'Program kind']
 		]),
 		objectTypesPerKey: {
-			programKind: ['program'],
-			sdg: ['indicator']
+			[programKindKey]: ['program'],
+			[sdg.key]: ['indicator']
 		},
 		options: {
-			__categoryLabels__: {
-				programKind: 'Program kind',
-				sdg: 'Sustainable Development Goal'
-			},
-			programKind: [],
-			sdg: [
+			[programKindKey]: [],
+			[sdg.key]: [
 				{
-					guid: '00000000-0000-4000-8000-000000000004',
 					label: 'Environment',
-					subOptions: [
-						{
-							guid: '00000000-0000-4000-8000-000000000005',
-							label: 'Climate action',
-							value: '13'
-						}
-					],
-					value: 'environment'
+					subOptions: [{ label: 'Climate action', value: sdg.climateAction }],
+					value: sdg.environment
 				}
 			]
 		}
@@ -76,7 +73,7 @@ test('lists category metadata using union semantics for requested types', async 
 		categories: [
 			{
 				applicableTypes: ['indicator'],
-				key: 'sdg',
+				key: sdg.key,
 				label: 'Sustainable Development Goal',
 				valueCount: 2
 			}
@@ -92,7 +89,7 @@ test('lists category metadata using union semantics for requested types', async 
 test('searches and paginates values for one category', async () => {
 	await expect(
 		listMcpContainerCategoryValues({
-			categoryKey: 'sdg',
+			categoryKey: sdg.key,
 			limit: 1,
 			offset: 0,
 			organizationGuid,
@@ -101,14 +98,14 @@ test('searches and paginates values for one category', async () => {
 			userId
 		})({} as never)
 	).resolves.toEqual({
-		category: { key: 'sdg', label: 'Sustainable Development Goal' },
+		category: { key: sdg.key, label: 'Sustainable Development Goal' },
 		nextOffset: 1,
-		values: [{ label: 'Environment', parentValue: null, value: 'environment' }]
+		values: [{ label: 'Environment', parentValue: null, value: sdg.environment }]
 	});
 
 	await expect(
 		listMcpContainerCategoryValues({
-			categoryKey: 'sdg',
+			categoryKey: sdg.key,
 			limit: 50,
 			offset: 0,
 			organizationGuid,
@@ -117,8 +114,8 @@ test('searches and paginates values for one category', async () => {
 			userId
 		})({} as never)
 	).resolves.toEqual({
-		category: { key: 'sdg', label: 'Sustainable Development Goal' },
+		category: { key: sdg.key, label: 'Sustainable Development Goal' },
 		nextOffset: null,
-		values: [{ label: 'Climate action', parentValue: 'environment', value: '13' }]
+		values: [{ label: 'Climate action', parentValue: sdg.environment, value: sdg.climateAction }]
 	});
 });
