@@ -171,7 +171,7 @@
 		if (response.ok) {
 			const updatedContainer = await response.json();
 			organization.revision = updatedContainer.revision;
-			await invalidate('organization');
+			await invalidate('app:organization');
 		} else {
 			const error = await response.json();
 			alert(error.message);

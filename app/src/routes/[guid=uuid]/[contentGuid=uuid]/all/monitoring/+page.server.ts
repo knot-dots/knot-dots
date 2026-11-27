@@ -18,7 +18,7 @@ import {
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ depends, locals, params, url }) => {
-	depends('containers');
+	depends('app:containers');
 
 	const t = unwrapFunctionStore(_);
 

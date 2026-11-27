@@ -9,6 +9,7 @@ import {
 	type CategoryContext,
 	filterCategoryContext
 } from '$lib/categoryOptions';
+import { containerGroup, matchesContainerGroup } from '$lib/containerGroups';
 import {
 	administrativeTypes,
 	type AnyPayload,
@@ -56,6 +57,11 @@ export type ContainerV2Response = {
 	facets: Record<string, Record<string, number>>;
 };
 
+export type ContainerGroupsV2Response = {
+	facets: ContainerV2Response['facets'];
+	groups: Pick<ContainerV2Response, 'containers' | 'page'>[];
+};
+
 const querySchema = z.object({
 	administrativeType: z.array(administrativeTypes).default([]),
 	assignee: z.array(z.uuid()).default([]),
@@ -63,6 +69,7 @@ const querySchema = z.object({
 	categoryMatch: z.array(z.enum(['any', 'all'])).default(['all']),
 	contextGuid: z.array(z.uuid()).default([]),
 	excludeRelation: z.array(predicates).default([]),
+	facets: z.array(z.stringbool()).default([]),
 	federalState: z.array(z.string()).default([]),
 	guid: z.array(z.uuid()).default([]),
 	hierarchyLevel: z.array(z.coerce.number().int().gte(1).lte(6)).default([]),
@@ -108,11 +115,19 @@ const querySchema = z.object({
 
 type ContainerQueryParams = Omit<
 	z.infer<typeof querySchema>,
-	'availableIn' | 'categoryMatch' | 'contextGuid' | 'sort' | 'template' | 'templateRoot' | 'terms'
+	| 'availableIn'
+	| 'categoryMatch'
+	| 'contextGuid'
+	| 'facets'
+	| 'sort'
+	| 'template'
+	| 'templateRoot'
+	| 'terms'
 > & {
 	availableIn: string | undefined;
 	categoryMatch: 'any' | 'all';
 	contextGuid: string | undefined;
+	facets: boolean;
 	sort: 'alpha' | 'date' | 'modified' | 'priority' | 'relevance';
 	template: boolean;
 	templateRoot: boolean | undefined;
@@ -159,6 +174,7 @@ function parseContainerQuery(url: URL): ContainerQueryParams {
 		availableIn: parseResult.data.availableIn[0],
 		categoryMatch: parseResult.data.categoryMatch[0] ?? 'all',
 		contextGuid: parseResult.data.contextGuid[0],
+		facets: parseResult.data.facets[0] ?? true,
 		sort: parseResult.data.sort[0] ?? 'alpha',
 		template: parseResult.data.template[0] ?? false,
 		templateRoot: parseResult.data.templateRoot[0],
@@ -304,6 +320,50 @@ export async function loadContainerV2(params: {
 	url: URL;
 }): Promise<ContainerV2Response> {
 	const query = parseContainerQuery(params.url);
+	const { containers, facets } = await searchContainers(params, query);
+	const page = paginate(containers, query.limit, query.offset, containers.length);
+
+	return {
+		containers: page.containers,
+		page: page.page,
+		facets: mapToRecord(facets)
+	};
+}
+
+// Loads the first pages of several groups of the containers matching a query,
+// such as the columns of a board, with a single search. The facets are those
+// of all containers matching the query.
+export async function loadContainerGroupsV2(params: {
+	locals: App.Locals;
+	url: URL;
+}): Promise<ContainerGroupsV2Response> {
+	const query = parseContainerQuery(params.url);
+	const groupsResult = z
+		.array(containerGroup)
+		.min(1)
+		.safeParse(params.url.searchParams.getAll('group'));
+
+	if (!groupsResult.success) {
+		error(400, { message: groupsResult.error.message });
+	}
+
+	const { containers, facets } = await searchContainers(params, query);
+
+	return {
+		facets: mapToRecord(facets),
+		groups: groupsResult.data.map((group) => {
+			const groupContainers = containers.filter((container) =>
+				matchesContainerGroup(container, group)
+			);
+			return paginate(groupContainers, query.limit, query.offset, groupContainers.length);
+		})
+	};
+}
+
+async function searchContainers(
+	params: { locals: App.Locals; url: URL },
+	query: ContainerQueryParams
+) {
 	const applicationContext = query.contextGuid
 		? await loadApplicationContext({
 				locals: params.locals,
@@ -379,7 +439,7 @@ export async function loadContainerV2(params: {
 		const filters = buildFilters(scopedQuery, customCategories, { ...ouOverrides, includeGuids });
 		const result = await getManyContainersWithES(scopedQuery.organization, filters, query.sort, {
 			customCategoryKeys: queriedCategoryContext.keys,
-			includeFacets: true
+			includeFacets: query.facets
 		});
 		rawContainers = result.containers;
 		esFacets = result.facets;
@@ -404,15 +464,12 @@ export async function loadContainerV2(params: {
 					);
 	}
 
-	const allVisible = filterVisible(rawContainers, params.locals.user);
-	const page = paginate(allVisible, query.limit, query.offset, allVisible.length);
-	const facets = esFacets
-		? baseFacetMap(esFacets, queriedCategoryContext)
-		: computeFacetCount(baseFacetMap({}, queriedCategoryContext), allVisible);
+	const containers = filterVisible(rawContainers, params.locals.user);
+	const facets = !query.facets
+		? new Map<string, Map<string, number>>()
+		: esFacets
+			? baseFacetMap(esFacets, queriedCategoryContext)
+			: computeFacetCount(baseFacetMap({}, queriedCategoryContext), containers);
 
-	return {
-		containers: page.containers,
-		page: page.page,
-		facets: mapToRecord(facets)
-	};
+	return { containers, facets };
 }

@@ -4,7 +4,7 @@ import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ depends, fetch, params, url }) => {
-	depends('containers');
+	depends('app:containers');
 
 	const query = new URLSearchParams([...url.searchParams, ['type', payloadTypes.enum.page]]);
 

@@ -102,7 +102,7 @@
 			}
 		);
 		if (response.ok) {
-			await invalidate('containers');
+			await invalidate('app:containers');
 			dialog?.close();
 		} else {
 			alert($_('indicator_picker.import_failed'));

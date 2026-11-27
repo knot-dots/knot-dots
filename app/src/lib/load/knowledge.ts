@@ -5,7 +5,7 @@ import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/knowledge/$types';
 
 export default (async function load({ depends, fetch, params, parent, url }) {
-	depends('containers');
+	depends('app:containers');
 
 	const [data, { categoryContext, currentOrganization }] = await Promise.all([
 		fetchContainerPage<Container<KnowledgePayload>>({

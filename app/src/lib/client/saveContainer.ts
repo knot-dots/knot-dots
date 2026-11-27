@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { env } from '$env/dynamic/public';
 import {
+	anyContainer,
 	type AnyPayload,
 	type Container,
 	etag,
@@ -39,18 +40,21 @@ export default async function saveContainer(
 	});
 
 	if (response.ok && optimisticUpdate) {
-		const cloned = response.clone();
-		cloned.json().then((savedContainer) => {
-			if (isUpdate) {
-				lastUpdatedContainers.update(
-					(map) => new Map([...map, [savedContainer.guid, savedContainer]])
-				);
-			} else {
-				lastCreatedContainers.update(
-					(map) => new Map([...map, [savedContainer.guid, savedContainer]])
-				);
-			}
-		});
+		response
+			.clone()
+			.json()
+			.then(anyContainer.parse)
+			.then((savedContainer) => {
+				if (isUpdate) {
+					lastUpdatedContainers.update(
+						(map) => new Map([...map, [savedContainer.guid, savedContainer]])
+					);
+				} else {
+					lastCreatedContainers.update(
+						(map) => new Map([...map, [savedContainer.guid, savedContainer]])
+					);
+				}
+			});
 	}
 
 	return response;

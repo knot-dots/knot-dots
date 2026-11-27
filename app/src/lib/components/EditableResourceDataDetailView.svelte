@@ -304,7 +304,7 @@
 			throw new Error(error.message);
 		}
 		const updated = await response.json();
-		await invalidate('containers');
+		await invalidate('app:containers');
 		return { guid: updated.guid, revision: updated.revision };
 	}
 

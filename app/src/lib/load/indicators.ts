@@ -122,7 +122,7 @@ export async function getIndicatorsData(params: {
 }
 
 export default (async function load({ depends, locals, parent, url }) {
-	depends('containers');
+	depends('app:containers');
 
 	const {
 		categoryContext: rawCategoryContext,

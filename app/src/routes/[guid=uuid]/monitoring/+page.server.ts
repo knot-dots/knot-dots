@@ -9,7 +9,7 @@ import {
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ depends, locals, parent, url }) => {
-	depends('containers');
+	depends('app:containers');
 
 	let containers;
 	let subordinateOrganizationalUnits: string[] = [];

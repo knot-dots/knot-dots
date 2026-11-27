@@ -18,7 +18,7 @@ import { fetchResources } from '$lib/load/resources';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ depends, locals, parent, params, url }) => {
-	depends('containers');
+	depends('app:containers');
 
 	const t = unwrapFunctionStore(_);
 	const { categoryContext } = await parent();

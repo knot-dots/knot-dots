@@ -1,3 +1,4 @@
+import type { ContainerGroup } from '$lib/containerGroups';
 import { payloadTypes, predicates } from '$lib/models';
 
 export const DEFAULT_RELATION_TYPES = [
@@ -26,30 +27,12 @@ export const ALL_LEVEL_COLUMN_IDS = [
 
 export type AllLevelColumnId = (typeof ALL_LEVEL_COLUMN_IDS)[number];
 
-export function createAllLevelQuery(url: URL, columnId?: AllLevelColumnId) {
+export function createAllLevelQuery(url: URL) {
 	const query = new URLSearchParams(url.searchParams);
 	query.delete('payloadType');
 	query.delete('type');
 	query.delete('hierarchyLevel');
-	const selectedTypes = selectedTypeFilter(url);
-
-	if (!columnId) {
-		appendTypes(query, selectedTypes);
-	} else if (columnId === 'programs') {
-		appendTypes(query, selectedTypes, [payloadTypes.enum.program, payloadTypes.enum.report]);
-	} else if (columnId.startsWith('goals-')) {
-		appendTypes(query, selectedTypes, [payloadTypes.enum.goal]);
-		query.append('excludeRelation', predicates.enum['is-part-of-measure']);
-		query.append('hierarchyLevel', columnId.substring('goals-'.length));
-	} else {
-		const hierarchyLevel = columnId.substring('implementation-'.length);
-		const types: string[] = [payloadTypes.enum.measure, payloadTypes.enum.simple_measure];
-		if (hierarchyLevel === '1') {
-			types.push(payloadTypes.enum.rule);
-		}
-		appendTypes(query, selectedTypes, types);
-		query.append('hierarchyLevel', hierarchyLevel);
-	}
+	appendTypes(query, selectedTypeFilter(url));
 
 	if (url.searchParams.has('related-to') && !url.searchParams.has('relationType')) {
 		for (const relationType of DEFAULT_RELATION_TYPES) {
@@ -60,6 +43,27 @@ export function createAllLevelQuery(url: URL, columnId?: AllLevelColumnId) {
 	query.set('template', 'false');
 
 	return query;
+}
+
+export function allLevelColumnGroup(columnId: AllLevelColumnId): ContainerGroup {
+	if (columnId === 'programs') {
+		return { type: [payloadTypes.enum.program, payloadTypes.enum.report] };
+	}
+	if (columnId.startsWith('goals-')) {
+		return {
+			excludeRelation: [predicates.enum['is-part-of-measure']],
+			hierarchyLevel: [Number(columnId.substring('goals-'.length))],
+			type: [payloadTypes.enum.goal]
+		};
+	}
+	const hierarchyLevel = Number(columnId.substring('implementation-'.length));
+	return {
+		hierarchyLevel: [hierarchyLevel],
+		type:
+			hierarchyLevel === 1
+				? [payloadTypes.enum.measure, payloadTypes.enum.simple_measure, payloadTypes.enum.rule]
+				: [payloadTypes.enum.measure, payloadTypes.enum.simple_measure]
+	};
 }
 
 function selectedTypeFilter(url: URL) {
@@ -75,11 +79,9 @@ function selectedTypeFilter(url: URL) {
 	return allTypes.filter((type) => urlTypes.length === 0 || urlTypes.includes(type));
 }
 
-function appendTypes(query: URLSearchParams, selectedTypes: string[], columnTypes = selectedTypes) {
-	const types = columnTypes.filter((type) => selectedTypes.includes(type));
+function appendTypes(query: URLSearchParams, types: string[]) {
 	if (types.length === 0) {
 		// Append a dummy guid to ensure the query returns no results, since an empty type filter means "all types".
-		// Used for the facet request.
 		query.append('guid', '00000000-0000-0000-0000-000000000000');
 		return;
 	}

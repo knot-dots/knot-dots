@@ -22,7 +22,7 @@ export default function createColumnBoardPagination<
 	resetKey,
 	updated
 }: {
-	columnForItem: (container: T) => ColumnId;
+	columnForItem: (container: T) => ColumnId | undefined;
 	columnIds: () => readonly ColumnId[];
 	columns: () => Record<ColumnId, Column<T>>;
 	created: () => Map<string, Container<AnyPayload>>;

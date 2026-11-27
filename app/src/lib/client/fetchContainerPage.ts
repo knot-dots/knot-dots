@@ -10,16 +10,15 @@ interface FetchContainerPageOptions {
 	signal?: AbortSignal;
 }
 
-const responseSchema = z.object({
+export const facetsSchema = z
+	.record(z.string(), z.record(z.string(), z.number()))
+	.transform(
+		(record) =>
+			new Map(Object.entries(record).map(([key, values]) => [key, new Map(Object.entries(values))]))
+	);
+
+export const containerPageSchema = z.object({
 	containers: z.array(anyContainer),
-	facets: z
-		.record(z.string(), z.record(z.string(), z.number()))
-		.transform(
-			(record) =>
-				new Map(
-					Object.entries(record).map(([key, values]) => [key, new Map(Object.entries(values))])
-				)
-		),
 	page: z.object({
 		hasMore: z.boolean(),
 		limit: z.number(),
@@ -28,6 +27,8 @@ const responseSchema = z.object({
 		total: z.number()
 	})
 });
+
+const responseSchema = containerPageSchema.extend({ facets: facetsSchema });
 
 export default async function fetchContainerPage<T extends Container<AnyPayload>>({
 	contextGuid,

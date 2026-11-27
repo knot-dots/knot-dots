@@ -62,7 +62,7 @@ import {
 	type NewContainerWithGuid,
 	referenceCopyPredicates
 } from '$lib/server/containerCopyPlan';
-import { enqueueIndexingEvent } from '$lib/server/indexingQueue';
+import { enqueueIndexingEvent, enqueueIndexingEvents } from '$lib/server/indexingQueue';
 import { createGroup, deleteGroup, updateAccessSettings } from '$lib/server/keycloak';
 
 const createResultParserInterceptor = (): Interceptor => {
@@ -90,21 +90,6 @@ const createResultParserInterceptor = (): Interceptor => {
 	};
 };
 
-const createDisableJitInterceptor = (): Interceptor => {
-	return {
-		// JIT compilation costs several hundred milliseconds whenever the planner
-		// overestimates a query's cost (e.g. for the recursive computeManagedBy query)
-		// while none of our OLTP-style queries run long enough to gain from it. A plain
-		// SET (rather than SET LOCAL in a transaction) keeps concurrent queries on a
-		// shared connection possible.
-		afterPoolConnection: async (_connectionContext, connection) => {
-			await connection.query(sql.typeAlias('void')`SET jit = off`);
-			return null;
-		},
-		name: 'disable-jit-interceptor'
-	};
-};
-
 export type DatabaseNonTransactionConnection = DatabaseConnection & {
 	readonly transactionDepth?: never;
 	readonly transactionId?: never;
@@ -114,9 +99,20 @@ let pool: DatabasePool;
 
 export async function getPool() {
 	if (!pool) {
-		pool = await createPool('postgres://', {
-			interceptors: [createResultParserInterceptor(), createDisableJitInterceptor()],
+		// JIT compilation costs several hundred milliseconds whenever the planner
+		// overestimates a query's cost (e.g. for the recursive computeManagedBy query)
+		// while none of our OLTP-style queries run long enough to gain from it. Slonik
+		// resets a connection with DISCARD ALL whenever it is released, so a SET would
+		// have to be repeated on every checkout. The startup option disables JIT once
+		// per connection and survives the reset, which restores the values the
+		// session was started with.
+		pool = await createPool('postgres://?options=-c%20jit%3Doff', {
+			// Keep connections open across short pauses between requests, so that
+			// a request doesn't have to wait for new ones to be established.
+			idleTimeout: 60_000,
+			interceptors: [createResultParserInterceptor()],
 			maxPoolSize: 50,
+			minPoolSize: 5,
 			tracing: true
 		});
 	}
@@ -2595,9 +2591,7 @@ function affectedContainerGuids(relations: ReadonlyArray<Relation>) {
 
 async function enqueueContainerUpserts(guids: ReadonlyArray<string>) {
 	const timestamp = new Date().toISOString();
-	for (const guid of new Set(guids)) {
-		await enqueueIndexingEvent({ action: 'upsert', guid, timestamp });
-	}
+	await enqueueIndexingEvents(guids.map((guid) => ({ action: 'upsert', guid, timestamp })));
 }
 
 export function createManyContainerRelations(relations: ReadonlyArray<Relation>) {
@@ -2901,13 +2895,7 @@ export function createOrUpdateTaskPriority(taskPriority: TaskPriority[]) {
 			`);
 		});
 
-		for (const taskGuid of new Set(tasks)) {
-			await enqueueIndexingEvent({
-				action: 'upsert',
-				guid: taskGuid,
-				timestamp: new Date().toISOString()
-			});
-		}
+		await enqueueContainerUpserts(tasks);
 	};
 }
 

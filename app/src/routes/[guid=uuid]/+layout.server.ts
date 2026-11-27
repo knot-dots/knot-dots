@@ -1,28 +1,13 @@
 import type { LayoutServerLoad } from './$types';
-import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { loadApplicationContext } from '$lib/server/applicationContext';
-import { payloadTypes } from '$lib/models';
 
-function pageTitle(url: URL) {
-	const segments = url.pathname.split('/');
-
-	const workspaceType = segments[2];
-
-	if (!workspaceType) {
-		return '';
-	}
-
-	const workspaceView = segments[3];
-
-	if (!workspaceView) {
-		return '';
-	}
-
-	return unwrapFunctionStore(_)('workspace.' + workspaceType + '.title');
-}
-
+// This load must not read the route, the pathname or the search params of the
+// URL. Each would rerun it on navigations within the organization, and on the
+// client, SvelteKit requests the data of server loads before it runs the
+// universal page loads that fetch the data of the boards. The application
+// context only reads the hostname, which SvelteKit does not track, and the
+// title of the workspace is computed by the universal load in +layout.ts.
 export const load = (async ({ depends, locals, params, url }) => {
-	depends(payloadTypes.enum.organization, payloadTypes.enum.organizational_unit);
-	const context = await loadApplicationContext({ locals, params, url });
-	return { ...context, title: pageTitle(url) };
+	depends('app:organization', 'app:organizational_unit');
+	return loadApplicationContext({ locals, params, url });
 }) satisfies LayoutServerLoad;

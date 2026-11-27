@@ -1,15 +1,16 @@
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterCategoryContext } from '$lib/categoryOptions';
-import fetchContainerPage from '$lib/client/fetchContainerPage';
+import fetchContainerGroups from '$lib/client/fetchContainerGroups';
 import { type AnyPayload, type Container, payloadTypes } from '$lib/models';
 import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 import {
 	ALL_LEVEL_COLUMN_IDS,
 	type AllLevelColumnId,
+	allLevelColumnGroup,
 	createAllLevelQuery,
 	DEFAULT_RELATION_TYPES
 } from './query';
-import type { PageServerLoad } from './$types';
+import type { PageLoad } from './$types';
 
 type Column = {
 	containers: Container<AnyPayload>[];
@@ -31,35 +32,23 @@ const ALL_LEVEL_PAYLOAD_TYPES = [
 	payloadTypes.enum.simple_measure
 ];
 
-export const load: PageServerLoad = async ({ depends, fetch, params, parent, url }) => {
-	depends('containers');
+export const load: PageLoad = async ({ depends, fetch, params, parent, url }) => {
+	depends('app:containers');
 
-	const baseQuery = createAllLevelQuery(url);
-	const [facetData, columnEntries, { categoryContext, currentOrganization }] = await Promise.all([
-		fetchContainerPage<Container<AnyPayload>>({
+	const [{ facets, groups }, { categoryContext, currentOrganization }] = await Promise.all([
+		fetchContainerGroups<Container<AnyPayload>>({
 			contextGuid: params.guid,
 			fetch,
-			limit: 1,
-			offset: 0,
-			query: baseQuery
+			groups: ALL_LEVEL_COLUMN_IDS.map(allLevelColumnGroup),
+			limit: DEFAULT_PAGE_SIZE,
+			query: createAllLevelQuery(url)
 		}),
-		Promise.all(
-			ALL_LEVEL_COLUMN_IDS.map(async (columnId) => {
-				const data = await fetchContainerPage<Container<AnyPayload>>({
-					contextGuid: params.guid,
-					fetch,
-					limit: DEFAULT_PAGE_SIZE,
-					offset: 0,
-					query: createAllLevelQuery(url, columnId)
-				});
-
-				return [columnId, { containers: data.containers, page: data.page }] as const;
-			})
-		),
 		parent()
 	]);
 
-	const columns = Object.fromEntries(columnEntries) as Record<AllLevelColumnId, Column>;
+	const columns = Object.fromEntries(
+		ALL_LEVEL_COLUMN_IDS.map((columnId, index) => [columnId, groups[index]])
+	) as Record<AllLevelColumnId, Column>;
 	const filteredCategoryContext = filterCategoryContext(categoryContext, ALL_LEVEL_PAYLOAD_TYPES, {
 		matchAll: true
 	});
@@ -74,9 +63,9 @@ export const load: PageServerLoad = async ({ depends, fetch, params, parent, url
 					...((!currentOrganization.payload.default
 						? [['included', new Map<string, number>()]]
 						: []) as Array<[string, Map<string, number>]>),
-					['status', facetData.facets.get('status') ?? new Map()],
-					...[...facetData.facets].filter(([key]) => filteredCategoryContext.keys.includes(key)),
-					['programType', facetData.facets.get('programType') ?? new Map()]
+					['status', facets.get('status') ?? new Map()],
+					...[...facets].filter(([key]) => filteredCategoryContext.keys.includes(key)),
+					['programType', facets.get('programType') ?? new Map()]
 				]),
 		title: unwrapFunctionStore(_)('dots')
 	};
