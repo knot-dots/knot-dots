@@ -488,6 +488,81 @@ test('findDescendants without the flag still returns every descendant', () => {
 	);
 });
 
+test('findDescendants returns the descendants depth first, siblings in the order of the candidates', () => {
+	const rootGuid = '0d7e1a00-0000-4000-8000-000000000001';
+	const otherProgramGuid = '0d7e1a00-0000-4000-8000-000000000002';
+	const firstGuid = '0d7e1a00-0000-4000-8000-000000000003';
+	const secondGuid = '0d7e1a00-0000-4000-8000-000000000004';
+	const firstChildOfFirstGuid = '0d7e1a00-0000-4000-8000-000000000005';
+	const secondChildOfFirstGuid = '0d7e1a00-0000-4000-8000-000000000006';
+	const childOfSecondGuid = '0d7e1a00-0000-4000-8000-000000000007';
+	const grandchildOfFirstGuid = '0d7e1a00-0000-4000-8000-000000000008';
+
+	const root = makeContainer(rootGuid, payloadTypes.enum.program, []);
+	const first = makeContainer(firstGuid, payloadTypes.enum.goal, [
+		templateRelation(firstGuid, predicates.enum['is-part-of'], rootGuid)
+	]);
+	const second = makeContainer(secondGuid, payloadTypes.enum.goal, [
+		templateRelation(secondGuid, predicates.enum['is-part-of'], rootGuid)
+	]);
+	// Belongs to two programs.
+	const firstChildOfFirst = makeContainer(firstChildOfFirstGuid, payloadTypes.enum.measure, [
+		templateRelation(firstChildOfFirstGuid, predicates.enum['is-part-of'], firstGuid),
+		templateRelation(firstChildOfFirstGuid, predicates.enum['is-part-of-program'], rootGuid),
+		templateRelation(firstChildOfFirstGuid, predicates.enum['is-part-of-program'], otherProgramGuid)
+	]);
+	const secondChildOfFirst = makeContainer(secondChildOfFirstGuid, payloadTypes.enum.measure, [
+		templateRelation(secondChildOfFirstGuid, predicates.enum['is-part-of'], firstGuid)
+	]);
+	const childOfSecond = makeContainer(childOfSecondGuid, payloadTypes.enum.measure, [
+		templateRelation(childOfSecondGuid, predicates.enum['is-part-of'], secondGuid)
+	]);
+	const grandchildOfFirst = makeContainer(grandchildOfFirstGuid, payloadTypes.enum.measure, [
+		templateRelation(grandchildOfFirstGuid, predicates.enum['is-part-of'], firstChildOfFirstGuid)
+	]);
+	// Level by level, so that a breadth-first traversal would return them as is.
+	const candidates = [
+		root,
+		first,
+		second,
+		firstChildOfFirst,
+		secondChildOfFirst,
+		childOfSecond,
+		grandchildOfFirst
+	];
+
+	expect(
+		findDescendants(root, candidates, [predicates.enum['is-part-of']]).map(({ guid }) => guid)
+	).toEqual([
+		firstGuid,
+		firstChildOfFirstGuid,
+		grandchildOfFirstGuid,
+		secondChildOfFirstGuid,
+		secondGuid,
+		childOfSecondGuid
+	]);
+	expect(
+		findDescendants(
+			root,
+			candidates,
+			[predicates.enum['is-part-of']],
+			predicates.enum['is-part-of-program']
+		).map(({ guid }) => guid)
+	).toEqual([firstGuid, secondChildOfFirstGuid, secondGuid, childOfSecondGuid]);
+	expect(
+		findDescendants(root, [...candidates].reverse(), [predicates.enum['is-part-of']]).map(
+			({ guid }) => guid
+		)
+	).toEqual([
+		secondGuid,
+		childOfSecondGuid,
+		firstGuid,
+		secondChildOfFirstGuid,
+		firstChildOfFirstGuid,
+		grandchildOfFirstGuid
+	]);
+});
+
 test('deleting a program spares what still hangs elsewhere, including the subtree below it', () => {
 	expect(
 		guidsOf(
