@@ -488,6 +488,81 @@ test('findDescendants without the flag still returns every descendant', () => {
 	);
 });
 
+test('findDescendants returns the descendants depth first, siblings in the order of the candidates', () => {
+	const rootGuid = '0d7e1a00-0000-4000-8000-000000000001';
+	const otherProgramGuid = '0d7e1a00-0000-4000-8000-000000000002';
+	const firstGuid = '0d7e1a00-0000-4000-8000-000000000003';
+	const secondGuid = '0d7e1a00-0000-4000-8000-000000000004';
+	const firstChildOfFirstGuid = '0d7e1a00-0000-4000-8000-000000000005';
+	const secondChildOfFirstGuid = '0d7e1a00-0000-4000-8000-000000000006';
+	const childOfSecondGuid = '0d7e1a00-0000-4000-8000-000000000007';
+	const grandchildOfFirstGuid = '0d7e1a00-0000-4000-8000-000000000008';
+
+	const root = makeContainer(rootGuid, payloadTypes.enum.program, []);
+	const first = makeContainer(firstGuid, payloadTypes.enum.goal, [
+		templateRelation(firstGuid, predicates.enum['is-part-of'], rootGuid)
+	]);
+	const second = makeContainer(secondGuid, payloadTypes.enum.goal, [
+		templateRelation(secondGuid, predicates.enum['is-part-of'], rootGuid)
+	]);
+	// Belongs to two programs.
+	const firstChildOfFirst = makeContainer(firstChildOfFirstGuid, payloadTypes.enum.measure, [
+		templateRelation(firstChildOfFirstGuid, predicates.enum['is-part-of'], firstGuid),
+		templateRelation(firstChildOfFirstGuid, predicates.enum['is-part-of-program'], rootGuid),
+		templateRelation(firstChildOfFirstGuid, predicates.enum['is-part-of-program'], otherProgramGuid)
+	]);
+	const secondChildOfFirst = makeContainer(secondChildOfFirstGuid, payloadTypes.enum.measure, [
+		templateRelation(secondChildOfFirstGuid, predicates.enum['is-part-of'], firstGuid)
+	]);
+	const childOfSecond = makeContainer(childOfSecondGuid, payloadTypes.enum.measure, [
+		templateRelation(childOfSecondGuid, predicates.enum['is-part-of'], secondGuid)
+	]);
+	const grandchildOfFirst = makeContainer(grandchildOfFirstGuid, payloadTypes.enum.measure, [
+		templateRelation(grandchildOfFirstGuid, predicates.enum['is-part-of'], firstChildOfFirstGuid)
+	]);
+	// Level by level, so that a breadth-first traversal would return them as is.
+	const candidates = [
+		root,
+		first,
+		second,
+		firstChildOfFirst,
+		secondChildOfFirst,
+		childOfSecond,
+		grandchildOfFirst
+	];
+
+	expect(
+		findDescendants(root, candidates, [predicates.enum['is-part-of']]).map(({ guid }) => guid)
+	).toEqual([
+		firstGuid,
+		firstChildOfFirstGuid,
+		grandchildOfFirstGuid,
+		secondChildOfFirstGuid,
+		secondGuid,
+		childOfSecondGuid
+	]);
+	expect(
+		findDescendants(
+			root,
+			candidates,
+			[predicates.enum['is-part-of']],
+			predicates.enum['is-part-of-program']
+		).map(({ guid }) => guid)
+	).toEqual([firstGuid, secondChildOfFirstGuid, secondGuid, childOfSecondGuid]);
+	expect(
+		findDescendants(root, [...candidates].reverse(), [predicates.enum['is-part-of']]).map(
+			({ guid }) => guid
+		)
+	).toEqual([
+		secondGuid,
+		childOfSecondGuid,
+		firstGuid,
+		secondChildOfFirstGuid,
+		firstChildOfFirstGuid,
+		grandchildOfFirstGuid
+	]);
+});
+
 test('deleting a program spares what still hangs elsewhere, including the subtree below it', () => {
 	expect(
 		guidsOf(
@@ -612,6 +687,74 @@ test('cyclic relations do not trap the traversal when ignoring multi-parent node
 			)
 		)
 	).toEqual([firstGuid, secondGuid].sort());
+});
+
+test('empty candidates array returns empty descendants list', () => {
+	expect(
+		findDescendants(
+			programOne,
+			[],
+			[predicates.enum['is-part-of'], predicates.enum['is-part-of-program']]
+		)
+	).toEqual([]);
+});
+
+test('root with no children returns empty descendants list', () => {
+	const isolatedGuid = 'e57849e7-e16e-4f05-89db-dfdc2db19001';
+	const otherGuid = 'e57849e7-e16e-4f05-89db-dfdc2db19002';
+	const otherRootGuid = 'e57849e7-e16e-4f05-89db-dfdc2db19003';
+	const isolated = makeContainer(isolatedGuid, payloadTypes.enum.program, []);
+	const other = makeContainer(otherGuid, payloadTypes.enum.goal, [
+		templateRelation(otherGuid, predicates.enum['is-part-of'], otherRootGuid)
+	]);
+	expect(findDescendants(isolated, [isolated, other], [predicates.enum['is-part-of']])).toEqual([]);
+});
+
+test('diamond hierarchy without multi-parents returns all descendants without duplicates', () => {
+	const rootGuid = 'd1a00000-0000-4000-8000-000000000001';
+	const leftGuid = 'd1a00000-0000-4000-8000-000000000002';
+	const rightGuid = 'd1a00000-0000-4000-8000-000000000003';
+	const bottomGuid = 'd1a00000-0000-4000-8000-000000000004';
+
+	const root = makeContainer(rootGuid, payloadTypes.enum.program, []);
+	const left = makeContainer(leftGuid, payloadTypes.enum.goal, [
+		templateRelation(leftGuid, predicates.enum['is-part-of'], rootGuid)
+	]);
+	const right = makeContainer(rightGuid, payloadTypes.enum.goal, [
+		templateRelation(rightGuid, predicates.enum['is-part-of'], rootGuid)
+	]);
+	const bottom = makeContainer(bottomGuid, payloadTypes.enum.measure, [
+		templateRelation(bottomGuid, predicates.enum['is-part-of'], leftGuid),
+		templateRelation(bottomGuid, predicates.enum['is-part-of'], rightGuid)
+	]);
+
+	const result = findDescendants(
+		root,
+		[root, left, right, bottom],
+		[predicates.enum['is-part-of']],
+		predicates.enum['is-part-of-program']
+	);
+
+	expect(guidsOf(result)).toEqual([leftGuid, rightGuid, bottomGuid].sort());
+});
+
+test('duplicate relations pointing to the same parent do not cause duplicates', () => {
+	const rootGuid = 'd2a00000-0000-4000-8000-000000000001';
+	const childGuid = 'd2a00000-0000-4000-8000-000000000002';
+
+	const root = makeContainer(rootGuid, payloadTypes.enum.program, []);
+	const child = makeContainer(childGuid, payloadTypes.enum.goal, [
+		templateRelation(childGuid, predicates.enum['is-part-of'], rootGuid),
+		templateRelation(childGuid, predicates.enum['is-part-of-program'], rootGuid)
+	]);
+
+	const result = findDescendants(
+		root,
+		[root, child],
+		[predicates.enum['is-part-of'], predicates.enum['is-part-of-program']]
+	);
+
+	expect(result.map((c) => c.guid)).toEqual([childGuid]);
 });
 
 test.each([

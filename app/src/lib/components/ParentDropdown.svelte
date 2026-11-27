@@ -84,17 +84,18 @@
 {#await isPartOfOptionsRequest}
 	<SingleChoiceDropdown {labelledBy} options={[]} bind:value={() => isPartOfObject([]), set} />
 {:then isPartOfOptions}
+	{@const descendants = new Set(
+		'revision' in container
+			? findDescendants(container, isPartOfOptions, [predicates.enum['is-part-of']]).map(
+					(c) => c.guid
+				)
+			: []
+	)}
 	{@const options = [
 		{ label: $_('empty'), value: '' },
 		...isPartOfOptions
 			.filter(({ guid }) => !('guid' in container) || guid !== container.guid)
-			.filter(
-				({ guid }) =>
-					!('revision' in container) ||
-					!findDescendants(container, isPartOfOptions, [predicates.enum['is-part-of']])
-						.map((c) => c.guid)
-						.includes(guid)
-			)
+			.filter(({ guid }) => !descendants.has(guid))
 			.filter(
 				({ organizational_unit }) =>
 					!container.organizational_unit || organizational_unit === container.organizational_unit

@@ -3754,6 +3754,8 @@ export function grantForNewContainer(scope: Container<AnyPayload>): UserGrants |
 	};
 }
 
+const anyInitialContainer = createNewContainerSchema(anyInitialPayload);
+
 // A new container of the given type within the given scope: it lives in the
 // scope's organization and organizational unit, is managed by and related to the scope, and
 // carries the grants the request user would hold on it (grantForNewContainer),
@@ -3764,7 +3766,7 @@ export function containerOfType(payloadType: PayloadType, scope: Container<AnyPa
 		? scope.guid
 		: scope.organizational_unit;
 	return {
-		...(createNewContainerSchema(anyInitialPayload).parse({
+		...(anyInitialContainer.parse({
 			managed_by: isArea ? scope.guid : scope.managed_by,
 			organization: scope.organization,
 			organizational_unit:
@@ -3888,38 +3890,74 @@ export function grantSourceOf(
 	);
 }
 
-function collectDescendants<T extends Container<AnyPayload>>(
-	container: T,
-	containers: T[],
-	predicate: Predicate[]
-) {
-	const descendants = new Map<string, T>();
+function hasMultipleParents(container: Container<AnyPayload>, predicate: Predicate): boolean {
+	let parentCount = 0;
+	for (const rel of container.relation) {
+		if (
+			rel.subject === container.guid &&
+			rel.predicate === predicate &&
+			rel.object !== container.guid
+		) {
+			parentCount++;
+			if (parentCount > 1) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
 
-	function traverse(current: T) {
-		const children = containers.filter(
-			({ relation, guid }) =>
-				relation.findIndex(
-					(r) =>
-						predicate.some((p) => p == r.predicate) && r.object == current.guid && r.object != guid
-				) > -1 && !descendants.has(guid)
-		);
+function buildChildrenIndex<T extends Container<AnyPayload>>(
+	containers: readonly T[],
+	predicateSet: ReadonlySet<Predicate>
+): Map<string, T[]> {
+	const childrenByParent = new Map<string, T[]>();
 
-		for (const child of children) {
-			descendants.set(child.guid, child);
-			traverse(child);
+	for (const candidate of containers) {
+		const parentGuids = new Set<string>();
+		for (const rel of candidate.relation) {
+			if (rel.object !== candidate.guid && predicateSet.has(rel.predicate as Predicate)) {
+				parentGuids.add(rel.object);
+			}
+		}
+
+		for (const parentGuid of parentGuids) {
+			const existing = childrenByParent.get(parentGuid);
+			if (existing) {
+				existing.push(candidate);
+			} else {
+				childrenByParent.set(parentGuid, [candidate]);
+			}
 		}
 	}
 
-	traverse(container);
-	return descendants;
+	return childrenByParent;
 }
 
-function hasMultipleParents(container: Container<AnyPayload>, predicate: Predicate) {
-	return (
-		container.relation.filter(
-			(r) => r.subject == container.guid && r.predicate == predicate && r.object != container.guid
-		).length > 1
-	);
+function collectDescendants<T extends Container<AnyPayload>>(
+	root: T,
+	childrenByParent: Map<string, T[]>
+): Map<string, T> {
+	const descendants = new Map<string, T>();
+	// Depth first, so that the descendants of a node directly follow it.
+	const stack: T[] = (childrenByParent.get(root.guid) ?? []).toReversed();
+
+	while (stack.length > 0) {
+		const current = stack.pop()!;
+		if (descendants.has(current.guid)) continue;
+		descendants.set(current.guid, current);
+
+		const children = childrenByParent.get(current.guid);
+		if (!children) continue;
+
+		for (let i = children.length - 1; i >= 0; i--) {
+			if (!descendants.has(children[i].guid)) {
+				stack.push(children[i]);
+			}
+		}
+	}
+
+	return descendants;
 }
 
 // With ignoreMultiParentNodes, descendants that have several parents via that
@@ -3931,23 +3969,34 @@ export function findDescendants<T extends Container<AnyPayload>>(
 	predicate: Predicate[],
 	ignoreMultiParentNodes?: Predicate
 ): T[] {
-	const descendants = collectDescendants(container, containers, predicate);
+	const predicateSet = new Set(predicate);
+	const childrenByParent = buildChildrenIndex(containers, predicateSet);
+	const descendants = collectDescendants(container, childrenByParent);
 
 	if (!ignoreMultiParentNodes) {
 		return Array.from(descendants.values());
 	}
 
-	const ignored = new Set<string>();
-	for (const node of descendants.values()) {
-		if (hasMultipleParents(node, ignoreMultiParentNodes)) {
-			ignored.add(node.guid);
-			for (const guid of collectDescendants(node, containers, predicate).keys()) {
-				ignored.add(guid);
-			}
+	const multiParentNodes = Array.from(descendants.values()).filter((node) =>
+		hasMultipleParents(node, ignoreMultiParentNodes)
+	);
+
+	if (multiParentNodes.length === 0) {
+		return Array.from(descendants.values());
+	}
+
+	const excludedGuids = new Set<string>();
+	for (const node of multiParentNodes) {
+		if (excludedGuids.has(node.guid)) continue;
+		excludedGuids.add(node.guid);
+
+		const subtree = collectDescendants(node, childrenByParent);
+		for (const guid of subtree.keys()) {
+			excludedGuids.add(guid);
 		}
 	}
 
-	return Array.from(descendants.values()).filter(({ guid }) => !ignored.has(guid));
+	return Array.from(descendants.values()).filter(({ guid }) => !excludedGuids.has(guid));
 }
 
 export function computeProgressSegments(
